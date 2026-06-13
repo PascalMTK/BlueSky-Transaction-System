@@ -1,0 +1,781 @@
+{% extends 'layouts/app.html' %}
+{% load static bluesky_tags %}
+
+{% block title %}{{ t.messages_title }}{% endblock %}
+{% block page_title %}{{ t.messages_title }}{% endblock %}
+{% block page_subtitle %}{{ t.messages_sub }}{% endblock %}
+{% block nav_messages %}active{% endblock %}
+{% block nav_admin_messages %}active{% endblock %}
+
+{% block styles %}
+<style>
+:root {
+    --bbl-mine:        linear-gradient(145deg, #4f46e5, #7c3aed);
+    --bbl-mine-shadow: rgba(79,70,229,.30);
+    --bbl-other:       linear-gradient(145deg, #0d9488, #0891b2);
+    --bbl-other-shadow:rgba(13,148,136,.22);
+    --chat-bg:         #f4f6fb;
+    --conv-active:     rgba(79,70,229,.09);
+}
+[data-theme="dark"] {
+    --bbl-mine:        linear-gradient(145deg, #5b50f0, #9333ea);
+    --bbl-mine-shadow: rgba(147,51,234,.30);
+    --bbl-other:       linear-gradient(145deg, #0f766e, #0369a1);
+    --bbl-other-shadow:rgba(15,118,110,.25);
+    --chat-bg:         #0d1117;
+    --conv-active:     rgba(147,51,234,.12);
+}
+
+/* ── Shell ─────────────────────────────── */
+.msg-shell {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    height: calc(100dvh - 138px);
+    min-height: 520px;
+    border-radius: 18px;
+    overflow: hidden;
+    border: 1px solid var(--border-light);
+    box-shadow: 0 6px 32px rgba(0,0,0,.10);
+    background: var(--bg-card);
+}
+
+/* ── Left sidebar ───────────────────────── */
+.ms-sidebar {
+    display: flex; flex-direction: column;
+    border-right: 1px solid var(--border-light);
+    background: var(--bg-secondary);
+    overflow: hidden;
+}
+.ms-sidebar-top {
+    padding: 16px 14px 12px;
+    border-bottom: 1px solid var(--border-light);
+    flex-shrink: 0;
+}
+.ms-sidebar-title {
+    font-size: 15px; font-weight: 800; color: var(--text-primary);
+    display: flex; align-items: center; gap: 8px; margin-bottom: 11px;
+}
+.ms-compose-btn {
+    width: 100%; border: none; cursor: pointer;
+    background: linear-gradient(135deg,var(--sky-primary),var(--sky-secondary));
+    color: white; border-radius: 11px;
+    padding: 10px 14px; font-size: 13px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center; gap: 7px;
+    transition: opacity .18s, transform .18s;
+}
+.ms-compose-btn:hover { opacity:.88; transform:translateY(-1px); }
+
+.ms-conv-list { flex: 1; overflow-y: auto; }
+
+/* conversation row */
+.ms-conv-row {
+    display: flex; align-items: center; gap: 11px;
+    padding: 12px 14px; border-bottom: 1px solid var(--divider);
+    text-decoration: none; transition: background .13s; position: relative;
+    cursor: pointer;
+}
+.ms-conv-row:hover { background: var(--bg-hover); }
+.ms-conv-row:hover .ms-conv-del { opacity: 1; }
+.ms-conv-row.is-active {
+    background: var(--conv-active);
+    border-left: 3px solid var(--sky-primary);
+}
+
+/* avatar */
+.ms-av {
+    position: relative; flex-shrink: 0;
+    width: 44px; height: 44px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; font-weight: 800; color: white;
+}
+.ms-av-admin { background: linear-gradient(135deg,#7c3aed,#a855f7); }
+.ms-av-agent { background: linear-gradient(135deg,var(--sky-primary),var(--sky-secondary)); }
+.ms-unread-ring { outline: 2.5px solid var(--sky-primary); outline-offset: 2px; }
+
+.ms-conv-info { flex: 1; min-width: 0; }
+.ms-conv-name {
+    font-size: 13.5px; font-weight: 700; color: var(--text-primary);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.ms-conv-preview {
+    font-size: 12px; color: var(--text-muted); margin-top: 2px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.ms-conv-role {
+    font-size: 10px; font-weight: 700;
+    padding: 1px 6px; border-radius: 8px; display: inline-block; margin-top: 3px;
+}
+.role-adm { background: rgba(124,58,237,.12); color: #7c3aed; }
+.role-agt { background: rgba(0,133,255,.10); color: var(--sky-primary); }
+
+.ms-conv-right { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; flex-shrink: 0; }
+.ms-conv-time { font-size: 10px; color: var(--text-muted); }
+.ms-badge {
+    background: var(--sky-primary); color: white;
+    border-radius: 10px; font-size: 10px; font-weight: 800;
+    padding: 1px 7px; min-width: 18px; text-align: center;
+}
+
+/* delete icon on conv row (hidden until hover) */
+.ms-conv-del {
+    opacity: 0; transition: opacity .15s;
+    background: rgba(239,68,68,.1); color: #ef4444;
+    border: none; border-radius: 8px;
+    padding: 3px 6px; font-size: 12px; cursor: pointer;
+    margin-left: auto; flex-shrink: 0;
+}
+.ms-conv-del:hover { background: rgba(239,68,68,.2); }
+
+.ms-empty {
+    padding: 40px 16px; text-align: center; color: var(--text-muted);
+}
+.ms-empty-icon { font-size: 38px; margin-bottom: 10px; opacity: .5; }
+
+/* ── Right chat area ────────────────────── */
+.ms-chat { display: flex; flex-direction: column; overflow: hidden; }
+
+.ms-chat-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border-light);
+    display: flex; align-items: center; gap: 13px;
+    background: var(--bg-card); flex-shrink: 0;
+}
+.ms-chat-hdr-info { flex: 1; min-width: 0; }
+.ms-chat-hdr-name { font-size: 15px; font-weight: 800; color: var(--text-primary); }
+.ms-chat-hdr-sub  { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.ms-hdr-btn {
+    border: 1px solid var(--border-light);
+    background: transparent; color: var(--text-secondary);
+    border-radius: 10px; padding: 7px 12px; font-size: 12px;
+    font-weight: 600; cursor: pointer; transition: all .15s;
+    text-decoration: none; display: inline-flex; align-items: center; gap: 5px;
+}
+.ms-hdr-btn:hover { background: var(--bg-secondary); }
+.ms-hdr-btn-del { color: #ef4444; border-color: rgba(239,68,68,.25); }
+.ms-hdr-btn-del:hover { background: rgba(239,68,68,.08); }
+
+/* ── Chat body background ───────────────── */
+.ms-body {
+    flex: 1; overflow-y: auto;
+    padding: 20px 20px 12px;
+    display: flex; flex-direction: column; gap: 4px;
+    background: var(--chat-bg);
+    transition: background .3s;
+}
+
+/* date separator */
+.ms-date-sep {
+    text-align: center; margin: 18px 0 12px;
+    font-size: 11px; color: var(--text-muted); font-weight: 700;
+    letter-spacing: .4px;
+    display: flex; align-items: center; gap: 10px;
+}
+.ms-date-sep::before,.ms-date-sep::after {
+    content:''; flex: 1; height: 1px; background: var(--divider);
+}
+
+/* ── Bubble row ─────────────────────────── */
+.ms-bbl-row {
+    display: flex; align-items: flex-end; gap: 9px;
+    margin-bottom: 2px;
+}
+.ms-bbl-row.is-mine  { flex-direction: row-reverse; }
+.ms-bbl-row.group-end { margin-bottom: 12px; }
+
+/* mini avatar */
+.ms-bbl-av {
+    width: 30px; height: 30px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 800; color: white; flex-shrink: 0;
+    margin-bottom: 2px; box-shadow: 0 2px 6px rgba(0,0,0,.18);
+}
+.ms-bbl-av.is-mine  { background: var(--bbl-mine); }
+.ms-bbl-av.is-admin { background: linear-gradient(135deg,#6d28d9,#a855f7); }
+.ms-bbl-av.is-agent { background: linear-gradient(135deg,#0d9488,#0891b2); }
+.ms-bbl-av.hidden-av { visibility: hidden; }
+
+/* bubble group (delete btn + bubble) */
+.ms-bbl-group { display: flex; flex-direction: column; max-width: 68%; }
+.ms-bbl-row.is-mine .ms-bbl-group { align-items: flex-end; }
+
+/* delete action — appears on hover */
+.ms-bbl-actions {
+    display: flex; align-items: center; gap: 4px; margin-bottom: 4px;
+    opacity: 0; transition: opacity .15s; height: 18px;
+}
+.ms-bbl-row.is-mine .ms-bbl-actions { justify-content: flex-end; }
+.ms-bbl-group:hover .ms-bbl-actions  { opacity: 1; }
+.ms-del-btn {
+    background: rgba(239,68,68,.12); color: #ef4444; border: none;
+    border-radius: 7px; padding: 2px 8px; font-size: 10.5px; cursor: pointer;
+    transition: background .12s; font-weight: 600;
+}
+.ms-del-btn:hover { background: rgba(239,68,68,.24); }
+
+/* ── THE BUBBLES ────────────────────────── */
+.ms-bbl-wrap { display: flex; flex-direction: column; }
+.ms-bbl-row.is-mine .ms-bbl-wrap { align-items: flex-end; }
+
+.ms-bbl {
+    border-radius: 18px;
+    padding: 10px 15px;
+    font-size: 13.5px; line-height: 1.62;
+    word-break: break-word; white-space: pre-wrap;
+    position: relative;
+}
+
+/* MY messages — indigo → violet */
+.ms-bbl.is-mine {
+    background: var(--bbl-mine);
+    color: #fff;
+    border-bottom-right-radius: 5px;
+    box-shadow: 0 3px 14px var(--bbl-mine-shadow);
+}
+/* Tail shape — bottom-right */
+.ms-bbl.is-mine::after {
+    content: '';
+    position: absolute; bottom: 0; right: -6px;
+    width: 12px; height: 12px;
+    background: inherit;
+    clip-path: polygon(0 0, 0% 100%, 100% 100%);
+}
+
+/* THEIR messages — teal → cyan */
+.ms-bbl.is-other {
+    background: var(--bbl-other);
+    color: #fff;
+    border-bottom-left-radius: 5px;
+    box-shadow: 0 3px 14px var(--bbl-other-shadow);
+}
+/* Tail shape — bottom-left */
+.ms-bbl.is-other::after {
+    content: '';
+    position: absolute; bottom: 0; left: -6px;
+    width: 12px; height: 12px;
+    background: inherit;
+    clip-path: polygon(100% 0, 0 100%, 100% 100%);
+}
+
+/* Grouped: flatten inner corners */
+.ms-bbl-row.not-first.is-mine    .ms-bbl { border-top-right-radius: 5px; }
+.ms-bbl-row.not-first:not(.is-mine) .ms-bbl { border-top-left-radius: 5px; }
+
+/* meta (time + read tick) */
+.ms-bbl-meta {
+    font-size: 10px; margin-top: 4px;
+    display: flex; align-items: center; gap: 5px;
+    opacity: .72; color: var(--text-muted);
+}
+.ms-bbl-row.is-mine .ms-bbl-meta { justify-content: flex-end; }
+
+/* no selection pane */
+.ms-placeholder {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center; color: var(--text-muted); gap: 14px; padding: 40px;
+}
+.ms-placeholder-icon { font-size: 58px; opacity: .35; }
+
+/* input bar */
+.ms-input-bar {
+    padding: 12px 16px; border-top: 1px solid var(--border-light);
+    display: flex; align-items: flex-end; gap: 10px;
+    background: var(--bg-card); flex-shrink: 0;
+}
+.ms-textarea {
+    flex: 1; resize: none; border: 1.5px solid var(--border-light);
+    border-radius: 14px; padding: 10px 14px; font-size: 13.5px;
+    background: var(--bg-secondary); color: var(--text-primary);
+    outline: none; max-height: 130px; min-height: 44px;
+    line-height: 1.5; transition: border-color .18s; font-family: inherit;
+}
+.ms-textarea:focus { border-color: var(--sky-primary); }
+.ms-send-btn {
+    background: linear-gradient(135deg,var(--sky-primary),var(--sky-secondary));
+    color: white; border: none; border-radius: 14px;
+    width: 44px; height: 44px; cursor: pointer; font-size: 17px;
+    transition: opacity .18s, transform .18s; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+}
+.ms-send-btn:hover { opacity:.88; transform:translateY(-1px); }
+
+/* ── Contact picker modal ────────────────── */
+.ms-modal-overlay {
+    position: fixed; inset: 0; z-index: 1000;
+    background: rgba(0,0,0,.48);
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px; opacity: 0; pointer-events: none; transition: opacity .2s;
+}
+.ms-modal-overlay.open { opacity: 1; pointer-events: all; }
+.ms-modal {
+    background: var(--bg-card); border-radius: 18px;
+    width: 100%; max-width: 440px; max-height: 82dvh;
+    display: flex; flex-direction: column;
+    box-shadow: 0 24px 64px rgba(0,0,0,.28);
+    transform: scale(.96); transition: transform .22s;
+    overflow: hidden;
+}
+.ms-modal-overlay.open .ms-modal { transform: scale(1); }
+.ms-modal-hdr {
+    padding: 20px 20px 14px; border-bottom: 1px solid var(--border-light);
+    display: flex; align-items: center; justify-content: space-between;
+    flex-shrink: 0;
+}
+.ms-modal-title { font-size: 16px; font-weight: 800; color: var(--text-primary); }
+.ms-modal-close {
+    width: 30px; height: 30px; border-radius: 50%; border: none;
+    background: var(--bg-secondary); color: var(--text-muted);
+    cursor: pointer; font-size: 15px; display: flex;
+    align-items: center; justify-content: center; transition: background .14s;
+}
+.ms-modal-close:hover { background: var(--bg-hover); }
+.ms-modal-search-wrap { padding: 12px 16px; border-bottom: 1px solid var(--border-light); flex-shrink: 0; }
+.ms-modal-search {
+    width: 100%; border: 1.5px solid var(--border-light);
+    border-radius: 11px; padding: 9px 14px; font-size: 13px;
+    background: var(--bg-secondary); color: var(--text-primary); outline: none;
+}
+.ms-modal-search:focus { border-color: var(--sky-primary); }
+.ms-modal-list { overflow-y: auto; flex: 1; }
+.ms-contact-row {
+    display: flex; align-items: center; gap: 11px;
+    padding: 11px 16px; border-bottom: 1px solid var(--divider);
+    text-decoration: none; transition: background .13s; cursor: pointer;
+}
+.ms-contact-row:hover { background: var(--bg-hover); }
+.ms-contact-info { flex: 1; min-width: 0; }
+.ms-contact-name { font-size: 13.5px; font-weight: 700; color: var(--text-primary); }
+.ms-contact-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+/* ── Confirm delete overlay ─────────────── */
+.ms-confirm-overlay {
+    position: fixed; inset: 0; z-index: 1100;
+    background: rgba(0,0,0,.5);
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px; opacity: 0; pointer-events: none; transition: opacity .18s;
+}
+.ms-confirm-overlay.open { opacity: 1; pointer-events: all; }
+.ms-confirm-box {
+    background: var(--bg-card); border-radius: 16px;
+    padding: 28px 24px; max-width: 360px; width: 100%;
+    box-shadow: 0 20px 60px rgba(0,0,0,.25);
+    transform: scale(.95); transition: transform .2s; text-align: center;
+}
+.ms-confirm-overlay.open .ms-confirm-box { transform: scale(1); }
+.ms-confirm-icon { font-size: 38px; margin-bottom: 10px; }
+.ms-confirm-title { font-size: 16px; font-weight: 800; color: var(--text-primary); margin-bottom: 6px; }
+.ms-confirm-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; }
+.ms-confirm-btns { display: flex; gap: 10px; justify-content: center; }
+.ms-confirm-cancel {
+    border: 1px solid var(--border-light); background: transparent;
+    color: var(--text-secondary); border-radius: 10px;
+    padding: 10px 22px; font-size: 13px; font-weight: 600; cursor: pointer;
+}
+.ms-confirm-ok {
+    background: #ef4444; color: white; border: none;
+    border-radius: 10px; padding: 10px 22px; font-size: 13px; font-weight: 700; cursor: pointer;
+}
+
+/* Back button — hidden on desktop, shown on mobile */
+.ms-back-btn { display: none; }
+
+/* ── Tablet (768–1024px) ─────────────────── */
+@media (min-width: 768px) and (max-width: 1024px) {
+    .msg-shell { grid-template-columns: 240px 1fr; }
+    .ms-bbl-group { max-width: 76%; }
+}
+
+/* ── Mobile (≤768px) ─────────────────────── */
+@media (max-width: 768px) {
+    /* Flush shell to screen edges, removing content-area padding */
+    .content-area:has(.msg-shell) { padding: 0 !important; }
+
+    .msg-shell {
+        display: block;
+        position: relative;
+        width: 100%;
+        height: calc(100dvh - 60px);   /* 60px = topbar height on mobile */
+        min-height: unset;
+        border-radius: 0;
+        border: none;
+        box-shadow: none;
+        overflow: hidden;
+    }
+    /* Both panels fill the shell absolutely and slide */
+    .ms-sidebar {
+        position: absolute;
+        inset: 0;
+        height: 100%;
+        max-height: none;
+        border-right: none;
+        border-bottom: none;
+        transform: translateX(0);
+        transition: transform .3s cubic-bezier(.4,0,.2,1);
+        will-change: transform;
+        z-index: 2;
+    }
+    .ms-chat {
+        position: absolute;
+        inset: 0;
+        height: 100%;
+        transform: translateX(105%);
+        transition: transform .3s cubic-bezier(.4,0,.2,1);
+        will-change: transform;
+        z-index: 1;
+        background: var(--bg-card);
+    }
+    /* Slide sidebar out → chat in */
+    .msg-shell.mobile-show-chat .ms-sidebar {
+        transform: translateX(-100%);
+        pointer-events: none;
+    }
+    .msg-shell.mobile-show-chat .ms-chat {
+        transform: translateX(0);
+    }
+    /* Back button visible */
+    .ms-back-btn { display: inline-flex !important; }
+    /* Wider bubbles on small screen */
+    .ms-bbl-group { max-width: 88%; }
+    /* Touch-friendly tap targets */
+    .ms-conv-row { min-height: 60px; padding: 14px; }
+    .ms-compose-btn { min-height: 46px; }
+    /* iPhone home indicator safe area */
+    .ms-input-bar {
+        padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    }
+}
+
+/* ── Extra-small phones (≤400px) ────────── */
+@media (max-width: 400px) {
+    .ms-bbl { font-size: 13px; line-height: 1.58; }
+    .ms-bbl-group { max-width: 92%; }
+    .ms-chat-hdr-name { font-size: 13.5px; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Contact picker -->
+<div class="ms-modal-overlay" id="contactOverlay" onclick="if(event.target===this)closeContact()">
+    <div class="ms-modal">
+        <div class="ms-modal-hdr">
+            <div class="ms-modal-title">👥 {{ t.new_conversation }}</div>
+            <button class="ms-modal-close" onclick="closeContact()">✕</button>
+        </div>
+        <div class="ms-modal-search-wrap">
+            <input class="ms-modal-search" id="contactSearch" placeholder="🔍 {{ t.search }}..." oninput="filterContacts(this.value)" autocomplete="off">
+        </div>
+        <div class="ms-modal-list" id="contactList">
+            {% for u in all_users %}
+            <a href="{% url 'messages_thread' u.id %}" class="ms-contact-row" data-name="{{ u.name|lower }}">
+                <div class="ms-av {% if u.is_admin %}ms-av-admin{% else %}ms-av-agent{% endif %}">{{ u.name|initials }}</div>
+                <div class="ms-contact-info">
+                    <div class="ms-contact-name">{{ u.name }}</div>
+                    <div class="ms-contact-meta">
+                        <span class="ms-conv-role {% if u.is_admin %}role-adm{% else %}role-agt{% endif %}">{% if u.is_admin %}🛡️ Admin{% else %}🏢 Agent{% endif %}</span>
+                        {% if u.country %} · {{ u.country.flag_emoji }} {{ u.country.name }}{% endif %}
+                    </div>
+                </div>
+            </a>
+            {% empty %}<div class="ms-empty"><div>Aucun utilisateur.</div></div>{% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Delete confirm modal -->
+<div class="ms-confirm-overlay" id="confirmOverlay">
+    <div class="ms-confirm-box">
+        <div class="ms-confirm-icon">🗑️</div>
+        <div class="ms-confirm-title" id="confirmTitle">Supprimer ?</div>
+        <div class="ms-confirm-sub" id="confirmSub">Cette action est irréversible.</div>
+        <div class="ms-confirm-btns">
+            <button class="ms-confirm-cancel" onclick="closeConfirm()">Annuler</button>
+            <button class="ms-confirm-ok" id="confirmOkBtn" onclick="doDelete()">Supprimer</button>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden delete forms -->
+{% if selected %}
+{% if thread %}{% for item in thread %}{% if item.is_mine %}
+<form id="del-form-{{ item.msg.id }}" method="POST" action="{% url 'message_delete' item.msg.id %}" style="display:none;">{% csrf_token %}</form>
+{% endif %}{% endfor %}{% endif %}
+<form id="del-conv-form" method="POST" action="{% url 'conversation_delete' selected.id %}" style="display:none;">{% csrf_token %}</form>
+{% endif %}
+{% for conv in conversations %}
+<form id="del-sidebar-{{ conv.partner.id }}" method="POST" action="{% url 'conversation_delete' conv.partner.id %}" style="display:none;">{% csrf_token %}</form>
+{% endfor %}
+
+<!-- Main shell -->
+<div class="msg-shell">
+
+    <!-- ── Left sidebar ── -->
+    <div class="ms-sidebar">
+        <div class="ms-sidebar-top">
+            <div class="ms-sidebar-title">💬 {{ t.messages_title }}</div>
+            <button class="ms-compose-btn" onclick="openContact()">✏️ {{ t.new_conversation }}</button>
+        </div>
+        <div class="ms-conv-list">
+            {% if conversations %}
+                {% for conv in conversations %}
+                <div class="ms-conv-row {% if selected and selected.id == conv.partner.id %}is-active{% endif %}"
+                     onclick="window.location='{% url 'messages_thread' conv.partner.id %}'">
+                    <div class="ms-av {% if conv.partner.is_admin %}ms-av-admin{% else %}ms-av-agent{% endif %} {% if conv.unread > 0 %}ms-unread-ring{% endif %}">
+                        {{ conv.partner.name|initials }}
+                    </div>
+                    <div class="ms-conv-info">
+                        <div class="ms-conv-name">{{ conv.partner.name }}</div>
+                        <div class="ms-conv-preview">
+                            {% if conv.last_msg %}{{ conv.last_msg.message|truncatechars:36 }}{% else %}—{% endif %}
+                        </div>
+                        <span class="ms-conv-role {% if conv.partner.is_admin %}role-adm{% else %}role-agt{% endif %}">
+                            {% if conv.partner.is_admin %}🛡️ Admin{% else %}🏢 Agent{% endif %}
+                        </span>
+                    </div>
+                    <div class="ms-conv-right">
+                        {% if conv.last_msg %}<div class="ms-conv-time">{{ conv.last_msg.created_at|date:"d/m H:i" }}</div>{% endif %}
+                        {% if conv.unread > 0 %}<span class="ms-badge">{{ conv.unread }}</span>{% endif %}
+                        <button class="ms-conv-del" title="Supprimer"
+                            onclick="event.stopPropagation(); confirmSidebarDelete({{ conv.partner.id }}, '{{ conv.partner.name|escapejs }}')">🗑</button>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="ms-empty">
+                    <div class="ms-empty-icon">📭</div>
+                    <div style="font-weight:600;font-size:13px;">{{ t.no_conversations }}</div>
+                    <div style="font-size:12px;margin-top:6px;">{{ t.start_chat_hint }}</div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ── Right chat ── -->
+    <div class="ms-chat">
+        {% if selected %}
+
+        <!-- Header -->
+        <div class="ms-chat-header">
+            <a href="{% url 'messages_list' %}" class="ms-back-btn ms-hdr-btn" style="display:none;" aria-label="Retour">← Retour</a>
+            <div class="ms-av {% if selected.is_admin %}ms-av-admin{% else %}ms-av-agent{% endif %}" style="width:44px;height:44px;font-size:16px;">{{ selected.name|initials }}</div>
+            <div class="ms-chat-hdr-info">
+                <div class="ms-chat-hdr-name">{{ selected.name }}</div>
+                <div class="ms-chat-hdr-sub">
+                    {% if selected.is_admin %}🛡️ Administrateur{% else %}🏢 Agent{% endif %}
+                    {% if selected.country %} · {{ selected.country.flag_emoji }} {{ selected.country.name }}{% endif %}
+                </div>
+            </div>
+            {% if selected.phone %}
+            <a href="tel:{{ selected.phone }}" class="ms-hdr-btn">📞 {{ selected.phone }}</a>
+            {% endif %}
+            <button class="ms-hdr-btn ms-hdr-btn-del" onclick="confirmDelete('conv','Supprimer la conversation ?','Tous les messages avec {{ selected.name }} seront définitivement supprimés.')">🗑️</button>
+        </div>
+
+        <!-- Thread -->
+        <div class="ms-body" id="msgBody">
+            {% if thread %}
+                {% for item in thread %}
+                    {% if item.show_sep %}
+                    <div class="ms-date-sep">{{ item.sep_label }}</div>
+                    {% endif %}
+                    <div class="ms-bbl-row {% if item.is_mine %}is-mine{% endif %} {% if item.new_group %}group-end{% else %}not-first{% endif %}" data-msg-id="{{ item.msg.id }}">
+                        <div class="ms-bbl-av {% if item.is_mine %}is-mine{% elif item.msg.sender.is_admin %}is-admin{% else %}is-agent{% endif %} {% if not item.new_group %}hidden-av{% endif %}">
+                            {{ item.msg.sender.name|initials }}
+                        </div>
+                        <div class="ms-bbl-group">
+                            {% if item.is_mine %}
+                            <div class="ms-bbl-actions">
+                                <button class="ms-del-btn" onclick="confirmDelete('{{ item.msg.id }}','Supprimer ce message ?','Ce message sera définitivement supprimé.')">🗑 Supprimer</button>
+                            </div>
+                            {% endif %}
+                            <div class="ms-bbl-wrap">
+                                <div class="ms-bbl {% if item.is_mine %}is-mine{% else %}is-other{% endif %}">{{ item.msg.message }}</div>
+                                <div class="ms-bbl-meta">
+                                    {% if item.new_group and not item.is_mine %}<span>{{ item.msg.sender.name|limit:14 }}</span> · {% endif %}
+                                    {{ item.msg.created_at|date:"H:i" }}
+                                    {% if item.is_mine %} {% if item.msg.is_read %}✓✓{% else %}✓{% endif %}{% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div style="margin:auto;text-align:center;color:var(--text-muted);">
+                    <div style="font-size:40px;margin-bottom:10px;">👋</div>
+                    <div style="font-size:13px;font-weight:600;">{{ t.no_messages_yet }}</div>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Input -->
+        <form method="POST" action="{% url 'messages_thread' selected.id %}" class="ms-input-bar" id="sendForm">
+            {% csrf_token %}
+            <textarea name="message" class="ms-textarea" id="msgInput" placeholder="{{ t.type_message }}" rows="1" required></textarea>
+            <button type="submit" class="ms-send-btn" title="{{ t.send_btn }}">➤</button>
+        </form>
+
+        {% else %}
+        <div class="ms-placeholder">
+            <div class="ms-placeholder-icon">💬</div>
+            <div style="font-size:17px;font-weight:800;color:var(--text-primary);">{{ t.select_contact }}</div>
+            <div style="font-size:13px;">{{ t.start_chat_hint }}</div>
+            <button class="ms-compose-btn" style="max-width:210px;" onclick="openContact()">✏️ {{ t.new_conversation }}</button>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+/* ── contact picker ── */
+function openContact(){ document.getElementById('contactOverlay').classList.add('open'); setTimeout(()=>document.getElementById('contactSearch').focus(),180); }
+function closeContact(){ document.getElementById('contactOverlay').classList.remove('open'); }
+function filterContacts(v){
+    v = v.toLowerCase();
+    document.querySelectorAll('#contactList .ms-contact-row').forEach(el=>{ el.style.display = el.dataset.name.includes(v)?'':'none'; });
+}
+
+/* ── confirm delete ── */
+var _pendingForm = null;
+function confirmDelete(msgId, title, sub){
+    if(msgId === 'conv'){
+        _pendingForm = document.getElementById('del-conv-form');
+    } else {
+        _pendingForm = document.getElementById('del-form-'+msgId);
+    }
+    document.getElementById('confirmTitle').textContent = title;
+    document.getElementById('confirmSub').textContent   = sub;
+    document.getElementById('confirmOverlay').classList.add('open');
+}
+function confirmSidebarDelete(partnerId, partnerName){
+    _pendingForm = document.getElementById('del-sidebar-'+partnerId);
+    document.getElementById('confirmTitle').textContent = 'Supprimer la conversation ?';
+    document.getElementById('confirmSub').textContent   = 'Tous les messages avec '+partnerName+' seront définitivement supprimés.';
+    document.getElementById('confirmOverlay').classList.add('open');
+}
+function closeConfirm(){ document.getElementById('confirmOverlay').classList.remove('open'); _pendingForm=null; }
+function doDelete(){ if(_pendingForm){ _pendingForm.submit(); } }
+
+document.addEventListener('keydown', function(e){
+    if(e.key==='Escape'){ closeContact(); closeConfirm(); }
+});
+
+/* ── textarea auto-resize + Enter send ── */
+var inp = document.getElementById('msgInput');
+if(inp){
+    inp.addEventListener('input',function(){ this.style.height='auto'; this.style.height=Math.min(this.scrollHeight,130)+'px'; });
+    inp.addEventListener('keydown',function(e){ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); if(this.value.trim()) document.getElementById('sendForm').submit(); }});
+}
+
+/* ── scroll to bottom ── */
+var bd = document.getElementById('msgBody');
+if(bd) bd.scrollTop = bd.scrollHeight;
+
+/* ── Mobile: auto-show chat panel when a thread is open ── */
+{% if selected %}
+(function(){
+    if(window.innerWidth <= 768){
+        var shell = document.querySelector('.msg-shell');
+        if(shell) shell.classList.add('mobile-show-chat');
+    }
+})();
+
+/* ══════════════════════════════════════════════
+   REAL-TIME MESSAGING
+   Polling every 2.5s + AJAX send (no page reload)
+   ══════════════════════════════════════════════ */
+var _lastId = 0;
+(function(){
+    var rows = document.querySelectorAll('.ms-bbl-row[data-msg-id]');
+    if(rows.length) _lastId = parseInt(rows[rows.length-1].dataset.msgId) || 0;
+})();
+
+var _myInitials  = '{{ auth_user.name|initials }}';
+var _othInitials = '{{ selected.name|initials }}';
+var _csrfToken   = (document.querySelector('[name=csrfmiddlewaretoken]') || {}).value || '{{ csrf_token }}';
+var _baseUrl     = '{% url "messages_since" selected.id 0 %}'; /* ends with /0/ */
+
+function _escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function _buildBubble(msg){
+    var mine = msg.is_mine;
+    var av   = '<div class="ms-bbl-av '+(mine?'is-mine':'is-agent')+'">'+(mine?_myInitials:_othInitials)+'</div>';
+    var delBtn = mine
+        ? '<div class="ms-bbl-actions"><button class="ms-del-btn" onclick="confirmDelete('+msg.id+',\'Supprimer ce message ?\',\'Ce message sera définitivement supprimé.\')">🗑 Supprimer</button></div>'
+        : '';
+    var tick = mine ? (msg.is_read ? '✓✓' : '✓') : '';
+    var bbl  = '<div class="ms-bbl '+(mine?'is-mine':'is-other')+'">'+_escHtml(msg.message)+'</div>';
+    var meta = '<div class="ms-bbl-meta">'+msg.time+' '+tick+'</div>';
+    var grp  = '<div class="ms-bbl-group">'+delBtn+'<div class="ms-bbl-wrap">'+bbl+meta+'</div></div>';
+    if(mine){
+        var f = document.createElement('form');
+        f.id = 'del-form-'+msg.id; f.method = 'POST';
+        f.action = '/messages/delete/'+msg.id+'/'; f.style.display = 'none';
+        f.innerHTML = '<input type="hidden" name="csrfmiddlewaretoken" value="'+_csrfToken+'">';
+        document.body.appendChild(f);
+    }
+    return '<div class="ms-bbl-row '+(mine?'is-mine ':'')+' group-end" data-msg-id="'+msg.id+'">'+av+grp+'</div>';
+}
+
+function _appendMessages(msgs){
+    var bd = document.getElementById('msgBody');
+    if(!bd) return;
+    /* remove empty state */
+    var emp = bd.querySelector('.ms-empty-icon, [style*="margin:auto"]');
+    if(emp && emp.closest('div')) emp.closest('div').remove();
+
+    msgs.forEach(function(msg){
+        var seps = bd.querySelectorAll('.ms-date-sep');
+        var lastLabel = seps.length ? seps[seps.length-1].textContent.trim() : null;
+        if(lastLabel !== msg.date_label){
+            var sep = document.createElement('div');
+            sep.className = 'ms-date-sep'; sep.textContent = msg.date_label;
+            bd.appendChild(sep);
+        }
+        bd.insertAdjacentHTML('beforeend', _buildBubble(msg));
+        if(msg.id > _lastId) _lastId = msg.id;
+    });
+    bd.scrollTop = bd.scrollHeight;
+}
+
+/* Polling */
+function _doPoll(){
+    var url = _baseUrl.slice(0, -2) + _lastId + '/';
+    fetch(url, { headers:{'X-Requested-With':'XMLHttpRequest'} })
+        .then(function(r){ return r.json(); })
+        .then(function(d){ if(d.messages && d.messages.length) _appendMessages(d.messages); })
+        .catch(function(){});
+}
+setInterval(_doPoll, 2500);
+
+/* AJAX send — intercept form submit */
+var _sendForm = document.getElementById('sendForm');
+if(_sendForm){
+    _sendForm.addEventListener('submit', function(e){
+        e.preventDefault();
+        var inp = document.getElementById('msgInput');
+        if(!inp || !inp.value.trim()) return;
+        var fd = new FormData(_sendForm);
+        fetch(_sendForm.action, {
+            method:'POST',
+            headers:{'X-Requested-With':'XMLHttpRequest'},
+            body: fd
+        }).then(function(r){ return r.json(); })
+          .then(function(d){
+              if(d.ok){
+                  inp.value = '';
+                  inp.style.height = 'auto';
+                  _appendMessages([d]);
+              }
+          }).catch(function(){
+              /* Network error: fall back to normal submit */
+              _sendForm.submit();
+          });
+    });
+}
+{% endif %}
+</script>
+{% endblock %}

@@ -1,0 +1,327 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="{{ locale|default:'fr' }}" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+    <title>BLUESKY — {{ t.welcome_tagline }}</title>
+    <link rel="icon" href="{% static 'images/WhatsApp_Image_2026-01-27_at_11.11.59_PM__1_-removebg-preview.png' %}" type="image/png">
+    <link href="{% static 'css/bluesky.css' %}" rel="stylesheet">
+    <script>(function(){var t=localStorage.getItem('bluesky-theme')||'light';document.documentElement.setAttribute('data-theme',t);})();</script>
+    <style>
+        *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+        body{
+            min-height:100vh;
+            font-family:'Inter',system-ui,sans-serif;
+            display:flex;
+            flex-direction:column;
+            overflow-x:hidden;
+            transition: background .3s, color .3s;
+        }
+
+        /* ── DARK MODE explicit ── */
+        [data-theme="dark"] body { background: #04111f; color: #fff; }
+        [data-theme="dark"] .bg  { opacity: .18; filter: grayscale(.6) blur(1px); }
+        [data-theme="dark"] nav  { border-bottom-color: rgba(255,255,255,.06); background: transparent; }
+        [data-theme="dark"] .nav-logo { color: #fff; text-shadow: 0 0 24px rgba(2,132,199,.45); }
+        [data-theme="dark"] .nav-logo span { color: #38BDF8; }
+        [data-theme="dark"] .lang-sw a { color: rgba(255,255,255,.35); }
+        [data-theme="dark"] .lang-sw a.on, [data-theme="dark"] .lang-sw a:hover { color: #fff; }
+        [data-theme="dark"] .lang-sw s { color: rgba(255,255,255,.1); }
+        [data-theme="dark"] .btn-o { border-color: rgba(255,255,255,.15); color: rgba(255,255,255,.65); }
+        [data-theme="dark"] .btn-o:hover { border-color: rgba(255,255,255,.4); color: #fff; }
+        [data-theme="dark"] .theme-btn { border-color: rgba(255,255,255,.15); background: rgba(255,255,255,.06); color: rgba(255,255,255,.7); }
+        [data-theme="dark"] .badge { background: rgba(0,212,106,.08); border-color: rgba(0,212,106,.2); color: #00d46a; }
+        [data-theme="dark"] .dot  { background: #00d46a; }
+        [data-theme="dark"] .brand-name { color: var(--sky-primary); letter-spacing: 4px; }
+        [data-theme="dark"] h1  { color: var(--text-heading); }
+        [data-theme="dark"] h1 em { background: linear-gradient(90deg,#38BDF8,#93C5FD); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+        [data-theme="dark"] .sub { color: var(--text-secondary); }
+        [data-theme="dark"] .cta-b { border-color: rgba(255,255,255,.15); color: rgba(255,255,255,.7); backdrop-filter: blur(8px); background: rgba(255,255,255,.04); }
+        [data-theme="dark"] .cta-b:hover { border-color: rgba(255,255,255,.35); color: #fff; }
+        [data-theme="dark"] .chip { background: rgba(255,255,255,.04); border-color: rgba(255,255,255,.07); color: rgba(255,255,255,.75); }
+        [data-theme="dark"] .chip:hover { background: rgba(2,132,199,.09); border-color: rgba(2,132,199,.22); }
+        [data-theme="dark"] .stats { border-color: rgba(255,255,255,.08); }
+        [data-theme="dark"] .stat { border-right-color: rgba(255,255,255,.07); }
+        [data-theme="dark"] .sn  { color: #38BDF8; }
+        [data-theme="dark"] .sl  { color: rgba(255,255,255,.28); }
+        [data-theme="dark"] .ticker::before { background: linear-gradient(to right,#04111f,transparent); }
+        [data-theme="dark"] .ticker::after  { background: linear-gradient(to left,#04111f,transparent); }
+        [data-theme="dark"] .tc  { background: rgba(255,255,255,.05); border-color: rgba(255,255,255,.07); color: rgba(255,255,255,.4); }
+        [data-theme="dark"] footer { color: rgba(255,255,255,.1); border-top-color: rgba(255,255,255,.04); }
+        [data-theme="dark"] .logo { filter: drop-shadow(0 0 70px rgba(2,132,199,.7)) drop-shadow(0 8px 28px rgba(0,0,0,.45)); }
+
+        /* ── LIGHT MODE explicit ── */
+        [data-theme="light"] body {
+            background: linear-gradient(160deg,
+                rgba(224,242,254,.92) 0%,
+                rgba(240,249,255,.88) 50%,
+                rgba(214,236,254,.90) 100%);
+            color: #0f172a;
+            backdrop-filter: blur(0px);
+        }
+        [data-theme="light"] .bg  { opacity: .13; filter: grayscale(.2) blur(1px); }
+        [data-theme="light"] .bg-overlay {
+            background:
+                radial-gradient(ellipse 70% 50% at 50% 20%, rgba(2,132,199,.18) 0%, transparent 60%),
+                radial-gradient(ellipse 50% 40% at 80% 80%, rgba(14,165,233,.10) 0%, transparent 55%);
+        }
+        [data-theme="light"] nav  { border-bottom: 1px solid rgba(2,132,199,.12); background: rgba(255,255,255,.85); backdrop-filter: blur(12px); }
+        [data-theme="light"] .nav-logo { color: #0369a1; text-shadow: none; }
+        [data-theme="light"] .nav-logo span { color: #0284C7; }
+        [data-theme="light"] .lang-sw a { color: rgba(15,23,42,.45); }
+        [data-theme="light"] .lang-sw a.on, [data-theme="light"] .lang-sw a:hover { color: #0369a1; }
+        [data-theme="light"] .lang-sw s { color: rgba(15,23,42,.15); }
+        [data-theme="light"] .btn-o { border-color: rgba(2,132,199,.25); color: #0369a1; }
+        [data-theme="light"] .btn-o:hover { border-color: #0284C7; color: #0284C7; }
+        [data-theme="light"] .theme-btn { border-color: rgba(2,132,199,.25); background: rgba(2,132,199,.06); color: #0369a1; }
+        [data-theme="light"] .badge { background: rgba(2,132,199,.08); border-color: rgba(2,132,199,.2); color: #0369a1; }
+        [data-theme="light"] .dot  { background: #0284C7; }
+        [data-theme="light"] .brand-name { color: #0284C7 !important; letter-spacing: 4px; }
+        [data-theme="light"] h1  { color: var(--text-heading); }
+        [data-theme="light"] h1 em { background: linear-gradient(90deg,#0284C7,#0ea5e9); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+        [data-theme="light"] .sub { color: var(--text-secondary); }
+        [data-theme="light"] .cta-b { border-color: rgba(2,132,199,.22); color: #0369a1; backdrop-filter: none; background: rgba(2,132,199,.04); }
+        [data-theme="light"] .cta-b:hover { border-color: #0284C7; color: #0284C7; }
+        [data-theme="light"] .chip { background: rgba(2,132,199,.06); border-color: rgba(2,132,199,.14); color: #0369a1; }
+        [data-theme="light"] .chip:hover { background: rgba(2,132,199,.10); }
+        [data-theme="light"] .stats { border-color: rgba(2,132,199,.14); }
+        [data-theme="light"] .stat { border-right-color: rgba(2,132,199,.10); }
+        [data-theme="light"] .sn  { color: #0284C7; }
+        [data-theme="light"] .sl  { color: rgba(15,23,42,.38); }
+        [data-theme="light"] .ticker::before { background: linear-gradient(to right,#f0f8ff,transparent); }
+        [data-theme="light"] .ticker::after  { background: linear-gradient(to left,#f0f8ff,transparent); }
+        [data-theme="light"] .tc  { background: rgba(2,132,199,.05); border-color: rgba(2,132,199,.12); color: rgba(15,23,42,.5); }
+        [data-theme="light"] footer { color: rgba(15,23,42,.2); border-top-color: rgba(2,132,199,.08); }
+        [data-theme="light"] .logo { filter: drop-shadow(0 0 40px rgba(2,132,199,.4)) drop-shadow(0 8px 20px rgba(0,0,0,.15)); }
+
+        /* Fond photo filigrane */
+        .bg{
+            position:fixed;inset:0;z-index:0;pointer-events:none;
+            background:url("{% static 'images/unrecognizable-businessmen-sitting-table-meeting-analyzing-graphs.jpg' %}") center/cover no-repeat;
+            opacity:.18;
+            filter:grayscale(.6) blur(1px);
+            transition: opacity .3s, filter .3s;
+        }
+        .bg-overlay{
+            position:fixed;inset:0;z-index:1;pointer-events:none;
+            background:radial-gradient(ellipse 80% 60% at 50% 40%, rgba(2,132,199,.09) 0%, transparent 70%);
+        }
+
+        /* NAV */
+        nav{
+            position:relative;z-index:50;
+            display:flex;align-items:center;justify-content:space-between;
+            padding:0 40px;height:62px;
+            transition: background .3s, border-color .3s;
+        }
+        .nav-logo{font-size:26px;font-weight:900;letter-spacing:3px;text-decoration:none;transition:color .3s;}
+        .nav-logo span{transition:color .3s;}
+        .nav-links{display:flex;align-items:center;gap:8px;}
+        .lang-sw{display:flex;gap:6px;align-items:center;padding-right:10px;border-right:1px solid rgba(128,128,128,.15);margin-right:4px;}
+        .lang-sw a{font-size:12px;font-weight:700;text-decoration:none;transition:color .15s;}
+        .lang-sw s{text-decoration:none;font-style:normal;}
+        .btn-o{padding:7px 16px;border-radius:8px;border:1.5px solid;font-size:13px;font-weight:600;text-decoration:none;transition:all .15s;}
+        .btn-f{padding:8px 18px;border-radius:8px;background:linear-gradient(135deg,#0284C7,#0EA5E9);color:#fff;font-size:13px;font-weight:700;text-decoration:none;box-shadow:0 4px 14px rgba(2,132,199,.38);transition:all .15s;}
+        .btn-f:hover{box-shadow:0 6px 22px rgba(2,132,199,.55);transform:translateY(-1px);}
+        .theme-btn{width:36px;height:36px;border-radius:8px;border:1.5px solid;font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;backdrop-filter:blur(6px);}
+        .theme-btn:hover{filter:brightness(1.2);}
+
+        /* HERO */
+        .hero{
+            position:relative;z-index:10;
+            flex:1;
+            display:flex;flex-direction:column;align-items:center;justify-content:center;
+            text-align:center;
+            padding:60px 20px 40px;
+        }
+
+        /* Badge live */
+        .badge{display:inline-flex;align-items:center;gap:6px;border-radius:100px;padding:5px 15px;font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-bottom:32px;border:1px solid;transition:color .3s,background .3s,border-color .3s;}
+        .dot{width:6px;height:6px;border-radius:50%;animation:blink 1.6s infinite;}
+        @keyframes blink{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.2;transform:scale(1.6);}}
+
+        /* Logo grand */
+        .logo{
+            width:220px;height:auto;object-fit:contain;
+            filter:drop-shadow(0 0 70px rgba(2,132,199,.7)) drop-shadow(0 8px 28px rgba(0,0,0,.45));
+            animation:fl 5s ease-in-out infinite;
+            margin-bottom:10px;
+        }
+        @keyframes fl{0%,100%{transform:translateY(0);}50%{transform:translateY(-10px);}}
+
+        .brand-name{font-size:13px;font-weight:700;letter-spacing:4px;text-transform:uppercase;margin-bottom:24px;transition:color .3s;}
+
+        /* Titre principal */
+        h1{font-size:clamp(2.2rem,5vw,3.8rem);font-weight:900;line-height:1.07;letter-spacing:-1.5px;margin-bottom:14px;max-width:660px;transition:color .3s;}
+        h1 em{font-style:normal;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+        .sub{font-size:clamp(14px,1.5vw,16px);line-height:1.8;max-width:480px;margin-bottom:40px;transition:color .3s;}
+
+        /* Boutons */
+        .cta{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-bottom:56px;}
+        .cta-a{display:inline-flex;align-items:center;gap:8px;padding:16px 38px;border-radius:12px;background:linear-gradient(135deg,#0284C7,#0EA5E9);color:#fff;font-size:15px;font-weight:800;text-decoration:none;box-shadow:0 8px 28px rgba(2,132,199,.44);transition:all .2s;}
+        .cta-a:hover{transform:translateY(-3px);box-shadow:0 14px 38px rgba(2,132,199,.62);}
+        .arr{transition:transform .2s;}
+        .cta-a:hover .arr{transform:translateX(5px);}
+        .cta-b{display:inline-flex;align-items:center;gap:8px;padding:14px 30px;border-radius:12px;border:2px solid;font-size:14.5px;font-weight:700;text-decoration:none;transition:all .2s;}
+
+        /* Chips features */
+        .chips{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-bottom:48px;}
+        .chip{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:10px;border:1px solid;font-size:13px;font-weight:600;transition:all .2s;}
+        .chip:hover{transform:translateY(-2px);}
+        .chip em{font-size:18px;font-style:normal;}
+
+        /* Stats */
+        .stats{display:flex;border:1px solid;border-radius:13px;overflow:hidden;}
+        .stat{padding:13px 30px;text-align:center;border-right:1px solid;}
+        .stat:last-child{border-right:none;}
+        .sn{font-size:21px;font-weight:900;}
+        .sl{font-size:10px;text-transform:uppercase;letter-spacing:.8px;margin-top:2px;}
+
+        /* Ticker */
+        .ticker{position:relative;z-index:10;padding:10px 0;overflow:hidden;border-top:1px solid rgba(128,128,128,.08);}
+        .ticker::before,.ticker::after{content:'';position:absolute;top:0;bottom:0;width:70px;z-index:2;pointer-events:none;}
+        .tt{display:flex;gap:9px;animation:tk 30s linear infinite;width:max-content;}
+        @keyframes tk{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
+        .tc{display:inline-flex;align-items:center;gap:6px;border-radius:100px;padding:5px 13px;font-size:12px;font-weight:600;white-space:nowrap;border:1px solid;transition:color .3s,background .3s,border-color .3s;}
+
+        footer{position:relative;z-index:10;text-align:center;padding:10px;font-size:11px;border-top:1px solid;transition:color .3s,border-color .3s;}
+
+        /* Tablet (768px) */
+        @media(max-width:768px){
+            nav{padding:0 20px;height:56px;}
+            .btn-o,.btn-f{font-size:12px;padding:6px 13px;}
+            .hero{padding:52px 16px 36px;}
+            .logo{width:175px;}
+            h1{letter-spacing:-1px;}
+            .chips{gap:7px;}
+            .chip{font-size:12px;padding:8px 14px;}
+            .cta-a{padding:14px 30px;font-size:14px;}
+            .cta-b{padding:12px 24px;font-size:14px;}
+            .stat{padding:12px 22px;}
+            .sn{font-size:18px;}
+        }
+
+        /* Mobile (580px) */
+        @media(max-width:580px){
+            nav{padding:0 14px;height:52px;}
+            .nav-logo{font-size:20px;letter-spacing:2px;}
+            .btn-o{display:none;}
+            .btn-f{padding:7px 14px;font-size:12px;}
+            .lang-sw{padding-right:8px;}
+            .hero{padding:44px 14px 28px;}
+            .logo{width:140px;}
+            .brand-name{font-size:11px;letter-spacing:3px;}
+            .badge{font-size:10px;padding:4px 12px;margin-bottom:24px;}
+            .cta{flex-direction:column;align-items:center;width:100%;}
+            .cta-a,.cta-b{width:100%;max-width:300px;justify-content:center;}
+            .chips{gap:6px;}
+            .chip{font-size:12px;padding:8px 12px;}
+            .chip em{font-size:15px;}
+            .stats{flex-wrap:wrap;}
+            .stat{padding:11px 18px;flex:1 0 40%;}
+        }
+
+        /* Tiny phones (375px) */
+        @media(max-width:375px){
+            .logo{width:110px;}
+            .lang-sw{display:none;}
+            .chips .chip:nth-child(n+3){display:none;}
+            .hero{padding:36px 12px 24px;}
+            .cta-a,.cta-b{max-width:260px;}
+        }
+
+        /* Safe area for notched phones */
+        @supports(padding:env(safe-area-inset-top)){
+            nav{padding-left:max(14px,env(safe-area-inset-left));padding-right:max(14px,env(safe-area-inset-right));}
+            footer{padding-bottom:max(10px,env(safe-area-inset-bottom));}
+        }
+    </style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="bg-overlay"></div>
+
+<nav>
+    <a href="{% url 'welcome' %}" class="nav-logo">BLUE<span>SKY</span></a>
+    <div class="nav-links">
+        <div class="lang-sw">
+            <a href="{% url 'lang_switch' 'fr' %}" class="{% if locale == 'fr' or not locale %}on{% endif %}">🇫🇷 FR</a>
+            <s>|</s>
+            <a href="{% url 'lang_switch' 'en' %}" class="{% if locale == 'en' %}on{% endif %}">🇬🇧 EN</a>
+        </div>
+        <button class="theme-btn" id="wThemeBtn" onclick="wToggleTheme()" aria-label="Changer de mode">🌙</button>
+        <a href="{% url 'login' %}" class="btn-o">{{ t.login_btn }}</a>
+        <a href="{% url 'register' %}" class="btn-f">🚀 {{ t.nav_register }}</a>
+    </div>
+</nav>
+
+<div class="hero">
+    <div class="badge"><span class="dot"></span>{{ t.welcome_live }}</div>
+
+    <img src="{% static 'images/WhatsApp_Image_2026-01-27_at_11.11.59_PM__1_-removebg-preview.png' %}"
+         data-logo-light="{% static 'images/WhatsApp_Image_2026-01-27_at_11.11.59_PM__1_-removebg-preview.png' %}"
+         data-logo-dark="{% static 'images/WhatsApp_Image_2026-01-27_at_11.11.59_PM-removebg-preview.png' %}"
+         alt="BLUESKY" class="logo" id="welcomeLogo">
+    <div class="brand-name">BLUESKY · Transactions</div>
+
+    <h1>{{ t.feat_fast }}, {{ t.feat_secure }},<br><em>{{ t.feat_multi }}.</em></h1>
+    <p class="sub">{{ t.welcome_desc }}</p>
+
+    <div class="cta">
+        <a href="{% url 'register' %}" class="cta-a">🚀 {{ t.create_agent }} <span class="arr">→</span></a>
+        <a href="{% url 'login' %}" class="cta-b">🔑 {{ t.welcome_login_btn }}</a>
+    </div>
+
+    <div class="chips">
+        <div class="chip"><em>⚡</em>{{ t.feat_fast }}</div>
+        <div class="chip"><em>🌍</em>{{ t.feat_multi }}</div>
+        <div class="chip"><em>🔒</em>{{ t.feat_secure }}</div>
+        <div class="chip"><em>📊</em>{{ t.feat_reports }}</div>
+    </div>
+
+    {% if active_countries %}
+    <div class="stats">
+        <div class="stat"><div class="sn">{{ active_countries|length }}+</div><div class="sl">{{ t.countries_active }}</div></div>
+        <div class="stat"><div class="sn">24/7</div><div class="sl">{{ t.welcome_live }}</div></div>
+        <div class="stat"><div class="sn">100%</div><div class="sl">{{ t.feat_secure }}</div></div>
+    </div>
+    {% endif %}
+</div>
+
+{% if active_countries %}
+<div class="ticker">
+    <div class="tt">
+        {% for c in active_countries %}<div class="tc"><span>{{ c.flag_emoji }}</span><span>{{ c.name }}</span></div>{% endfor %}
+        {% for c in active_countries %}<div class="tc"><span>{{ c.flag_emoji }}</span><span>{{ c.name }}</span></div>{% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<footer>© {% now "Y" %} BLUESKY Transactions — {{ t.all_rights }}</footer>
+<script src="https://cdn.jsdelivr.net/npm/twemoji@14.0.2/dist/twemoji.min.js" crossorigin="anonymous"></script>
+<script>twemoji.parse(document.body,{folder:'svg',ext:'.svg'});</script>
+<script>
+var LOGO_LIGHT = '{% static "images/WhatsApp_Image_2026-01-27_at_11.11.59_PM__1_-removebg-preview.png" %}';
+var LOGO_DARK  = '{% static "images/WhatsApp_Image_2026-01-27_at_11.11.59_PM-removebg-preview.png" %}';
+
+function wApplyTheme(t){
+    document.documentElement.setAttribute('data-theme', t);
+    localStorage.setItem('bluesky-theme', t);
+    var btn = document.getElementById('wThemeBtn');
+    if(btn) btn.textContent = t === 'dark' ? '☀️' : '🌙';
+    var logo = document.getElementById('welcomeLogo');
+    if(logo) logo.src = t === 'dark' ? LOGO_DARK : LOGO_LIGHT;
+}
+function wToggleTheme(){
+    var cur = document.documentElement.getAttribute('data-theme') || 'light';
+    wApplyTheme(cur === 'dark' ? 'light' : 'dark');
+}
+/* Init on load */
+(function(){
+    var saved = localStorage.getItem('bluesky-theme') || 'light';
+    wApplyTheme(saved);
+})();
+</script>
+</body>
+</html>

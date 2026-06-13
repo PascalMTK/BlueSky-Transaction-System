@@ -1,0 +1,683 @@
+{% extends 'layouts/app.html' %}
+{% load static bluesky_tags %}
+
+{% block title %}{{ t.create_tx_title }}{% endblock %}
+{% block page_title %}{{ t.create_tx_title }}{% endblock %}
+{% block page_subtitle %}{{ t.tx_form_sub }}{% endblock %}
+{% block nav_tx_create %}active{% endblock %}
+
+{% block styles %}
+<style>
+/* ── Icon picker groups ─────────────────────────────── */
+.icon-pickers {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 4px;
+}
+.ip-group { }
+.ip-label {
+    display: flex; align-items: center; gap: 7px;
+    font-size: 11px; font-weight: 700; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: .5px;
+    margin-bottom: 8px;
+}
+.ip-opt-badge {
+    font-size: 9.5px; font-weight: 700; letter-spacing: .4px;
+    background: rgba(2,132,199,.09); color: var(--sky-primary);
+    border: 1px solid rgba(2,132,199,.2); border-radius: 4px;
+    padding: 1px 6px; text-transform: uppercase;
+}
+
+/* ── Collapsible optional groups ───────────────────────────────── */
+.ip-group-opt {
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: border-color .2s;
+}
+.ip-group-opt.is-open,
+.ip-group-opt:has(.ip-btn.ip-active) { border-color: rgba(2,132,199,.4); }
+
+.ip-toggle-header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 11px 14px;
+    cursor: pointer;
+    user-select: none;
+    transition: background .15s;
+}
+.ip-toggle-header:hover { background: var(--bg-secondary); }
+
+.ip-toggle-icon  { font-size: 18px; line-height: 1; flex-shrink: 0; }
+.ip-toggle-title {
+    flex: 1;
+    font-size: 13px; font-weight: 700; color: var(--text-primary);
+}
+.ip-toggle-chosen {
+    font-size: 11.5px; font-weight: 600;
+    color: var(--sky-primary);
+    background: rgba(2,132,199,.08);
+    border-radius: 6px; padding: 2px 8px;
+    display: none;
+}
+.ip-group-opt:has(.ip-btn.ip-active) .ip-toggle-chosen { display: inline; }
+.ip-toggle-arrow {
+    font-size: 11px; color: var(--text-muted);
+    transition: transform .22s;
+    flex-shrink: 0;
+}
+.ip-group-opt.is-open .ip-toggle-arrow { transform: rotate(180deg); }
+
+.ip-collapsible {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height .28s cubic-bezier(.4,0,.2,1), padding .28s;
+    padding: 0 14px;
+}
+.ip-group-opt.is-open .ip-collapsible {
+    max-height: 200px;
+    padding: 0 14px 14px;
+}
+.ip-row {
+    display: flex; gap: 8px; flex-wrap: wrap;
+}
+.ip-btn {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 5px; padding: 11px 14px;
+    border: 1.5px solid var(--border); border-radius: 12px;
+    background: var(--bg-secondary); color: var(--text-secondary);
+    cursor: pointer; transition: all .18s; flex: 1; min-width: 72px;
+    font-family: inherit;
+}
+.ip-btn:hover {
+    border-color: var(--sky-primary);
+    background: rgba(2,132,199,.06);
+    color: var(--sky-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(2,132,199,.15);
+}
+.ip-icon { font-size: 22px; line-height: 1; }
+.ip-text { font-size: 11px; font-weight: 700; white-space: nowrap; }
+
+/* Active state — default blue */
+.ip-btn.ip-active {
+    border-color: var(--sky-primary);
+    background: rgba(2,132,199,.10);
+    color: var(--sky-primary);
+    box-shadow: 0 2px 10px rgba(2,132,199,.18);
+}
+/* Status-specific active states */
+.ip-btn.ip-status-completed.ip-active {
+    border-color: #10b981; background: rgba(16,185,129,.10);
+    color: #059669; box-shadow: 0 2px 10px rgba(16,185,129,.18);
+}
+.ip-btn.ip-status-pending.ip-active {
+    border-color: #f59e0b; background: rgba(245,158,11,.10);
+    color: #d97706; box-shadow: 0 2px 10px rgba(245,158,11,.18);
+}
+.ip-btn.ip-status-cancelled.ip-active {
+    border-color: #ef4444; background: rgba(239,68,68,.10);
+    color: #dc2626; box-shadow: 0 2px 10px rgba(239,68,68,.18);
+}
+
+/* ── Transfer details block ──────────────────────── */
+.tx-details-block {
+    border: 1.5px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 16px;
+}
+.tx-details-hdr {
+    display: flex; align-items: center; gap: 9px;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, rgba(2,132,199,.08), rgba(14,165,233,.05));
+    border-bottom: 1.5px solid var(--border);
+}
+.tx-details-hdr-icon {
+    width: 32px; height: 32px; border-radius: 9px;
+    background: linear-gradient(135deg, var(--sky-primary), var(--sky-secondary));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; flex-shrink: 0;
+}
+.tx-details-hdr-label {
+    font-size: 12px; font-weight: 800; color: var(--text-primary);
+    text-transform: uppercase; letter-spacing: .6px;
+}
+.tx-details-body { padding: 16px; background: var(--bg-secondary); }
+
+/* ── Rangée 1 : Montant + Devise fusionnés ─────── */
+.tx-row-amount {
+    display: flex; align-items: flex-end; gap: 0;
+    margin-bottom: 14px;
+}
+.tx-row-amount .tx-amount-grp { flex: 1; }
+.tx-row-amount .tx-amount-grp .form-control {
+    border-radius: 10px 0 0 10px;
+    border-right: none;
+    font-size: 17px; font-weight: 700;
+    height: 46px;
+    border-color: rgba(2,132,199,.4);
+    background: rgba(2,132,199,.04);
+    padding-left: 38px;
+}
+.tx-row-amount .tx-amount-grp .form-control:focus {
+    border-color: var(--sky-primary);
+    box-shadow: 0 0 0 3px rgba(2,132,199,.12);
+    outline: none;
+}
+.tx-row-amount .tx-cur-grp { width: 86px; flex-shrink: 0; }
+.tx-row-amount .tx-cur-grp .form-control {
+    border-radius: 0 10px 10px 0;
+    height: 46px;
+    font-weight: 800; font-size: 13px; letter-spacing: 1px;
+    text-align: center; text-transform: uppercase;
+    border-color: rgba(2,132,199,.4);
+    border-left: 1.5px solid rgba(2,132,199,.2);
+    background: rgba(2,132,199,.08);
+    color: var(--sky-primary);
+    padding-left: 8px; padding-right: 8px;
+}
+.tx-row-amount .tx-cur-grp .form-control:focus {
+    border-color: var(--sky-primary);
+    box-shadow: 0 0 0 3px rgba(2,132,199,.12);
+    outline: none;
+}
+
+/* ── Rangée 2 : Frais + Total ───────────────────── */
+.tx-row-result {
+    display: flex; align-items: flex-end; gap: 12px;
+}
+.tx-fee-grp { width: 130px; flex-shrink: 0; }
+.tx-fee-grp .form-control {
+    padding-left: 30px; height: 42px;
+}
+
+/* flèche entre frais et total */
+.tx-result-arrow {
+    flex-shrink: 0; margin-bottom: 10px;
+    color: var(--text-muted); font-size: 18px; line-height: 1;
+}
+
+/* Total — panneau résultat */
+.tx-total-panel {
+    flex: 1;
+    background: linear-gradient(135deg, rgba(2,132,199,.10), rgba(14,165,233,.06));
+    border: 1.5px solid rgba(2,132,199,.28);
+    border-radius: 12px;
+    padding: 10px 16px;
+    display: flex; align-items: center; justify-content: space-between;
+    min-height: 42px;
+}
+.tx-total-panel-label {
+    font-size: 10.5px; font-weight: 700; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: .4px;
+}
+.tx-total-panel-val {
+    font-size: 22px; font-weight: 900; color: var(--sky-primary);
+    line-height: 1;
+}
+.tx-total-panel-cur {
+    font-size: 12px; font-weight: 700; color: var(--sky-secondary);
+    margin-top: 2px;
+}
+.tx-total-panel-right { text-align: right; }
+.tx-total-panel-empty {
+    font-size: 13px; font-weight: 600; color: var(--text-muted); opacity: .5;
+}
+
+/* préfixe icône générique */
+.tx-field-icon-wrap { position: relative; }
+.tx-field-icon-wrap .tx-icon {
+    position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+    font-size: 13px; pointer-events: none; z-index: 1; color: var(--text-muted);
+}
+
+/* Barre récap */
+.tx-calc-bar {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    margin-top: 14px; padding: 9px 13px;
+    background: var(--bg-card);
+    border: 1px solid var(--border); border-radius: 10px;
+    font-size: 12px; font-weight: 700; color: var(--text-secondary);
+}
+.tx-calc-val   { color: var(--text-primary); }
+.tx-calc-sep   { color: var(--text-muted); font-weight: 400; }
+.tx-calc-total { color: var(--sky-primary); font-size: 13.5px; }
+.tx-calc-cur   { font-size: 10.5px; color: var(--text-muted); font-weight: 600; }
+
+/* Montant + Devise : séparation sur petits écrans */
+@media (max-width: 500px) {
+    .tx-row-amount { flex-direction: column; gap: 10px; }
+    .tx-row-amount .tx-cur-grp { width: 100%; }
+    .tx-row-amount .tx-amount-grp .form-control {
+        border-radius: 10px !important;
+        border-right: 1.5px solid rgba(2,132,199,.4) !important;
+    }
+    .tx-row-amount .tx-cur-grp .form-control {
+        border-radius: 10px !important;
+        text-align: left;
+        padding-left: 38px;
+    }
+    .tx-row-result { flex-wrap: wrap; }
+    .tx-fee-grp { width: 100%; }
+    .tx-result-arrow { display: none; }
+    .tx-total-panel { width: 100%; }
+    .tx-total-panel-val { font-size: 18px; }
+}
+
+/* ── Action buttons ───────────────────────────────── */
+.tx-actions {
+    display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap;
+}
+.tx-btn-save  { flex: 1; min-width: 140px; justify-content: center; }
+.tx-btn-cancel { flex-shrink: 0; }
+
+@media (max-width: 480px) {
+    .ip-row { gap: 6px; }
+    .ip-btn { padding: 10px 8px; min-width: 60px; }
+    .ip-text { font-size: 10px; }
+    .ip-icon { font-size: 20px; }
+    .tx-actions { flex-direction: column; }
+    .tx-btn-save, .tx-btn-cancel { width: 100%; text-align: center; justify-content: center; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width:760px;margin:0 auto;">
+    <div class="card-header">
+        <div class="card-title">➕ {{ t.create_tx_title }}</div>
+    </div>
+    <div class="card-body">
+
+        {% for message in messages %}
+            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %}">
+                {% if message.tags == 'error' %}❌{% else %}✅{% endif %} {{ message }}
+            </div>
+        {% endfor %}
+
+        <form method="POST" action="{% url 'tx_create' %}" id="txForm">
+            {% csrf_token %}
+
+            <!-- Countries -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;" class="form-grid">
+                <div class="form-group" style="margin:0;">
+                    <label class="form-label">{{ t.origin_country }} *</label>
+                    <select name="origin_country_id" class="form-control" id="originCountry" required onchange="loadFee()">
+                        <option value="">-- {{ t.select_country }} --</option>
+                        {% for c in countries %}
+                            <option value="{{ c.id }}" data-fee="{{ c.default_fee_percentage }}" data-currency="{{ c.currency_code }}">{{ c.flag_emoji }} {{ c.name }} ({{ c.currency_code }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group" style="margin:0;">
+                    <label class="form-label">{{ t.dest_country }} *</label>
+                    <select name="destination_country_id" class="form-control" id="destCountry" required>
+                        <option value="">-- {{ t.select_country }} --</option>
+                        {% for c in countries %}
+                            <option value="{{ c.id }}">{{ c.flag_emoji }} {{ c.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <!-- Sender / Receiver -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;" class="form-grid">
+                <div style="background:var(--bg-secondary);border-radius:12px;padding:14px;">
+                    <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">📤 {{ t.sender_info }}</div>
+                    <div class="form-group" style="margin-bottom:10px;">
+                        <label class="form-label">{{ t.sender_name }} *</label>
+                        <input type="text" name="sender_name" id="senderNameInput" class="form-control" placeholder="Jean Dupont" required>
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                        <label class="form-label">{{ t.sender_phone }}</label>
+                        <input type="tel" name="sender_phone" class="form-control" placeholder="+225 07 00 00 00">
+                    </div>
+                </div>
+                <div style="background:var(--bg-secondary);border-radius:12px;padding:14px;">
+                    <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">📥 {{ t.receiver_info }}</div>
+                    <div class="form-group" style="margin-bottom:10px;">
+                        <label class="form-label">{{ t.receiver_name }}</label>
+                        <input type="text" name="receiver_name" id="receiverNameInput" class="form-control" placeholder="Marie Martin">
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                        <label class="form-label">{{ t.receiver_phone }}</label>
+                        <input type="tel" name="receiver_phone" class="form-control" placeholder="+221 70 00 00 00">
+                    </div>
+                </div>
+            </div>
+
+<!-- Datalist devises -->
+<datalist id="currencyList">
+{% for code, name in currencies.items %}<option value="{{ code }}">{{ name }}</option>
+{% endfor %}
+</datalist>
+
+            <!-- Amount & fees -->
+            <div class="tx-details-block">
+                <div class="tx-details-hdr">
+                    <div class="tx-details-hdr-icon">💰</div>
+                    <div class="tx-details-hdr-label">{{ t.transfer_details }}</div>
+                </div>
+                <div class="tx-details-body">
+
+                    <!-- Rangée 1 : Montant + Devise fusionnés -->
+                    <div class="tx-row-amount">
+                        <div class="tx-amount-grp">
+                            <label class="form-label">{{ t.amount_to_send }} *</label>
+                            <div class="tx-field-icon-wrap">
+                                <span class="tx-icon">💵</span>
+                                <input type="number" name="amount" id="amountInput" class="form-control"
+                                       placeholder="100 000" step="0.01" min="0" required oninput="calcTotal()">
+                            </div>
+                        </div>
+                        <div class="tx-cur-grp">
+                            <label class="form-label" style="opacity:0;pointer-events:none;">·</label>
+                            <input type="text" name="currency" id="currencyInput" class="form-control"
+                                   list="currencyList" placeholder="XAF" autocomplete="off">
+                        </div>
+                    </div>
+
+                    <!-- Rangée 2 : Frais % → Total -->
+                    <div class="tx-row-result">
+                        <div class="tx-fee-grp">
+                            <label class="form-label">{{ t.fee_pct }}</label>
+                            <div class="tx-field-icon-wrap">
+                                <span class="tx-icon" style="font-size:11px;font-weight:700;">%</span>
+                                <input type="number" name="fee_percentage" id="feeInput" class="form-control"
+                                       placeholder="3" step="0.01" min="0" max="100" value="3" oninput="calcTotal()">
+                            </div>
+                        </div>
+                        <div class="tx-result-arrow">→</div>
+                        <div class="tx-total-panel" id="totalPanel">
+                            <div>
+                                <div class="tx-total-panel-label">{{ t.total_client }}</div>
+                            </div>
+                            <div class="tx-total-panel-right" id="totalPanelRight">
+                                <div class="tx-total-panel-empty" id="totalEmpty">—</div>
+                                <div id="totalFilled" style="display:none;">
+                                    <div class="tx-total-panel-val" id="totalDisplay">—</div>
+                                    <div class="tx-total-panel-cur" id="totalCurLabel"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Récap formule -->
+                    <div class="tx-calc-bar" id="calcBar" style="display:none;">
+                        <span class="tx-calc-val" id="calcAmt"></span>
+                        <span class="tx-calc-cur" id="calcCur1"></span>
+                        <span class="tx-calc-sep">+</span>
+                        <span class="tx-calc-val" id="calcFee"></span>
+                        <span class="tx-calc-cur" id="calcCur2"></span>
+                        <span style="font-size:10px;color:var(--text-muted);" id="calcPct"></span>
+                        <span class="tx-calc-sep">=</span>
+                        <span class="tx-calc-total" id="calcTotal2"></span>
+                        <span class="tx-calc-cur" id="calcCur3"></span>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Icon pickers -->
+            <div class="icon-pickers">
+
+                <!-- Payment method — optionnel, accordéon -->
+                <div class="ip-group-opt" id="grpPm">
+                    <div class="ip-toggle-header" onclick="toggleIpGroup('grpPm')">
+                        <span class="ip-toggle-icon">💳</span>
+                        <span class="ip-toggle-title">{{ t.payment_method }}</span>
+                        <span class="ip-opt-badge">OPTIONNEL</span>
+                        <span class="ip-toggle-chosen" id="pmChosen">—</span>
+                        <span class="ip-toggle-arrow">▼</span>
+                    </div>
+                    <div class="ip-collapsible">
+                        <div class="ip-row">
+                            <button type="button" class="ip-btn" onclick="pickIpToggle('pm','cash',this,'pmChosen','💵 {{ t.cash }}')"><span class="ip-icon">💵</span><span class="ip-text">{{ t.cash }}</span></button>
+                            <button type="button" class="ip-btn" onclick="pickIpToggle('pm','bank_transfer',this,'pmChosen','🏦 {{ t.bank }}')"><span class="ip-icon">🏦</span><span class="ip-text">{{ t.bank }}</span></button>
+                            <button type="button" class="ip-btn" onclick="pickIpToggle('pm','mobile_money',this,'pmChosen','📱 {{ t.mobile_money }}')"><span class="ip-icon">📱</span><span class="ip-text">{{ t.mobile_money }}</span></button>
+                            <button type="button" class="ip-btn" onclick="pickIpToggle('pm','card',this,'pmChosen','💳 {{ t.card_label }}')"><span class="ip-icon">💳</span><span class="ip-text">{{ t.card_label }}</span></button>
+                        </div>
+                    </div>
+                    <input type="hidden" name="payment_method" id="pm" value="">
+                </div>
+
+                <!-- Transaction type — optionnel, accordéon -->
+                <div class="ip-group-opt" id="grpTxType">
+                    <div class="ip-toggle-header" onclick="toggleIpGroup('grpTxType')">
+                        <span class="ip-toggle-icon">🔄</span>
+                        <span class="ip-toggle-title">{{ t.tx_type_label }}</span>
+                        <span class="ip-opt-badge">OPTIONNEL</span>
+                        <span class="ip-toggle-chosen" id="txTypeChosen">—</span>
+                        <span class="ip-toggle-arrow">▼</span>
+                    </div>
+                    <div class="ip-collapsible">
+                        <div class="ip-row">
+                            <button type="button" class="ip-btn" onclick="pickIpToggle('txType','send',this,'txTypeChosen','📤 {{ t.type_send }}')"><span class="ip-icon">📤</span><span class="ip-text">{{ t.type_send }}</span></button>
+                            <button type="button" class="ip-btn" onclick="pickIpToggle('txType','receive',this,'txTypeChosen','📥 {{ t.receive_verb }}')"><span class="ip-icon">📥</span><span class="ip-text">{{ t.receive_verb }}</span></button>
+                            <button type="button" class="ip-btn" onclick="pickIpToggle('txType','exchange',this,'txTypeChosen','🔄 {{ t.exchange_verb }}')"><span class="ip-icon">🔄</span><span class="ip-text">{{ t.exchange_verb }}</span></button>
+                        </div>
+                    </div>
+                    <input type="hidden" name="transaction_type" id="txType" value="">
+                </div>
+
+                <!-- Status — requis, toujours sélectionné -->
+                <div class="ip-group">
+                    <div class="ip-label">📋 {{ t.status_label }}</div>
+                    <div class="ip-row">
+                        <button type="button" class="ip-btn ip-status-completed ip-active" onclick="pickIp('st','completed',this)"><span class="ip-icon">✅</span><span class="ip-text">{{ t.completed }}</span></button>
+                        <button type="button" class="ip-btn ip-status-pending" onclick="pickIp('st','pending',this)"><span class="ip-icon">⏳</span><span class="ip-text">{{ t.pending }}</span></button>
+                        <button type="button" class="ip-btn ip-status-cancelled" onclick="pickIp('st','cancelled',this)"><span class="ip-icon">❌</span><span class="ip-text">{{ t.cancelled }}</span></button>
+                    </div>
+                    <input type="hidden" name="status" id="st" value="completed">
+                </div>
+
+            </div>
+
+            <!-- Notes -->
+            <div class="form-group" style="margin-top:16px;">
+                <label class="form-label">📝 {{ t.notes }}</label>
+                <textarea name="notes" class="form-control" rows="2" placeholder="{{ t.notes_ph }}"></textarea>
+            </div>
+
+            <!-- Email client (optionnel) -->
+            <div style="border:1.5px solid var(--border);border-radius:12px;padding:14px;margin-top:14px;">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+                    <span style="font-size:13px;font-weight:700;color:var(--text-secondary);">📧 Email du client</span>
+                    <span style="background:rgba(2,132,199,.1);border-radius:5px;padding:2px 7px;font-size:10px;font-weight:700;color:var(--sky-primary);">OPTIONNEL</span>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 130px;gap:12px;align-items:end;" class="form-grid">
+                    <div class="form-group" style="margin:0;">
+                        <div style="position:relative;">
+                            <input type="email" name="client_email" id="clientEmailInput" class="form-control"
+                                placeholder="client@email.com" oninput="updateNotifPreview()" style="padding-right:36px;">
+                            <span id="emailCheckIcon" style="position:absolute;right:11px;top:50%;transform:translateY(-50%);font-size:15px;display:none;">✅</span>
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                        <select name="notif_locale" id="notifLocale" class="form-control" onchange="updateNotifPreview()">
+                            <option value="fr" {% if locale == 'fr' or not locale %}selected{% endif %}>🇫🇷 Français</option>
+                            <option value="en" {% if locale == 'en' %}selected{% endif %}>🇬🇧 English</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="notifHint" style="margin-top:8px;font-size:11.5px;color:var(--text-muted);">
+                    💡 <span id="notifHintText">Le client reçoit instantanément un reçu complet par email.</span>
+                </div>
+                <div id="notifPreview" style="display:none;margin-top:10px;border-radius:8px;border:1px solid rgba(2,132,199,.2);overflow:hidden;">
+                    <div style="background:linear-gradient(135deg,#0052b2,#0284c7);padding:8px 12px;display:flex;align-items:center;gap:8px;">
+                        <div style="width:20px;height:20px;background:rgba(255,255,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#fff;flex-shrink:0;">B</div>
+                        <div style="font-size:11px;font-weight:800;color:#fff;letter-spacing:.4px;">BLUESKY</div>
+                        <div style="font-size:10px;color:rgba(255,255,255,.65);" id="previewTo">→ client@email.com</div>
+                        <div style="margin-left:auto;background:rgba(255,255,255,.15);border-radius:4px;padding:2px 7px;font-size:10px;color:#fff;font-weight:700;">APERÇU</div>
+                    </div>
+                    <div style="padding:10px 12px;background:var(--bg-primary);">
+                        <div id="previewBody" style="font-size:12px;color:var(--text-secondary);line-height:1.7;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="tx-actions">
+                <button type="submit" class="btn btn-primary tx-btn-save">✅ {{ t.save_tx }}</button>
+                <a href="{% url 'tx_index' %}" class="btn btn-secondary tx-btn-cancel">← {{ t.cancel }}</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// ── Notification preview ──────────────────────────────────────────────────
+function updateNotifPreview() {
+    var emailVal  = document.getElementById('clientEmailInput').value.trim();
+    var locale    = document.getElementById('notifLocale').value;
+    var preview   = document.getElementById('notifPreview');
+    var hint      = document.getElementById('notifHint');
+    var checkIcon = document.getElementById('emailCheckIcon');
+    var previewTo = document.getElementById('previewTo');
+    var previewBody = document.getElementById('previewBody');
+    var hintText  = document.getElementById('notifHintText');
+
+    var validEmail = emailVal && emailVal.indexOf('@') > 0 && emailVal.indexOf('.') > emailVal.indexOf('@');
+
+    checkIcon.style.display = validEmail ? 'block' : 'none';
+
+    if (!validEmail) {
+        preview.style.display = 'none';
+        hint.style.display    = 'flex';
+        hintText.textContent  = locale === 'en'
+            ? "Enter the client's email — they will instantly receive a full receipt with all transaction details."
+            : "Entrez l'email du client — il recevra instantanément un reçu complet avec tous les détails de la transaction.";
+        return;
+    }
+
+    // Show preview
+    preview.style.display = 'block';
+    hint.style.display    = 'none';
+    previewTo.textContent = '→ ' + emailVal;
+
+    // Get client name from form for personalization
+    var txType = document.querySelector('[name="transaction_type"]') ? document.querySelector('[name="transaction_type"]').value : 'send';
+    var clientName = txType === 'send'
+        ? (document.getElementById('senderNameInput') ? document.getElementById('senderNameInput').value.split(' ')[0] : '')
+        : (document.getElementById('receiverNameInput') ? document.getElementById('receiverNameInput').value.split(' ')[0] : '');
+    var nameStr = clientName ? clientName : (locale === 'en' ? 'Client' : 'Client');
+
+    if (locale === 'en') {
+        previewBody.innerHTML =
+            '<strong>Hello ' + nameStr + ',</strong><br>' +
+            'Your transfer has been successfully recorded at BLUESKY Transactions.<br>' +
+            'A full receipt with reference number, amount, countries and date will be attached.<br><br>' +
+            '<em style="color:#0284c7;">Thank you for trusting BLUESKY Transactions! 💙</em>';
+    } else {
+        previewBody.innerHTML =
+            '<strong>Bonjour ' + nameStr + ',</strong><br>' +
+            'Votre transaction a été enregistrée avec succès chez BLUESKY Transactions.<br>' +
+            'Un reçu complet avec numéro de référence, montant, pays et date sera inclus.<br><br>' +
+            '<em style="color:#0284c7;">Merci de faire confiance à BLUESKY Transactions ! 💙</em>';
+    }
+}
+
+// Also update preview when sender/receiver name changes
+document.addEventListener('input', function(e) {
+    if (e.target.id === 'senderNameInput' || e.target.id === 'receiverNameInput') {
+        updateNotifPreview();
+    }
+});
+document.addEventListener('change', function(e) {
+    if (e.target.name === 'transaction_type') updateNotifPreview();
+});
+
+// ── Icon picker — requis (statut) ──────────────────────────────────────
+function pickIp(hiddenId, val, btn){
+    var row = btn.closest('.ip-row');
+    row.querySelectorAll('.ip-btn').forEach(function(b){ b.classList.remove('ip-active'); });
+    btn.classList.add('ip-active');
+    document.getElementById(hiddenId).value = val;
+    if(hiddenId === 'txType') updateNotifPreview();
+}
+
+// ── Accordéon toggle ─────────────────────────────────────────────────────
+function toggleIpGroup(groupId){
+    document.getElementById(groupId).classList.toggle('is-open');
+}
+
+// ── Icon picker — optionnel avec accordéon ───────────────────────────────
+function pickIpToggle(hiddenId, val, btn, chosenId, label){
+    var row = btn.closest('.ip-row');
+    var wasActive = btn.classList.contains('ip-active');
+    row.querySelectorAll('.ip-btn').forEach(function(b){ b.classList.remove('ip-active'); });
+    if(!wasActive){
+        btn.classList.add('ip-active');
+        document.getElementById(hiddenId).value = val;
+        if(chosenId) document.getElementById(chosenId).textContent = label || val;
+    } else {
+        document.getElementById(hiddenId).value = '';
+        if(chosenId) document.getElementById(chosenId).textContent = '—';
+    }
+    if(hiddenId === 'txType') updateNotifPreview();
+}
+
+// ── Flags & fees ─────────────────────────────────────────────────────────
+function updateFlag(selId, flagId) {
+    var sel = document.getElementById(selId);
+    var opt = sel.options[sel.selectedIndex];
+    var el  = document.getElementById(flagId);
+    if (!el) return;
+    var flag = (opt && opt.dataset.flag) ? opt.dataset.flag : '🌍';
+    el.textContent = flag;
+    el.style.transform = 'scale(1.3)';
+    setTimeout(function(){ el.style.transform = 'scale(1)'; }, 200);
+}
+function loadFee() {
+    const sel = document.getElementById('originCountry');
+    const opt = sel.options[sel.selectedIndex];
+    if (opt.dataset.fee) {
+        document.getElementById('feeInput').value = opt.dataset.fee;
+        calcTotal();
+    }
+    if (opt.dataset.currency) {
+        const cur = document.getElementById('currencyInput');
+        if (!cur.dataset.userEdited) cur.value = opt.dataset.currency;
+    }
+}
+/* Mark currency as manually edited so country change won't overwrite it */
+(function(){
+    var cur = document.getElementById('currencyInput');
+    if(cur){
+        cur.addEventListener('input', function(){ this.dataset.userEdited = '1'; calcTotal(); });
+        cur.addEventListener('change', function(){ this.value = this.value.toUpperCase(); calcTotal(); });
+    }
+})();
+
+function calcTotal() {
+    const amt   = parseFloat(document.getElementById('amountInput').value) || 0;
+    const pct   = parseFloat(document.getElementById('feeInput').value) || 0;
+    const fee   = Math.round(amt * pct / 100 * 100) / 100;
+    const total = Math.round((amt + fee) * 100) / 100;
+    const cur   = (document.getElementById('currencyInput').value || '').toUpperCase();
+    /* total panel */
+    const empty  = document.getElementById('totalEmpty');
+    const filled = document.getElementById('totalFilled');
+    if (amt > 0) {
+        empty.style.display  = 'none';
+        filled.style.display = 'block';
+        document.getElementById('totalDisplay').textContent   = total.toLocaleString('fr-FR');
+        document.getElementById('totalCurLabel').textContent  = cur;
+        /* calc bar */
+        document.getElementById('calcBar').style.display = 'flex';
+        document.getElementById('calcAmt').textContent    = amt.toLocaleString('fr-FR');
+        document.getElementById('calcFee').textContent    = fee.toLocaleString('fr-FR');
+        document.getElementById('calcTotal2').textContent = total.toLocaleString('fr-FR');
+        document.getElementById('calcPct').textContent    = pct > 0 ? '(' + pct + '%)' : '';
+        ['calcCur1','calcCur2','calcCur3'].forEach(function(id){ document.getElementById(id).textContent = cur; });
+    } else {
+        empty.style.display  = 'block';
+        filled.style.display = 'none';
+        document.getElementById('calcBar').style.display = 'none';
+    }
+}
+</script>
+{% endblock %}

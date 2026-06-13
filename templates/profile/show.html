@@ -1,0 +1,365 @@
+{% extends 'layouts/app.html' %}
+{% load static bluesky_tags %}
+
+{% block title %}{{ t.profile_title }}{% endblock %}
+{% block page_title %}{{ t.profile_title }}{% endblock %}
+{% block page_subtitle %}{{ t.profile_sub }}{% endblock %}
+{% block nav_profile %}active{% endblock %}
+
+{% block styles %}
+<style>
+/* ── Layout ─────────────────────────────────────────── */
+.profile-grid {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 20px;
+    align-items: start;
+}
+@media (max-width: 768px) {
+    .profile-grid { grid-template-columns: 1fr; }
+}
+
+/* ── Cover ───────────────────────────────────────────── */
+.profile-cover {
+    height: 90px;
+    background: linear-gradient(135deg, var(--sky-deeper) 0%, var(--sky-primary) 50%, var(--sky-secondary) 100%);
+    border-radius: 14px 14px 0 0;
+    position: relative;
+    overflow: hidden;
+}
+.profile-cover::after {
+    content: '';
+    position: absolute; inset: 0;
+    background-image: radial-gradient(circle, rgba(255,255,255,.07) 1px, transparent 1px);
+    background-size: 22px 22px;
+}
+
+/* ── Avatar ──────────────────────────────────────────── */
+.profile-avatar-wrap {
+    position: relative;
+    display: inline-block;
+    margin-top: -45px;
+    margin-bottom: 10px;
+    z-index: 2;
+}
+.profile-avatar-wrap img,
+.profile-avatar-circle {
+    width: 90px; height: 90px;
+    border-radius: 50%;
+    border: 4px solid var(--bg-card);
+    box-shadow: 0 4px 20px rgba(0,0,0,.18);
+    object-fit: cover;
+}
+.profile-avatar-circle {
+    background: linear-gradient(135deg, var(--sky-primary), var(--sky-secondary));
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 900; font-size: 32px;
+}
+.profile-photo-btn {
+    position: absolute; bottom: 2px; right: 2px;
+    width: 30px; height: 30px;
+    background: var(--sky-primary);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    border: 3px solid var(--bg-card);
+    transition: background .2s;
+    touch-action: manipulation;
+}
+.profile-photo-btn:hover { background: var(--sky-dark); }
+
+/* ── Photo preview overlay ───────────────────────────── */
+.photo-preview-overlay {
+    display: none;
+    position: fixed; inset: 0; z-index: 9999;
+    background: rgba(0,0,0,.65);
+    align-items: center; justify-content: center;
+    padding: 20px;
+}
+.photo-preview-overlay.open { display: flex; }
+.photo-preview-box {
+    background: var(--bg-card);
+    border-radius: 20px;
+    padding: 28px 24px 24px;
+    max-width: 340px; width: 100%;
+    text-align: center;
+    box-shadow: 0 24px 60px rgba(0,0,0,.5);
+}
+.photo-preview-img {
+    width: 120px; height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid var(--sky-primary);
+    box-shadow: 0 0 0 4px rgba(2,132,199,.18);
+    margin-bottom: 16px;
+}
+.photo-preview-name {
+    font-size: 13px; font-weight: 700;
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+    word-break: break-all;
+    max-width: 260px; margin-left: auto; margin-right: auto;
+}
+.photo-preview-actions {
+    display: flex; gap: 10px;
+}
+.photo-preview-actions .btn { flex: 1; justify-content: center; }
+
+/* ── Info rows ───────────────────────────────────────── */
+.profile-info-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 11px 18px;
+    border-bottom: 1px solid var(--divider);
+    font-size: 13px;
+}
+.profile-info-row:last-child { border-bottom: none; }
+.profile-info-label { font-size: 10px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: .6px; }
+.profile-info-val { font-weight: 600; color: var(--text-primary); text-align: right; max-width: 60%; word-break: break-all; }
+
+/* ── Password toggle ─────────────────────────────────── */
+.pw-wrap { position: relative; }
+.pw-wrap .form-control { padding-right: 46px; }
+.pw-toggle { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 18px; color: var(--text-muted); padding: 6px; line-height: 1; touch-action: manipulation; }
+.pw-toggle:hover { color: var(--sky-primary); }
+
+/* ── Mobile form grids ───────────────────────────────── */
+@media (max-width: 600px) {
+    .profile-form-2col { grid-template-columns: 1fr !important; }
+    .profile-form-3col { grid-template-columns: 1fr !important; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Photo preview overlay -->
+<div class="photo-preview-overlay" id="photoOverlay">
+    <div class="photo-preview-box">
+        <img src="" alt="Aperçu" class="photo-preview-img" id="photoPreviewImg">
+        <div class="photo-preview-name" id="photoPreviewName"></div>
+        <div class="photo-preview-actions">
+            <button type="button" class="btn btn-secondary" onclick="cancelPhoto()">✕ Annuler</button>
+            <button type="button" class="btn btn-primary" onclick="confirmPhoto()">✅ Enregistrer</button>
+        </div>
+    </div>
+</div>
+
+<div class="profile-grid">
+
+    <!-- Profile card -->
+    <div>
+        <div class="card" style="margin-bottom:16px;overflow:visible;">
+            <!-- Cover -->
+            <div class="profile-cover"></div>
+
+            <!-- Avatar + name -->
+            <div style="text-align:center;padding:0 20px 20px;">
+                <form method="POST" action="{% url 'profile_photo' %}" enctype="multipart/form-data" id="photoForm">
+                    {% csrf_token %}
+                    <div class="profile-avatar-wrap">
+                        {% if auth_user.photo_url %}
+                            <img src="{{ auth_user.photo_url }}" alt="Photo" id="currentAvatar" style="width:90px;height:90px;border-radius:50%;object-fit:cover;border:4px solid var(--bg-card);box-shadow:0 4px 20px rgba(0,0,0,.18);">
+                        {% else %}
+                            <div class="profile-avatar-circle" id="currentAvatar">{{ auth_user.name|initials }}</div>
+                        {% endif %}
+                        <label for="photoInput" class="profile-photo-btn" title="{{ t.change_photo }}">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="17 8 12 3 7 8"/>
+                                <line x1="12" y1="3" x2="12" y2="15"/>
+                            </svg>
+                        </label>
+                        <input type="file" id="photoInput" name="photo" accept="image/*" style="display:none;" onchange="previewPhoto(this)">
+                    </div>
+                </form>
+
+                <div style="font-size:20px;font-weight:900;color:var(--text-heading);margin-bottom:3px;">{{ auth_user.name }}</div>
+                <div style="font-size:13px;color:var(--text-muted);margin-bottom:10px;">{{ auth_user.email }}</div>
+
+                <div style="display:flex;align-items:center;justify-content:center;gap:7px;flex-wrap:wrap;">
+                    <span class="badge-status {% if auth_user.status == 'active' %}status-completed{% elif auth_user.status == 'pending' %}status-pending{% else %}status-cancelled{% endif %}" style="font-size:11.5px;">
+                        {% if auth_user.status == 'active' %}✅ {{ t.status_active }}{% elif auth_user.status == 'pending' %}⏳ {{ t.status_pending }}{% else %}❌ {{ t.status_inactive }}{% endif %}
+                    </span>
+                    <span style="background:linear-gradient(135deg,rgba(2,132,199,.1),rgba(14,165,233,.06));border:1px solid rgba(2,132,199,.2);border-radius:7px;padding:3px 10px;font-size:11.5px;font-weight:700;color:var(--sky-primary);">
+                        {% if auth_user.role == 'admin' %}🛡️ {{ t.role_admin }}{% else %}🏢 {{ t.role_agent }}{% endif %}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Info rows -->
+            <div style="border-top:1px solid var(--divider);">
+                {% if auth_user.agent_code %}
+                <div class="profile-info-row">
+                    <span class="profile-info-label">{{ t.agent_code_section }}</span>
+                    <span style="font-family:monospace;font-weight:900;color:var(--sky-primary);font-size:14px;">{{ auth_user.agent_code }}</span>
+                </div>
+                {% endif %}
+                {% if auth_user.country %}
+                <div class="profile-info-row">
+                    <span class="profile-info-label">{{ t.operating_countries }}</span>
+                    <span class="profile-info-val">{{ auth_user.country.flag_emoji }} {{ auth_user.country.name }}</span>
+                </div>
+                {% endif %}
+                {% if auth_user.phone %}
+                <div class="profile-info-row">
+                    <span class="profile-info-label">{{ t.phone_label }}</span>
+                    <span class="profile-info-val">{{ auth_user.phone }}</span>
+                </div>
+                {% endif %}
+                {% if auth_user.address %}
+                <div class="profile-info-row">
+                    <span class="profile-info-label">{{ t.address_label }}</span>
+                    <span class="profile-info-val" style="font-size:12px;">{{ auth_user.address }}</span>
+                </div>
+                {% endif %}
+                {% if auth_user.created_at %}
+                <div class="profile-info-row">
+                    <span class="profile-info-label">{{ t.registration }}</span>
+                    <span class="profile-info-val" style="font-size:12px;color:var(--text-muted);">{{ auth_user.created_at|date:"d/m/Y" }}</span>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Photo tip -->
+            <div style="padding:12px 18px;text-align:center;font-size:11.5px;color:var(--text-muted);border-top:1px solid var(--divider);">
+                💡 {{ t.photo_tip }}
+            </div>
+        </div>
+
+        <!-- Quick links -->
+        <div class="card">
+            <div style="padding:14px 16px;border-bottom:1px solid var(--divider);">
+                <div class="card-title" style="font-size:13px;">{{ t.quick_actions }}</div>
+            </div>
+            <div style="padding:8px;">
+                <a href="{% url 'tx_create' %}" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;text-decoration:none;color:var(--text-primary);transition:background .15s;" onmouseover="this.style.background='var(--bg-input)'" onmouseout="this.style.background='transparent'">
+                    <span style="font-size:18px;">➕</span>
+                    <span style="font-size:13px;font-weight:600;">{{ t.new_transaction }}</span>
+                </a>
+                <a href="{% url 'tx_index' %}" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;text-decoration:none;color:var(--text-primary);transition:background .15s;" onmouseover="this.style.background='var(--bg-input)'" onmouseout="this.style.background='transparent'">
+                    <span style="font-size:18px;">📋</span>
+                    <span style="font-size:13px;font-weight:600;">{{ t.my_transactions }}</span>
+                </a>
+                <a href="{% url 'agent_dashboard' %}" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;text-decoration:none;color:var(--text-primary);transition:background .15s;" onmouseover="this.style.background='var(--bg-input)'" onmouseout="this.style.background='transparent'">
+                    <span style="font-size:18px;">🏠</span>
+                    <span style="font-size:13px;font-weight:600;">{{ t.my_space }}</span>
+                </a>
+                <a href="{% url 'agent_export_csv' %}" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;text-decoration:none;color:var(--text-primary);transition:background .15s;" onmouseover="this.style.background='var(--bg-input)'" onmouseout="this.style.background='transparent'">
+                    <span style="font-size:18px;">📥</span>
+                    <span style="font-size:13px;font-weight:600;">{{ t.export_my_data }}</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Forms -->
+    <div>
+        <!-- Messages -->
+        {% for message in messages %}
+            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %}" style="margin-bottom:14px;">
+                {% if message.tags == 'error' %}❌{% else %}✅{% endif %} {{ message }}
+            </div>
+        {% endfor %}
+
+        <!-- Info form -->
+        <div class="card" style="margin-bottom:16px;">
+            <div class="card-header"><div class="card-title">👤 {{ t.personal_info }}</div></div>
+            <div class="card-body">
+                <form method="POST" action="{% url 'profile_update' %}">
+                    {% csrf_token %}
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;" class="form-grid profile-form-2col">
+                        <div class="form-group">
+                            <label class="form-label">{{ t.full_name_label }}</label>
+                            <input type="text" name="name" class="form-control" value="{{ auth_user.name }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">{{ t.email_label }}</label>
+                            <input type="email" class="form-control" value="{{ auth_user.email }}" readonly style="opacity:.6;cursor:not-allowed;">
+                            <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">{{ t.email_readonly }}</div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">{{ t.phone_label }}</label>
+                            <input type="tel" name="phone" class="form-control" value="{{ auth_user.phone|default:'' }}" placeholder="+225 07 00 00 00 00">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">{{ t.address_label }}</label>
+                            <input type="text" name="address" class="form-control" value="{{ auth_user.address|default:'' }}" placeholder="Abidjan, Côte d'Ivoire">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">💾 {{ t.save_info }}</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Password form -->
+        <div class="card">
+            <div class="card-header"><div class="card-title">🔒 {{ t.change_password }}</div></div>
+            <div class="card-body">
+                <form method="POST" action="{% url 'profile_password' %}">
+                    {% csrf_token %}
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;" class="form-grid profile-form-3col">
+                        <div class="form-group">
+                            <label class="form-label">{{ t.current_password }}</label>
+                            <div class="pw-wrap">
+                                <input type="password" name="current_password" id="profPw0" class="form-control" placeholder="••••••••" required>
+                                <button type="button" class="pw-toggle" onclick="togglePw('profPw0','profEye0')" aria-label="Voir"><span id="profEye0">👁</span></button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">{{ t.new_password }}</label>
+                            <div class="pw-wrap">
+                                <input type="password" name="password" id="profPw1" class="form-control" placeholder="Min. 8" required minlength="8">
+                                <button type="button" class="pw-toggle" onclick="togglePw('profPw1','profEye1')" aria-label="Voir"><span id="profEye1">👁</span></button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">{{ t.confirm_new_password }}</label>
+                            <div class="pw-wrap">
+                                <input type="password" name="password_confirmation" id="profPw2" class="form-control" placeholder="..." required>
+                                <button type="button" class="pw-toggle" onclick="togglePw('profPw2','profEye2')" aria-label="Voir"><span id="profEye2">👁</span></button>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">🔑 {{ t.update_password }}</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+function togglePw(inputId, eyeId){
+    var inp = document.getElementById(inputId);
+    var eye = document.getElementById(eyeId);
+    if(inp.type === 'password'){ inp.type = 'text'; eye.textContent = '🙈'; }
+    else { inp.type = 'password'; eye.textContent = '👁'; }
+}
+
+/* ── Photo preview ─────────────────────────────────── */
+function previewPhoto(input) {
+    if (!input.files || !input.files[0]) return;
+    var file = input.files[0];
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        document.getElementById('photoPreviewImg').src = e.target.result;
+        document.getElementById('photoPreviewName').textContent = file.name + ' — ' + (file.size / 1024).toFixed(0) + ' Ko';
+        document.getElementById('photoOverlay').classList.add('open');
+    };
+    reader.readAsDataURL(file);
+}
+
+function confirmPhoto() {
+    document.getElementById('photoOverlay').classList.remove('open');
+    document.getElementById('photoForm').submit();
+}
+
+function cancelPhoto() {
+    document.getElementById('photoOverlay').classList.remove('open');
+    document.getElementById('photoInput').value = '';
+}
+
+/* Fermer en cliquant hors du panneau */
+document.getElementById('photoOverlay').addEventListener('click', function(e) {
+    if (e.target === this) cancelPhoto();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,84 @@
+{% extends 'layouts/app.html' %}
+{% load static bluesky_tags %}
+
+{% block title %}{{ t.stats_title }}{% endblock %}
+{% block page_title %}{{ t.stats_title }}{% endblock %}
+{% block page_subtitle %}{{ t.stats_sub }}{% endblock %}
+{% block nav_admin_stats %}active{% endblock %}
+
+{% block content %}
+
+<!-- Yearly table -->
+<div class="table-card" style="margin-bottom:22px;">
+    <div class="table-header">
+        <div class="table-title">📈 {{ t.yearly_summary }} — {{ t.yearly_sub }}</div>
+    </div>
+    <div style="overflow-x:auto;">
+        {% if yearly_data %}
+        <table class="bsky-table">
+            <thead>
+                <tr>
+                    <th>{{ t.year }}</th>
+                    <th>{{ t.nb_tx }}</th>
+                    <th>{{ t.volume }}</th>
+                    <th>{{ t.commissions }}</th>
+                    <th>{{ t.growth }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in yearly_data %}
+                <tr>
+                    <td><strong style="font-size:15px;">{{ row.year }}</strong></td>
+                    <td>{{ row.total }}</td>
+                    <td><strong>{{ row.total_amount|number_format:0 }}</strong></td>
+                    <td style="color:var(--text-muted);">{{ row.total_fees|number_format:0 }}</td>
+                    <td>
+                        {% if row.growth is None %}
+                            <span style="color:var(--text-muted);font-size:12px;">{{ t.first_year }}</span>
+                        {% elif row.growth > 0 %}
+                            <span style="color:#22c55e;font-weight:700;">▲ {{ row.growth }}%</span>
+                        {% elif row.growth < 0 %}
+                            <span style="color:#ef4444;font-weight:700;">▼ {{ row.growth }}%</span>
+                        {% else %}
+                            <span style="color:var(--text-muted);">= 0%</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+            <div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">{{ t.no_data }}</div></div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Monthly bars for current year -->
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">📅 {{ t.monthly_progression }} {{ current_year }}</div>
+        <div class="card-subtitle">{{ t.monthly_subtitle }}</div>
+    </div>
+    <div class="card-body">
+        {% if max_amount > 0 %}
+        <div style="display:flex;flex-direction:column;gap:10px;">
+            {% for row in current_year_monthly %}
+            <div style="display:grid;grid-template-columns:50px 1fr 120px 70px;gap:10px;align-items:center;">
+                <span style="font-size:12px;color:var(--text-muted);font-weight:600;">{{ row.month }}</span>
+                <div style="background:var(--bg-secondary);border-radius:6px;height:22px;overflow:hidden;">
+                    {% if row.amount > 0 %}
+                    <div style="height:100%;border-radius:6px;background:linear-gradient(90deg,var(--sky-primary),var(--sky-secondary));width:{% widthratio row.amount max_amount 100 %}%;transition:width .6s;"></div>
+                    {% endif %}
+                </div>
+                <span style="font-size:12px;text-align:right;font-weight:600;">{{ row.amount|number_format:0 }}</span>
+                <span style="font-size:11px;color:var(--text-muted);text-align:right;">{{ row.count }} tx</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+            <div class="empty-state"><div class="empty-icon">📊</div><div class="empty-text">{{ t.no_data }}</div></div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

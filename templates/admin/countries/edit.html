@@ -1,0 +1,248 @@
+{% extends 'layouts/app.html' %}
+{% load static bluesky_tags %}
+
+{% block title %}{{ t.edit_country_title }} — {{ country.name }}{% endblock %}
+{% block page_title %}{{ t.edit_country_title }}{% endblock %}
+{% block page_subtitle %}{{ country.flag_emoji }} {{ country.name }}{% endblock %}
+{% block nav_admin_countries %}active{% endblock %}
+
+{% block styles %}
+<style>
+.country-preview {
+    background: linear-gradient(135deg, var(--sky-deeper), var(--sky-primary));
+    border-radius: 16px; padding: 24px; color: #fff;
+    text-align: center; margin-bottom: 16px;
+    position: relative; overflow: hidden;
+    min-height: 140px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 8px;
+}
+.country-preview::before {
+    content: ''; position: absolute; inset: 0;
+    background-image: radial-gradient(circle, rgba(255,255,255,.06) 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+.preview-flag { font-size: 64px; line-height: 1; position: relative; z-index: 1; }
+.preview-name { font-size: 22px; font-weight: 900; letter-spacing: .5px; position: relative; z-index: 1; }
+.preview-meta {
+    font-size: 13px; opacity: .75; position: relative; z-index: 1;
+    display: flex; gap: 14px; flex-wrap: wrap; justify-content: center;
+}
+.preview-meta span { background: rgba(255,255,255,.12); border-radius: 6px; padding: 3px 10px; }
+
+.form-section {
+    background: var(--bg-input); border-radius: 12px;
+    padding: 18px 20px; margin-bottom: 16px; border: 1px solid var(--border);
+}
+.form-section-title {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .8px; color: var(--text-muted); margin-bottom: 14px;
+    display: flex; align-items: center; gap: 7px;
+}
+
+.danger-zone {
+    border: 1.5px solid rgba(239,68,68,.25);
+    border-radius: 12px; padding: 16px 20px;
+    background: rgba(239,68,68,.04);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Breadcrumb -->
+<div style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--text-muted);margin-bottom:16px;">
+    <a href="{% url 'admin_dashboard' %}" style="color:var(--text-muted);text-decoration:none;" onmouseover="this.style.color='var(--sky-primary)'" onmouseout="this.style.color='var(--text-muted)'">🏠 {{ t.dashboard }}</a>
+    <span>›</span>
+    <a href="{% url 'admin_countries' %}" style="color:var(--text-muted);text-decoration:none;" onmouseover="this.style.color='var(--sky-primary)'" onmouseout="this.style.color='var(--text-muted)'">🌍 {{ t.countries_title }}</a>
+    <span>›</span>
+    <span style="color:var(--sky-primary);font-weight:600;">{{ country.flag_emoji }} {{ country.name }}</span>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:start;" class="dashboard-cols">
+
+    <!-- Form -->
+    <div class="card">
+        <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+            <div>
+                <div class="card-title">✏️ {{ t.edit_country_title }}</div>
+                <div class="card-subtitle">{{ country.flag_emoji }} {{ country.name }}</div>
+            </div>
+            <div style="display:flex;gap:8px;">
+                <a href="{% url 'admin_countries' %}" class="btn btn-secondary btn-sm">← {{ t.cancel }}</a>
+            </div>
+        </div>
+        <div class="card-body">
+
+            {% for message in messages %}
+                <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %}" style="margin-bottom:16px;">
+                    {% if message.tags == 'error' %}❌{% else %}✅{% endif %} {{ message }}
+                </div>
+            {% endfor %}
+
+            <form method="POST" action="{% url 'admin_countries_edit' country.id %}">
+                {% csrf_token %}
+
+                <!-- Identity -->
+                <div class="form-section">
+                    <div class="form-section-title">🏳️ {{ t.country_identity }}</div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;" class="form-grid">
+                        <div class="form-group" style="margin:0;">
+                            <label class="form-label">{{ t.country_name }} <span class="required">*</span></label>
+                            <input type="text" name="name" id="nameInput" class="form-control" value="{{ country.name }}" required oninput="updatePreview()">
+                        </div>
+                        <div class="form-group" style="margin:0;">
+                            <label class="form-label">{{ t.country_code }} ISO 2</label>
+                            <input type="text" class="form-control" value="{{ country.code }}" readonly style="opacity:.6;cursor:not-allowed;font-family:monospace;font-weight:700;font-size:15px;letter-spacing:2px;">
+                            <div class="form-text">{{ t.code_readonly_hint }}</div>
+                        </div>
+                        <div class="form-group" style="margin:0;">
+                            <label class="form-label">{{ t.flag_emoji }} <span class="required">*</span></label>
+                            <input type="text" name="flag_emoji" id="flagInput" class="form-control" value="{{ country.flag_emoji }}" required oninput="updatePreview()" style="font-size:20px;">
+                        </div>
+                        <div class="form-group" style="margin:0;">
+                            <label class="form-label">{{ t.phone_code }}</label>
+                            <input type="text" name="phone_code" id="phoneInput" class="form-control" value="{{ country.phone_code|default:'' }}" oninput="updatePreview()">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Currency -->
+                <div class="form-section">
+                    <div class="form-section-title">💰 {{ t.currency_section }}</div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;" class="form-grid">
+                        <div class="form-group" style="margin:0;">
+                            <label class="form-label">{{ t.currency_code }} <span class="required">*</span></label>
+                            <input type="text" name="currency_code" id="currencyCodeInput" class="form-control" value="{{ country.currency_code }}" required
+                                oninput="this.value=this.value.toUpperCase();updatePreview()">
+                        </div>
+                        <div class="form-group" style="margin:0;">
+                            <label class="form-label">{{ t.currency_name }} <span class="required">*</span></label>
+                            <input type="text" name="currency_name" id="currencyNameInput" class="form-control" value="{{ country.currency_name }}" required oninput="updatePreview()">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings -->
+                <div class="form-section">
+                    <div class="form-section-title">⚙️ {{ t.settings_section }}</div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;" class="form-grid">
+                        <div class="form-group" style="margin:0;">
+                            <label class="form-label">{{ t.default_fee }} (%)</label>
+                            <input type="number" name="default_fee_percentage" id="feeInput" class="form-control" value="{{ country.default_fee_percentage }}" step="0.01" min="0" max="100" oninput="updatePreview()">
+                            <div class="form-text">{{ t.fee_applied_hint }}</div>
+                        </div>
+                        <div class="form-group" style="margin:0;">
+                            <label class="form-label">{{ t.status }}</label>
+                            <select name="is_active" class="form-control">
+                                <option value="1" {% if country.is_active %}selected{% endif %}>✅ {{ t.active }}</option>
+                                <option value="0" {% if not country.is_active %}selected{% endif %}>❌ {{ t.inactive }}</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display:flex;gap:12px;">
+                    <button type="submit" class="btn btn-primary btn-lg" style="flex:1;justify-content:center;">💾 {{ t.save_changes }}</button>
+                    <a href="{% url 'admin_countries' %}" class="btn btn-secondary btn-lg">← {{ t.cancel }}</a>
+                </div>
+            </form>
+
+            <!-- Danger zone -->
+            <div class="danger-zone" style="margin-top:24px;">
+                <div style="font-size:11px;font-weight:700;color:#ef4444;text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;">⚠️ {{ t.danger_zone }}</div>
+                <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+                    <div>
+                        <div style="font-size:13px;font-weight:600;color:var(--text-primary);">{{ t.delete_country }}</div>
+                        <div style="font-size:12px;color:var(--text-muted);">{{ t.delete_country_hint }}</div>
+                    </div>
+                    <form method="POST" action="{% url 'admin_countries_destroy' country.id %}" onsubmit="return confirm('{{ t.delete_confirm }}');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger btn-sm">🗑 {{ t.delete }}</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right sidebar: Live preview -->
+    <div>
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">👁 {{ t.live_preview }}</div>
+            </div>
+            <div class="card-body" style="padding:16px;">
+                <div class="country-preview">
+                    <div class="preview-flag" id="previewFlag">{{ country.flag_emoji }}</div>
+                    <div class="preview-name" id="previewName">{{ country.name }}</div>
+                    <div class="preview-meta">
+                        <span>{{ country.code }}</span>
+                        <span id="previewCurrency">{{ country.currency_code }}</span>
+                        <span id="previewFee">{{ country.default_fee_percentage }} %</span>
+                        <span id="previewPhone">{% if country.phone_code %}{{ country.phone_code }}{% endif %}</span>
+                    </div>
+                </div>
+
+                <!-- Info rows -->
+                <div style="display:flex;flex-direction:column;gap:0;">
+                    <div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--divider);font-size:12.5px;">
+                        <span style="color:var(--text-muted);font-weight:600;">{{ t.country_code }}</span>
+                        <code style="font-weight:700;color:var(--sky-primary);">{{ country.code }}</code>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--divider);font-size:12.5px;">
+                        <span style="color:var(--text-muted);font-weight:600;">{{ t.currency_code }}</span>
+                        <span style="font-weight:700;" id="infoCode">{{ country.currency_code }}</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--divider);font-size:12.5px;">
+                        <span style="color:var(--text-muted);font-weight:600;">{{ t.default_fee }}</span>
+                        <span style="font-weight:700;color:var(--sky-primary);" id="infoFee">{{ country.default_fee_percentage }}%</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;padding:9px 0;font-size:12.5px;">
+                        <span style="color:var(--text-muted);font-weight:600;">{{ t.status }}</span>
+                        <span class="badge-status {% if country.is_active %}status-completed{% else %}status-cancelled{% endif %}" style="font-size:11px;">
+                            {% if country.is_active %}✅ {{ t.active }}{% else %}❌ {{ t.inactive }}{% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toggle status quick action -->
+        <div class="card" style="margin-top:14px;">
+            <div class="card-body" style="padding:16px;text-align:center;">
+                <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px;">{{ t.quick_toggle_hint }}</div>
+                <form method="POST" action="{% url 'admin_countries_toggle' country.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn {% if country.is_active %}btn-warning{% else %}btn-success{% endif %}" style="width:100%;justify-content:center;">
+                        {% if country.is_active %}⏸ {{ t.deactivate }}{% else %}▶ {{ t.reactivate }}{% endif %}
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function updatePreview() {
+    var name = document.getElementById('nameInput').value || '—';
+    var flag = document.getElementById('flagInput').value || '🌍';
+    var cur  = document.getElementById('currencyCodeInput').value || '—';
+    var fee  = document.getElementById('feeInput').value || '—';
+    var ph   = document.getElementById('phoneInput').value || '';
+
+    document.getElementById('previewFlag').textContent    = flag;
+    document.getElementById('previewName').textContent    = name;
+    document.getElementById('previewCurrency').textContent = cur;
+    document.getElementById('previewFee').textContent     = fee + ' %';
+    var pph = document.getElementById('previewPhone');
+    if(pph){ pph.textContent = ph; pph.style.display = ph ? '' : 'none'; }
+
+    var ic = document.getElementById('infoCode');
+    var if_ = document.getElementById('infoFee');
+    if(ic) ic.textContent = cur;
+    if(if_) if_.textContent = fee + '%';
+}
+</script>
+{% endblock %}

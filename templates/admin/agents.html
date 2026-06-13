@@ -1,0 +1,364 @@
+{% extends 'layouts/app.html' %}
+{% load static bluesky_tags %}
+
+{% block title %}{{ t.agents_title }}{% endblock %}
+{% block page_title %}{{ t.agents_title }}{% endblock %}
+{% block page_subtitle %}{{ t.agents_sub }}{% endblock %}
+{% block nav_admin_agents %}active{% endblock %}
+
+{% block styles %}
+<style>
+/* ── Stat chips ─────────────────────────────────── */
+.ag-chips {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+}
+.ag-chip {
+    display: flex; align-items: center; gap: 11px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 16px;
+    transition: transform .15s, box-shadow .15s;
+}
+.ag-chip:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
+.ag-chip-icon {
+    width: 38px; height: 38px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+}
+.ag-chip-val  { font-size: 22px; font-weight: 900; line-height: 1; color: var(--text-heading); }
+.ag-chip-lbl  { font-size: 10px; font-weight: 700; color: var(--text-muted);
+                text-transform: uppercase; letter-spacing: .5px; margin-top: 2px; }
+
+/* chip color variants */
+.ag-chip-total  .ag-chip-icon { background: rgba(2,132,199,.10); }
+.ag-chip-active .ag-chip-icon { background: rgba(34,197,94,.10); }
+.ag-chip-active .ag-chip-val  { color: #22c55e; }
+.ag-chip-pending .ag-chip-icon{ background: rgba(245,158,11,.10); }
+.ag-chip-pending .ag-chip-val { color: #f59e0b; }
+.ag-chip-inactive .ag-chip-icon{ background: rgba(239,68,68,.10); }
+.ag-chip-inactive .ag-chip-val { color: #ef4444; }
+
+.ag-pulse {
+    display: none; width: 8px; height: 8px; border-radius: 50%;
+    background: #f59e0b; margin-left: auto; flex-shrink: 0;
+    animation: pulse 1.4s infinite;
+}
+
+/* ── Agent avatar cell ──────────────────────────── */
+.ag-cell-name { display: flex; align-items: center; gap: 10px; }
+.ag-avatar {
+    width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 800; color: white;
+    background: linear-gradient(135deg, var(--sky-primary), var(--sky-secondary));
+    overflow: hidden;
+}
+.ag-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.ag-name  { font-size: 13.5px; font-weight: 700; color: var(--text-primary); }
+.ag-addr  { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+
+/* ── Code badge ─────────────────────────────────── */
+.ag-code {
+    font-family: monospace; font-size: 11px; font-weight: 700;
+    background: var(--bg-secondary); color: var(--text-secondary);
+    border: 1px solid var(--border); border-radius: 5px;
+    padding: 2px 7px; letter-spacing: .4px;
+}
+
+/* ── Country pill ───────────────────────────────── */
+.ag-country {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 12px; font-weight: 600; color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+/* ── Action buttons ─────────────────────────────── */
+.ag-actions { display: flex; gap: 5px; align-items: center; flex-wrap: nowrap; }
+.ag-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 4px;
+    border: none; border-radius: 8px; cursor: pointer; font-size: 11.5px;
+    font-weight: 700; padding: 5px 10px; transition: all .15s; text-decoration: none;
+    font-family: inherit; white-space: nowrap;
+}
+.ag-btn-activate  { background: rgba(34,197,94,.12);  color: #16a34a; }
+.ag-btn-activate:hover  { background: rgba(34,197,94,.22); }
+.ag-btn-deactivate{ background: rgba(245,158,11,.12); color: #b45309; }
+.ag-btn-deactivate:hover{ background: rgba(245,158,11,.22); }
+.ag-btn-promote   { background: rgba(139,92,246,.10); color: #7c3aed; }
+.ag-btn-promote:hover   { background: rgba(139,92,246,.20); }
+.ag-btn-delete    { background: rgba(239,68,68,.10);  color: #dc2626; }
+.ag-btn-delete:hover    { background: rgba(239,68,68,.20); }
+
+/* ── Empty state ────────────────────────────────── */
+.ag-empty {
+    text-align: center; padding: 60px 20px; color: var(--text-muted);
+}
+.ag-empty-icon { font-size: 48px; margin-bottom: 12px; opacity: .4; }
+.ag-empty-text { font-size: 15px; font-weight: 600; }
+
+/* ── Responsive ─────────────────────────────────── */
+@media (max-width: 900px) {
+    .ag-chips { grid-template-columns: 1fr 1fr; }
+}
+
+/* Tablet 768px */
+@media (max-width: 768px) {
+    .ag-cell-name { gap: 8px; }
+    .ag-avatar    { width: 32px; height: 32px; font-size: 11px; }
+    .ag-name      { font-size: 12.5px; }
+    .ag-addr      { display: none; }
+    .ag-country   { font-size: 11px; }
+    .ag-btn       { padding: 4px 8px; font-size: 11px; }
+}
+
+/* Mobile 480px */
+@media (max-width: 480px) {
+    .ag-chips     { grid-template-columns: 1fr 1fr; gap: 8px; }
+    .ag-chip      { padding: 10px 12px; }
+    .ag-chip-val  { font-size: 18px; }
+    .ag-chip-icon { width: 32px; height: 32px; font-size: 15px; }
+
+    .ag-name      { font-size: 12px; }
+    .ag-avatar    { width: 30px; height: 30px; font-size: 10px; }
+    .ag-cell-name { gap: 7px; }
+
+    /* Hide button text on mobile — keep only icon */
+    .ag-btn-text  { display: none; }
+    .ag-btn       { padding: 5px 8px; font-size: 13px; border-radius: 8px; }
+    .ag-actions   { gap: 3px; }
+
+    /* Badge compact */
+    .badge-status { font-size: 10.5px; padding: 3px 7px; gap: 3px; }
+}
+
+/* Small phone 360px */
+@media (max-width: 360px) {
+    .ag-chips     { grid-template-columns: 1fr 1fr; gap: 6px; }
+    .ag-chip      { padding: 8px 10px; gap: 8px; }
+    .ag-chip-val  { font-size: 16px; }
+    .ag-chip-icon { width: 28px; height: 28px; font-size: 13px; }
+    .ag-chip-lbl  { font-size: 9px; }
+
+    .ag-btn       { padding: 4px 6px; font-size: 12px; }
+    .ag-actions   { gap: 2px; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Filters -->
+<div class="filters-bar">
+    <form method="GET" action="{% url 'admin_agents' %}" style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;width:100%;">
+        <div class="filter-group filter-group-search">
+            <label class="filter-label">🔍 {{ t.search }}</label>
+            <input type="text" name="q" class="filter-control" placeholder="{{ t.search_agent }}" value="{{ q }}">
+        </div>
+        <div class="filter-group">
+            <label class="filter-label">📋 {{ t.status }}</label>
+            <select name="status" class="filter-control">
+                <option value="">{{ t.all_status }}</option>
+                <option value="active"   {% if status_filter == 'active' %}selected{% endif %}>✅ {{ t.status_active }}</option>
+                <option value="pending"  {% if status_filter == 'pending' %}selected{% endif %}>⏳ {{ t.status_pending }}</option>
+                <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>❌ {{ t.status_inactive }}</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label class="filter-label">🌍 {{ t.operating_countries }}</label>
+            <select name="country_id" class="filter-control">
+                <option value="">{{ t.all_countries_filter }}</option>
+                {% for c in countries %}
+                    <option value="{{ c.id }}" {% if country_filter == c.id|stringformat:"s" %}selected{% endif %}>{{ c.flag_emoji }} {{ c.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;">
+            <button type="submit" class="btn btn-primary btn-sm">🔍 {{ t.filter_btn }}</button>
+            <a href="{% url 'admin_agents' %}" class="btn btn-secondary btn-sm">↺</a>
+        </div>
+    </form>
+</div>
+
+<!-- Stat chips -->
+<div class="ag-chips">
+    <div class="ag-chip ag-chip-total">
+        <div class="ag-chip-icon">👥</div>
+        <div>
+            <div class="ag-chip-val">{{ agents|length }}</div>
+            <div class="ag-chip-lbl">{{ t.agent_found }}</div>
+        </div>
+    </div>
+    <div class="ag-chip ag-chip-active">
+        <div class="ag-chip-icon">✅</div>
+        <div>
+            <div class="ag-chip-val" id="aActive">—</div>
+            <div class="ag-chip-lbl">{{ t.status_active }}</div>
+        </div>
+    </div>
+    <div class="ag-chip ag-chip-pending" style="position:relative;">
+        <div class="ag-chip-icon">⏳</div>
+        <div>
+            <div class="ag-chip-val" id="aPending">—</div>
+            <div class="ag-chip-lbl">{{ t.status_pending }}</div>
+        </div>
+        <div class="ag-pulse" id="pendingDot"></div>
+    </div>
+    <div class="ag-chip ag-chip-inactive">
+        <div class="ag-chip-icon">❌</div>
+        <div>
+            <div class="ag-chip-val" id="aInactive">—</div>
+            <div class="ag-chip-lbl">{{ t.status_inactive }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- Table card -->
+<div class="table-card card">
+    <div class="card-header">
+        <div>
+            <div class="card-title">👥 {{ t.agents_title }}</div>
+            <div class="card-subtitle">{{ agents|length }} {{ t.agent_found }}</div>
+        </div>
+    </div>
+    <div class="table-scroll">
+        {% if agents %}
+        <table class="bsky-table">
+            <thead>
+                <tr>
+                    <th>{{ t.agent_col }}</th>
+                    <th class="hide-mobile">{{ t.email }}</th>
+                    <th class="hide-mobile">{{ t.phone }}</th>
+                    <th class="hide-mobile">{{ t.code }}</th>
+                    <th>{{ t.operating_countries }}</th>
+                    <th>{{ t.status }}</th>
+                    <th class="hide-mobile">{{ t.registration }}</th>
+                    <th>{{ t.actions }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for agent in agents %}
+                <tr class="agent-row" data-status="{{ agent.status }}"
+                    {% if agent.status == 'pending' %}style="background:rgba(245,158,11,.03);"{% endif %}>
+
+                    <!-- Agent name + avatar -->
+                    <td>
+                        <div class="ag-cell-name">
+                            <div class="ag-avatar">
+                                {% if agent.photo_url %}<img src="{{ agent.photo_url }}" alt="">{% else %}{{ agent.name|initials }}{% endif %}
+                            </div>
+                            <div>
+                                <div class="ag-name">{{ agent.name }}</div>
+                                {% if agent.address %}<div class="ag-addr">{{ agent.address|limit:28 }}</div>{% endif %}
+                            </div>
+                        </div>
+                    </td>
+
+                    <!-- Email -->
+                    <td class="hide-mobile" style="font-size:13px;color:var(--text-secondary);">
+                        {{ agent.email }}
+                    </td>
+
+                    <!-- Phone -->
+                    <td class="hide-mobile" style="font-size:13px;color:var(--text-secondary);">
+                        {{ agent.phone|default:"—" }}
+                    </td>
+
+                    <!-- Code -->
+                    <td class="hide-mobile">
+                        {% if agent.agent_code %}<span class="ag-code">{{ agent.agent_code }}</span>{% else %}—{% endif %}
+                    </td>
+
+                    <!-- Country -->
+                    <td>
+                        {% if agent.country %}
+                        <span class="ag-country">{{ agent.country.flag_emoji }} {{ agent.country.name }}</span>
+                        {% else %}—{% endif %}
+                    </td>
+
+                    <!-- Status badge -->
+                    <td>
+                        <span class="badge-status status-{{ agent.status }}">
+                            {% if agent.status == 'active' %}✅ {{ t.status_active }}
+                            {% elif agent.status == 'pending' %}⏳ {{ t.status_pending }}
+                            {% else %}❌ {{ t.status_inactive }}{% endif %}
+                        </span>
+                    </td>
+
+                    <!-- Date -->
+                    <td class="hide-mobile" style="font-size:12px;color:var(--text-muted);">
+                        {{ agent.created_at|date:"d/m/Y" }}
+                    </td>
+
+                    <!-- Actions -->
+                    <td>
+                        <div class="ag-actions">
+                            <!-- Activate / Deactivate -->
+                            <form method="POST" action="{% url 'admin_agent_status' agent.id %}" style="display:contents;">
+                                {% csrf_token %}
+                                {% if agent.status == 'active' %}
+                                    <input type="hidden" name="status" value="inactive">
+                                    <button type="submit" class="ag-btn ag-btn-deactivate" title="{{ t.deactivate }}">⏸</button>
+                                {% elif agent.status == 'pending' %}
+                                    <input type="hidden" name="status" value="active">
+                                    <button type="submit" class="ag-btn ag-btn-activate" title="{{ t.activate }}">✅ <span class="ag-btn-text">{{ t.activate }}</span></button>
+                                {% else %}
+                                    <input type="hidden" name="status" value="active">
+                                    <button type="submit" class="ag-btn ag-btn-activate" title="{{ t.reactivate }}">▶</button>
+                                {% endif %}
+                            </form>
+                            <!-- Promote -->
+                            <form method="POST" action="{% url 'admin_agent_promote' agent.id %}" style="display:contents;"
+                                  onsubmit="return confirm('{{ t.promote_confirm }}');">
+                                {% csrf_token %}
+                                <button type="submit" class="ag-btn ag-btn-promote" title="{{ t.promote_admin }}">⬆</button>
+                            </form>
+                            <!-- Delete -->
+                            <form method="POST" action="{% url 'admin_agent_destroy' agent.id %}" style="display:contents;"
+                                  onsubmit="return confirm('{{ t.delete_confirm }}');">
+                                {% csrf_token %}
+                                <button type="submit" class="ag-btn ag-btn-delete" title="Supprimer">🗑</button>
+                            </form>
+                        </div>
+                    </td>
+
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="ag-empty">
+            <div class="ag-empty-icon">👥</div>
+            <div class="ag-empty-text">{{ t.no_agents }}</div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function(){
+    var rows = document.querySelectorAll('.agent-row');
+    var ac=0, pc=0, ic=0;
+    rows.forEach(function(r){
+        var s = r.dataset.status;
+        if(s==='active') ac++;
+        else if(s==='pending') pc++;
+        else ic++;
+    });
+    var ea = document.getElementById('aActive');
+    var ep = document.getElementById('aPending');
+    var ei = document.getElementById('aInactive');
+    var pd = document.getElementById('pendingDot');
+    if(ea) ea.textContent = ac;
+    if(ep) ep.textContent = pc;
+    if(ei) ei.textContent = ic;
+    if(pd && pc > 0) pd.style.display = 'block';
+})();
+</script>
+{% endblock %}

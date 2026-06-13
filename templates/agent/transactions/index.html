@@ -1,0 +1,257 @@
+{% extends 'layouts/app.html' %}
+{% load static bluesky_tags %}
+
+{% block title %}{{ t.tx_history_mine }}{% endblock %}
+{% block page_title %}{{ t.tx_history_mine }}{% endblock %}
+{% block page_subtitle %}{{ t.tx_history_sub }}{% endblock %}
+{% block nav_tx_index %}active{% endblock %}
+
+{% block content %}
+<!-- Filters -->
+<div class="filters-bar">
+    <form method="GET" action="{% url 'tx_index' %}" style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;width:100%;">
+        <div class="filter-group filter-group-search">
+            <label class="filter-label">🔍 {{ t.search }}</label>
+            <input type="text" name="q" class="filter-control" placeholder="{{ t.search_ph }}" value="{{ q }}">
+        </div>
+        <div class="filter-group">
+            <label class="filter-label">📋 {{ t.status }}</label>
+            <select name="status" class="filter-control">
+                <option value="">{{ t.all_statuses }}</option>
+                <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>✅ {{ t.completed }}</option>
+                <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>⏳ {{ t.pending }}</option>
+                <option value="cancelled" {% if status_filter == 'cancelled' %}selected{% endif %}>❌ {{ t.cancelled }}</option>
+            </select>
+        </div>
+        <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;">
+            <button type="submit" class="btn btn-primary btn-sm">🔍 {{ t.filter_btn }}</button>
+            <a href="{% url 'tx_index' %}" class="btn btn-secondary btn-sm">↺</a>
+            <a href="{% url 'tx_create' %}" class="btn btn-primary btn-sm">➕ {{ t.new_tx_btn }}</a>
+        </div>
+    </form>
+</div>
+
+<!-- Mini stats strip -->
+<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;" id="txStatsStrip">
+    <div style="display:flex;align-items:center;gap:8px;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:10px 16px;flex:1;min-width:120px;">
+        <span style="font-size:18px;">📋</span>
+        <div>
+            <div style="font-size:18px;font-weight:900;color:var(--text-heading);" id="sCount">{{ transactions|length }}</div>
+            <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;">{{ t.results }}</div>
+        </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.15);border-radius:10px;padding:10px 16px;flex:1;min-width:120px;">
+        <span style="font-size:18px;">✅</span>
+        <div>
+            <div style="font-size:18px;font-weight:900;color:#22c55e;" id="sCompleted">—</div>
+            <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;">{{ t.completed }}</div>
+        </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.15);border-radius:10px;padding:10px 16px;flex:1;min-width:120px;">
+        <span style="font-size:18px;">⏳</span>
+        <div>
+            <div style="font-size:18px;font-weight:900;color:#f59e0b;" id="sPending">—</div>
+            <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;">{{ t.pending }}</div>
+        </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.12);border-radius:10px;padding:10px 16px;flex:1;min-width:120px;">
+        <span style="font-size:18px;">❌</span>
+        <div>
+            <div style="font-size:18px;font-weight:900;color:#ef4444;" id="sCancelled">—</div>
+            <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;">{{ t.cancelled }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- Selection bar -->
+<div class="sel-bar" id="txSelBar">
+    <div class="sel-bar-count"><em id="txSelCount">0</em> sélectionné(s)</div>
+    <div class="sel-bar-actions">
+        <button class="sel-bar-btn" data-action="view"  disabled>👁 {{ t.view|default:"Voir" }}</button>
+        <button class="sel-bar-btn" data-action="edit"  disabled>✏️ {{ t.edit|default:"Modifier" }}</button>
+        <button class="sel-bar-btn" data-action="print">🖨 {{ t.print|default:"Imprimer" }}</button>
+        <button class="sel-bar-clear" title="Désélectionner">✕</button>
+    </div>
+</div>
+
+<div class="table-card">
+    <div class="table-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+        <div class="table-title">📋 {{ t.tx_history_mine }} — <span style="color:var(--sky-primary);">{{ transactions|length }}</span> {{ t.results }}</div>
+        <a href="{% url 'tx_create' %}" class="btn btn-primary btn-sm">➕ {{ t.new_tx_btn }}</a>
+    </div>
+    <div class="table-scroll" style="overflow-x:auto;">
+        {% if transactions %}
+        <table class="bsky-table" id="txTable">
+            <thead>
+                <tr>
+                    <th class="sel-th"><input type="checkbox" class="sel-cb" id="selAllIdx" title="Tout sélectionner"></th>
+                    <th>{{ t.tx_number }}</th>
+                    <th>{{ t.sender }}</th>
+                    <th>{{ t.beneficiary }}</th>
+                    <th>{{ t.amount }}</th>
+                    <th class="hide-mobile">{{ t.fee }}</th>
+                    <th class="hide-mobile">{{ t.total }}</th>
+                    <th>{{ t.route }}</th>
+                    <th>{{ t.status }}</th>
+                    <th class="hide-mobile">{{ t.date }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for tx in transactions %}
+                <tr data-id="{{ tx.id }}"
+                    data-url-view="{% url 'tx_show' tx.id %}"
+                    data-url-edit="{% url 'tx_edit' tx.id %}"
+                    data-url-print="{% url 'tx_print' tx.id %}">
+                    <td class="sel-td"><input type="checkbox" class="sel-cb"></td>
+                    <td><a href="{% url 'tx_show' tx.id %}" class="tx-number">{{ tx.transaction_number }}</a></td>
+                    <td>
+                        <div style="font-weight:600;font-size:13px;">{{ tx.sender_name }}</div>
+                        {% if tx.sender_phone %}<div style="font-size:11px;color:var(--text-muted);">{{ tx.sender_phone }}</div>{% endif %}
+                    </td>
+                    <td>
+                        <div style="font-size:13px;">{{ tx.receiver_name|default:"—" }}</div>
+                        {% if tx.receiver_phone %}<div style="font-size:11px;color:var(--text-muted);">{{ tx.receiver_phone }}</div>{% endif %}
+                    </td>
+                    <td><strong>{{ tx.amount|number_format:0 }}</strong></td>
+                    <td style="color:var(--text-muted);">{{ tx.fee_amount|number_format:0 }}</td>
+                    <td><strong style="color:var(--sky-primary);">{{ tx.total_amount|number_format:0 }}</strong></td>
+                    <td><span class="route-pill">{{ tx.origin_country.flag_emoji }} → {{ tx.destination_country.flag_emoji }}</span></td>
+                    <td>
+                        <span class="badge-status status-{{ tx.status }}">
+                            {% if tx.status == 'completed' %}✅ {{ t.completed }}{% elif tx.status == 'pending' %}⏳ {{ t.pending }}{% else %}❌ {{ t.cancelled }}{% endif %}
+                        </span>
+                    </td>
+                    <td style="font-size:12px;color:var(--text-muted);white-space:nowrap;">{{ tx.created_at|date:"d/m/Y H:i" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">📭</div>
+                <div class="empty-text">{{ t.no_transaction }}</div>
+                <a href="{% url 'tx_create' %}" class="btn btn-primary" style="margin-top:14px;">{{ t.create_first_tx }}</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function(){
+    /* ── Stats strip counter ── */
+    var rows = document.querySelectorAll('.bsky-table tbody tr');
+    var c=0, p=0, x=0;
+    rows.forEach(function(r){
+        var b = r.querySelector('.badge-status');
+        if(!b) return;
+        var cls = b.className;
+        if(cls.indexOf('completed')>-1) c++;
+        else if(cls.indexOf('pending')>-1) p++;
+        else if(cls.indexOf('cancelled')>-1) x++;
+    });
+    var ec = document.getElementById('sCompleted');
+    var ep = document.getElementById('sPending');
+    var ex = document.getElementById('sCancelled');
+    if(ec) ec.textContent = c;
+    if(ep) ep.textContent = p;
+    if(ex) ex.textContent = x;
+})();
+
+/* ── Row selection ── */
+(function(){
+    var tbl    = document.getElementById('txTable');
+    var bar    = document.getElementById('txSelBar');
+    if (!tbl || !bar) return;
+
+    var countEl  = document.getElementById('txSelCount');
+    var btnView  = bar.querySelector('[data-action="view"]');
+    var btnEdit  = bar.querySelector('[data-action="edit"]');
+    var btnPrint = bar.querySelector('[data-action="print"]');
+    var clearBtn = bar.querySelector('.sel-bar-clear');
+    var allCb    = tbl.querySelector('thead .sel-cb');
+    var sel      = new Set();
+
+    function getRow(id){ return tbl.querySelector('tbody tr[data-id="'+id+'"]'); }
+
+    function refresh(){
+        var n = sel.size;
+        if(n > 0){
+            bar.classList.add('active');
+            if(countEl) countEl.textContent = n;
+            if(btnView) btnView.disabled = n !== 1;
+            if(btnEdit) btnEdit.disabled = n !== 1;
+        } else {
+            bar.classList.remove('active');
+        }
+    }
+
+    /* Row checkboxes + click-row-to-toggle */
+    tbl.querySelectorAll('tbody tr[data-id]').forEach(function(row){
+        var cb = row.querySelector('.sel-cb');
+        if(!cb) return;
+        cb.addEventListener('change', function(){
+            if(cb.checked){ sel.add(row.dataset.id); row.classList.add('row-selected'); }
+            else           { sel.delete(row.dataset.id); row.classList.remove('row-selected'); }
+            refresh();
+        });
+        row.style.cursor = 'pointer';
+        row.addEventListener('click', function(e){
+            if(e.target.closest('a,button,input,form')) return;
+            cb.checked = !cb.checked;
+            cb.dispatchEvent(new Event('change'));
+        });
+    });
+
+    /* Select-all */
+    if(allCb){
+        allCb.addEventListener('change', function(){
+            tbl.querySelectorAll('tbody tr[data-id] .sel-cb').forEach(function(cb){
+                var row = cb.closest('tr');
+                cb.checked = allCb.checked;
+                if(allCb.checked){ sel.add(row.dataset.id); row.classList.add('row-selected'); }
+                else              { sel.delete(row.dataset.id); row.classList.remove('row-selected'); }
+            });
+            refresh();
+        });
+    }
+
+    /* Action buttons */
+    if(btnView){
+        btnView.addEventListener('click', function(){
+            if(sel.size!==1) return;
+            var r = getRow(Array.from(sel)[0]);
+            if(r) window.location.href = r.dataset.urlView;
+        });
+    }
+    if(btnEdit){
+        btnEdit.addEventListener('click', function(){
+            if(sel.size!==1) return;
+            var r = getRow(Array.from(sel)[0]);
+            if(r) window.location.href = r.dataset.urlEdit;
+        });
+    }
+    if(btnPrint){
+        btnPrint.addEventListener('click', function(){
+            sel.forEach(function(id){
+                var r = getRow(id);
+                if(r && r.dataset.urlPrint) window.open(r.dataset.urlPrint,'_blank');
+            });
+        });
+    }
+
+    /* Clear */
+    if(clearBtn){
+        clearBtn.addEventListener('click', function(){
+            sel.clear();
+            tbl.querySelectorAll('tbody tr[data-id] .sel-cb').forEach(function(cb){
+                cb.checked = false; cb.closest('tr').classList.remove('row-selected');
+            });
+            if(allCb) allCb.checked = false;
+            bar.classList.remove('active');
+        });
+    }
+})();
+</script>
+{% endblock %}

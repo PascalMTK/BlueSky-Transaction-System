@@ -1,0 +1,347 @@
+{% extends 'layouts/app.html' %}
+{% load static bluesky_tags %}
+
+{% block title %}{{ t.my_space }}{% endblock %}
+{% block page_title %}{{ t.my_space }}{% endblock %}
+{% block page_subtitle %}{{ t.agent_overview }}, {{ auth_user.name }}{% endblock %}
+{% block nav_agent_dashboard %}active{% endblock %}
+
+{% block styles %}
+<style>
+/* ── TX Action Cards ── */
+.tx-action-grid {
+    display:grid; grid-template-columns:1fr 1fr;
+    gap:14px; margin-bottom:22px;
+}
+.tx-action-card {
+    display:flex; align-items:center; gap:16px;
+    padding:20px 22px; border-radius:16px;
+    text-decoration:none; transition:all .22s;
+    border:1.5px solid transparent;
+    position:relative; overflow:hidden;
+}
+.tx-action-card::before {
+    content:''; position:absolute; inset:0; z-index:0;
+    opacity:.08; transition:opacity .2s;
+}
+.tx-action-card:hover { transform:translateY(-4px); }
+.tx-action-card:hover::before { opacity:.14; }
+.tx-action-send {
+    background:linear-gradient(135deg,rgba(2,132,199,.12),rgba(14,165,233,.06));
+    border-color:rgba(2,132,199,.22);
+}
+.tx-action-send:hover { border-color:rgba(2,132,199,.5); box-shadow:0 8px 28px rgba(2,132,199,.2); }
+.tx-action-receive {
+    background:linear-gradient(135deg,rgba(34,197,94,.12),rgba(16,185,129,.06));
+    border-color:rgba(34,197,94,.22);
+}
+.tx-action-receive:hover { border-color:rgba(34,197,94,.5); box-shadow:0 8px 28px rgba(34,197,94,.15); }
+.tac-icon {
+    width:52px; height:52px; border-radius:14px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    font-size:26px; position:relative; z-index:1;
+}
+.tac-icon-send   { background:rgba(2,132,199,.18); }
+.tac-icon-receive{ background:rgba(34,197,94,.18); }
+.tac-body { flex:1; position:relative; z-index:1; }
+.tac-title { font-size:15px; font-weight:800; color:var(--text-primary); margin-bottom:3px; }
+.tac-sub   { font-size:12px; color:var(--text-muted); }
+.tac-arrow { font-size:18px; color:var(--text-muted); position:relative; z-index:1; }
+
+/* ── Transaction row options ── */
+.tx-actions-row { display:flex; gap:5px; flex-wrap:nowrap; align-items:center; }
+.tx-btn {
+    display:inline-flex; align-items:center; gap:4px;
+    padding:5px 9px; border-radius:8px; font-size:11.5px; font-weight:700;
+    border:none; cursor:pointer; text-decoration:none; transition:all .18s;
+    white-space:nowrap;
+}
+.tx-btn:hover { transform:translateY(-1px); }
+.tx-btn-view   { background:rgba(14,165,233,.12); color:#0ea5e9; }
+.tx-btn-view:hover   { background:rgba(14,165,233,.22); }
+.tx-btn-edit   { background:rgba(139,92,246,.12); color:#8b5cf6; }
+.tx-btn-edit:hover   { background:rgba(139,92,246,.22); }
+.tx-btn-print  { background:rgba(20,184,166,.12); color:#14b8a6; }
+.tx-btn-print:hover  { background:rgba(20,184,166,.22); }
+.tx-btn-delete { background:rgba(239,68,68,.1); color:#ef4444; }
+.tx-btn-delete:hover { background:rgba(239,68,68,.2); }
+
+/* ── Mobile: tx-action-cards ── */
+@media (max-width: 480px) {
+    .tx-action-card { padding: 14px 16px; gap: 12px; }
+    .tac-icon  { width: 44px; height: 44px; font-size: 22px; border-radius: 12px; }
+    .tac-title { font-size: 14px; }
+    .tac-sub   { font-size: 11px; }
+    .tac-arrow { font-size: 16px; }
+}
+@media (max-width: 380px) {
+    /* Single column on very small phones */
+    .tx-action-grid { grid-template-columns: 1fr !important; gap: 10px; }
+    .tac-sub { display: none; }
+}
+
+/* ── Mobile: quick action buttons ── */
+@media (max-width: 480px) {
+    .card-body.qa-grid .btn { height: 66px !important; padding: 12px 8px !important; }
+    .card-body.qa-grid .btn > span:first-child { font-size: 20px !important; }
+    .card-body.qa-grid .btn > span:last-child  { font-size: 11px !important; line-height: 1.3 !important; }
+}
+
+/* ── Mobile: recent tx table header ── */
+@media (max-width: 600px) {
+    .table-card .table-header { flex-direction: column; align-items: flex-start; gap: 10px; padding: 12px 14px; }
+    .table-card .table-header > div:last-child { width: 100%; display: flex; gap: 8px; }
+    .table-card .table-header > div:last-child .btn { flex: 1; justify-content: center; }
+}
+
+/* Status pill */
+.status-pill {
+    display:inline-flex; align-items:center; gap:5px;
+    padding:4px 10px; border-radius:100px; font-size:11px; font-weight:700; white-space:nowrap;
+}
+.sp-completed { background:rgba(34,197,94,.12); color:#22c55e; border:1px solid rgba(34,197,94,.2); }
+.sp-pending   { background:rgba(245,158,11,.12); color:#f59e0b; border:1px solid rgba(245,158,11,.2); }
+.sp-cancelled { background:rgba(239,68,68,.1);  color:#ef4444;  border:1px solid rgba(239,68,68,.15); }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Welcome Banner -->
+<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;background:var(--bg-card);border-radius:16px;padding:22px 26px;margin-bottom:22px;border:1px solid var(--border);box-shadow:var(--shadow);" class="welcome-banner">
+    <div style="display:flex;align-items:center;gap:16px;">
+        <div style="width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,var(--sky-primary),var(--sky-secondary));display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;font-weight:900;flex-shrink:0;box-shadow:0 4px 14px rgba(2,132,199,.3);">
+            {{ auth_user.name|initials }}
+        </div>
+        <div>
+            <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:3px;">{{ t.my_space }}</div>
+            <div style="font-size:20px;font-weight:900;color:var(--text-heading);line-height:1.1;">{{ auth_user.name }}</div>
+            <div style="display:flex;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap;">
+                {% if auth_user.agent_code %}
+                <span style="background:rgba(2,132,199,.1);border:1px solid rgba(2,132,199,.2);border-radius:7px;padding:3px 9px;font-size:11.5px;font-weight:700;color:var(--sky-primary);font-family:monospace;">🔑 {{ auth_user.agent_code }}</span>
+                {% endif %}
+                <span class="badge-status status-active" style="font-size:11px;">✅ {{ t.status_active }}</span>
+                {% if auth_user.country %}
+                <span style="font-size:12px;color:var(--text-muted);">{{ auth_user.country.flag_emoji }} {{ auth_user.country.name }}</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+        <a href="{% url 'agent_export_csv' %}" class="btn btn-secondary">📥 {{ t.export_csv }}</a>
+        <a href="{% url 'tx_create' %}" class="btn btn-primary btn-lg">➕ {{ t.new_transaction }}</a>
+    </div>
+</div>
+
+<!-- Stats -->
+<div class="stats-grid" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));margin-bottom:22px;">
+    <div class="stat-card">
+        <div class="stat-icon blue">💸</div>
+        <div class="stat-info">
+            <div class="stat-value" data-counter="{{ stats.total_transactions }}">{{ stats.total_transactions }}</div>
+            <div class="stat-label">{{ t.my_transactions_total }}</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon green">📅</div>
+        <div class="stat-info">
+            <div class="stat-value" data-counter="{{ stats.transactions_today }}">{{ stats.transactions_today }}</div>
+            <div class="stat-label">{{ t.today }}</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon blue">📆</div>
+        <div class="stat-info">
+            <div class="stat-value" data-counter="{{ stats.transactions_month }}">{{ stats.transactions_month }}</div>
+            <div class="stat-label">{{ t.this_month }}</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon gold">💰</div>
+        <div class="stat-info">
+            <div class="stat-value" style="font-size:18px;">{{ stats.total_amount|number_format:0 }}</div>
+            <div class="stat-label">{{ t.total_volume_sent }}</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon teal">🏷️</div>
+        <div class="stat-info">
+            <div class="stat-value" style="font-size:18px;">{{ stats.total_fees|number_format:0 }}</div>
+            <div class="stat-label">{{ t.total_fees }}</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon purple">📊</div>
+        <div class="stat-info">
+            <div class="stat-value" style="font-size:18px;">{{ stats.amount_month|number_format:0 }}</div>
+            <div class="stat-label">{{ t.volume_month }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick TX Action Cards -->
+<div class="tx-action-grid" style="margin-bottom:22px;">
+    <a href="{% url 'tx_create' %}?type=send" class="tx-action-card tx-action-send">
+        <div class="tac-icon tac-icon-send">📤</div>
+        <div class="tac-body">
+            <div class="tac-title">{{ t.type_send }}</div>
+            <div class="tac-sub">{{ t.transfer_details }}</div>
+        </div>
+        <span class="tac-arrow">›</span>
+    </a>
+    <a href="{% url 'tx_create' %}?type=receive" class="tx-action-card tx-action-receive">
+        <div class="tac-icon tac-icon-receive">📥</div>
+        <div class="tac-body">
+            <div class="tac-title">{{ t.receive_verb }}</div>
+            <div class="tac-sub">{{ t.receiver_info }}</div>
+        </div>
+        <span class="tac-arrow">›</span>
+    </a>
+</div>
+
+<!-- Actions + Report row -->
+<div class="charts-row" style="margin-bottom:22px;">
+
+    <!-- Quick actions -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">⚡ {{ t.quick_actions }}</div>
+            <div class="card-subtitle">{{ t.quick_actions_sub }}</div>
+        </div>
+        <div class="card-body qa-grid">
+            <a href="{% url 'tx_index' %}" class="btn btn-secondary" style="flex-direction:column;gap:6px;padding:16px 12px;text-align:center;justify-content:center;height:74px;">
+                <span style="font-size:22px;">📋</span>
+                <span style="font-size:12px;">{{ t.quick_action_my_tx }}</span>
+            </a>
+            <a href="{% url 'profile_show' %}" class="btn btn-secondary" style="flex-direction:column;gap:6px;padding:16px 12px;text-align:center;justify-content:center;height:74px;">
+                <span style="font-size:22px;">👤</span>
+                <span style="font-size:12px;">{{ t.quick_action_profile }}</span>
+            </a>
+            <a href="{% url 'agent_export_csv' %}" class="btn btn-secondary" style="flex-direction:column;gap:6px;padding:16px 12px;text-align:center;justify-content:center;height:74px;">
+                <span style="font-size:22px;">📥</span>
+                <span style="font-size:12px;">{{ t.quick_action_csv }}</span>
+            </a>
+            <a href="{% url 'tx_create' %}" class="btn btn-primary" style="flex-direction:column;gap:6px;padding:16px 12px;text-align:center;justify-content:center;height:74px;">
+                <span style="font-size:22px;">➕</span>
+                <span style="font-size:12px;">{{ t.new_transaction }}</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Report form -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">📨 {{ t.send_report }}</div>
+            <div class="card-subtitle">{{ t.send_report_sub }}</div>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{% url 'agent_report_store' %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label class="form-label">{{ t.report_subject }}</label>
+                    <input type="text" name="subject" class="form-control" placeholder="{{ t.report_subject_ph }}" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">{{ t.report_message }}</label>
+                    <textarea name="message" class="form-control" rows="4" placeholder="{{ t.report_message_ph }}" required style="resize:vertical;"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">
+                    📤 {{ t.report_send_btn }}
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Recent transactions with full action options -->
+<div class="table-card">
+    <div class="table-header" style="display:flex;align-items:center;justify-content:space-between;">
+        <div>
+            <div class="table-title">🕐 {{ t.recent_my_tx }}</div>
+            <div style="font-size:11.5px;color:var(--text-muted);margin-top:2px;">{{ t.last_10_mine }}</div>
+        </div>
+        <div style="display:flex;gap:8px;">
+            <a href="{% url 'tx_index' %}" class="btn btn-secondary btn-sm">{{ t.see_all }}</a>
+            <a href="{% url 'tx_create' %}" class="btn btn-primary btn-sm">➕ {{ t.new_btn }}</a>
+        </div>
+    </div>
+    <div style="overflow-x:auto;">
+        {% if recent_tx %}
+        <table class="bsky-table">
+            <thead>
+                <tr>
+                    <th>{{ t.tx_number }}</th>
+                    <th>{{ t.sender }}</th>
+                    <th>{{ t.beneficiary }}</th>
+                    <th>{{ t.amount }}</th>
+                    <th>{{ t.route }}</th>
+                    <th>{{ t.status }}</th>
+                    <th>{{ t.date }}</th>
+                    <th style="min-width:190px;">{{ t.actions }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for tx in recent_tx %}
+                <tr>
+                    <td>
+                        <a href="{% url 'tx_show' tx.id %}" class="tx-number">{{ tx.transaction_number }}</a>
+                        <div style="font-size:10.5px;color:var(--text-muted);margin-top:2px;">
+                            {% if tx.transaction_type == 'send' %}📤{% elif tx.transaction_type == 'receive' %}📥{% else %}🔄{% endif %}
+                            {{ tx.transaction_type }}
+                        </div>
+                    </td>
+                    <td>
+                        <div style="font-weight:600;font-size:13px;">{{ tx.sender_name }}</div>
+                        {% if tx.sender_phone %}<div style="font-size:11px;color:var(--text-muted);">{{ tx.sender_phone }}</div>{% endif %}
+                    </td>
+                    <td>
+                        <div style="font-size:13px;">{{ tx.receiver_name|default:"—" }}</div>
+                        {% if tx.receiver_phone %}<div style="font-size:11px;color:var(--text-muted);">{{ tx.receiver_phone }}</div>{% endif %}
+                    </td>
+                    <td>
+                        <strong style="font-size:14px;">{{ tx.amount|number_format:0 }}</strong>
+                        <div style="font-size:10.5px;color:var(--text-muted);">{{ tx.origin_country.currency_code }}</div>
+                    </td>
+                    <td>
+                        <span style="font-size:18px;">{{ tx.origin_country.flag_emoji }}</span>
+                        <span style="color:var(--text-muted);font-size:12px;">→</span>
+                        <span style="font-size:18px;">{{ tx.destination_country.flag_emoji }}</span>
+                    </td>
+                    <td>
+                        {% if tx.status == 'completed' %}
+                            <span class="status-pill sp-completed">✅ {{ t.completed }}</span>
+                        {% elif tx.status == 'pending' %}
+                            <span class="status-pill sp-pending">⏳ {{ t.pending }}</span>
+                        {% else %}
+                            <span class="status-pill sp-cancelled">❌ {{ t.cancelled }}</span>
+                        {% endif %}
+                    </td>
+                    <td style="font-size:11.5px;color:var(--text-muted);white-space:nowrap;">{{ tx.created_at|date:"d/m/Y" }}<br>{{ tx.created_at|date:"H:i" }}</td>
+                    <td>
+                        <div class="tx-actions-row">
+                            <a href="{% url 'tx_show' tx.id %}" class="tx-btn tx-btn-view" title="{{ t.edit }}">👁 {{ t.edit|slice:":4" }}</a>
+                            <a href="{% url 'tx_edit' tx.id %}" class="tx-btn tx-btn-edit" title="{{ t.edit }}">✏️</a>
+                            <a href="{% url 'tx_print' tx.id %}" class="tx-btn tx-btn-print" target="_blank" title="{{ t.print }}">🖨</a>
+                            <form method="POST" action="{% url 'tx_destroy' tx.id %}" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="tx-btn tx-btn-delete" onclick="return confirm('{{ t.delete_tx_confirm }}')" title="{{ t.delete }}">🗑</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">💸</div>
+                <div class="empty-text">{{ t.no_tx_yet }}</div>
+                <div style="display:flex;gap:12px;margin-top:14px;justify-content:center;flex-wrap:wrap;">
+                    <a href="{% url 'tx_create' %}?type=send" class="btn btn-primary">📤 {{ t.type_send }}</a>
+                    <a href="{% url 'tx_create' %}?type=receive" class="btn btn-secondary">📥 {{ t.receive_verb }}</a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

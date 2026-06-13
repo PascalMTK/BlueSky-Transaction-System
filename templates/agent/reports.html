@@ -1,0 +1,463 @@
+{% extends 'layouts/app.html' %}
+{% load static bluesky_tags %}
+
+{% block title %}{{ t.my_reports_portal }}{% endblock %}
+{% block page_title %}{{ t.my_reports_portal }}{% endblock %}
+{% block page_subtitle %}{{ t.reports_portal_sub }}{% endblock %}
+{% block nav_agent_reports %}active{% endblock %}
+
+{% block styles %}
+<style>
+/* ── Shell ─────────────────────────────── */
+.rpt-shell {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    height: calc(100dvh - 138px);
+    min-height: 500px;
+    border-radius: 18px;
+    overflow: hidden;
+    border: 1px solid var(--border-light);
+    box-shadow: 0 6px 32px rgba(0,0,0,.10);
+    background: var(--bg-card);
+}
+
+/* ── Left sidebar ───────────────────────── */
+.rpt-sidebar {
+    display: flex; flex-direction: column;
+    border-right: 1px solid var(--border-light);
+    background: var(--bg-secondary); overflow: hidden;
+}
+.rpt-sidebar-top {
+    padding: 16px 14px 12px;
+    border-bottom: 1px solid var(--border-light); flex-shrink: 0;
+}
+.rpt-sidebar-title {
+    font-size: 15px; font-weight: 800; color: var(--text-primary);
+    display: flex; align-items: center; gap: 8px; margin-bottom: 11px;
+}
+.rpt-count-chip {
+    background: rgba(0,133,255,.12); color: var(--sky-primary);
+    border-radius: 10px; font-size: 11px; font-weight: 800;
+    padding: 1px 8px; margin-left: auto;
+}
+.rpt-compose-btn {
+    width: 100%; border: none; cursor: pointer;
+    background: linear-gradient(135deg,var(--sky-primary),var(--sky-secondary));
+    color: white; border-radius: 11px;
+    padding: 10px 14px; font-size: 13px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center; gap: 7px;
+    transition: opacity .18s, transform .18s;
+}
+.rpt-compose-btn:hover { opacity:.88; transform:translateY(-1px); }
+
+.rpt-list { flex: 1; overflow-y: auto; }
+
+/* report row */
+.rpt-row {
+    display: flex; align-items: flex-start; gap: 11px;
+    padding: 13px 14px; border-bottom: 1px solid var(--divider);
+    text-decoration: none; transition: background .13s;
+    cursor: pointer; position: relative;
+}
+.rpt-row:hover { background: var(--bg-hover); }
+.rpt-row:hover .rpt-row-del { opacity: 1; }
+.rpt-row.is-active {
+    background: rgba(0,133,255,.08);
+    border-left: 3px solid var(--sky-primary);
+}
+
+.rpt-av {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: linear-gradient(135deg,var(--sky-primary),var(--sky-secondary));
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 14px; font-weight: 800; flex-shrink: 0;
+}
+
+.rpt-row-info { flex: 1; min-width: 0; }
+.rpt-row-subject {
+    font-size: 13px; font-weight: 700; color: var(--text-primary);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px;
+}
+.rpt-row-preview {
+    font-size: 11.5px; color: var(--text-muted);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 5px;
+}
+.rpt-status-chip {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px;
+}
+.chip-answered { background: rgba(16,185,129,.12); color: #059669; }
+.chip-pending   { background: rgba(245,158,11,.12); color: #d97706; }
+
+.rpt-row-right { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; flex-shrink: 0; }
+.rpt-row-date { font-size: 10px; color: var(--text-muted); }
+/* delete icon — hidden until hover */
+.rpt-row-del {
+    opacity: 0; transition: opacity .15s;
+    background: rgba(239,68,68,.1); color: #ef4444;
+    border: none; border-radius: 8px;
+    padding: 3px 6px; font-size: 11px; cursor: pointer;
+}
+.rpt-row-del:hover { background: rgba(239,68,68,.2); }
+
+.rpt-empty {
+    padding: 44px 20px; text-align: center; color: var(--text-muted);
+}
+.rpt-empty-icon { font-size: 38px; margin-bottom: 10px; opacity: .5; }
+
+/* ── Right chat ─────────────────────────── */
+.rpt-chat { display: flex; flex-direction: column; overflow: hidden; }
+
+.rpt-chat-hdr {
+    padding: 14px 18px; border-bottom: 1px solid var(--border-light);
+    display: flex; align-items: center; gap: 12px;
+    background: var(--bg-card); flex-shrink: 0;
+}
+.rpt-chat-hdr-info { flex: 1; min-width: 0; }
+.rpt-chat-hdr-subject { font-size: 15px; font-weight: 800; color: var(--text-primary); }
+.rpt-chat-hdr-date { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+.rpt-body {
+    flex: 1; overflow-y: auto; padding: 24px 22px;
+    display: flex; flex-direction: column; gap: 16px;
+}
+
+/* bubbles */
+.rpt-bbl-row { display: flex; align-items: flex-end; gap: 10px; }
+.rpt-bbl-row.is-agent { flex-direction: row-reverse; }
+
+.rpt-bbl-av {
+    width: 34px; height: 34px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 800; color: white; flex-shrink: 0;
+}
+.rpt-bbl-av.av-agent { background: linear-gradient(135deg,var(--sky-primary),var(--sky-secondary)); }
+.rpt-bbl-av.av-admin { background: linear-gradient(135deg,#7c3aed,#a855f7); }
+
+.rpt-bbl-group { display: flex; flex-direction: column; max-width: 72%; }
+.rpt-bbl-row.is-agent .rpt-bbl-group { align-items: flex-end; }
+
+.rpt-bbl-sender { font-size: 11px; font-weight: 700; margin-bottom: 4px; opacity: .7; }
+.rpt-bbl-row.is-agent .rpt-bbl-sender { text-align: right; color: var(--sky-primary); }
+.rpt-bbl-row:not(.is-agent) .rpt-bbl-sender { color: #7c3aed; }
+
+.rpt-bbl {
+    border-radius: 16px; padding: 11px 16px;
+    font-size: 13.5px; line-height: 1.65; word-break: break-word; white-space: pre-wrap;
+}
+.rpt-bbl.agent-bbl {
+    background: linear-gradient(135deg,var(--sky-primary),#0055cc);
+    color: white; border-bottom-right-radius: 5px;
+}
+.rpt-bbl.admin-bbl {
+    background: var(--bg-secondary); color: var(--text-primary);
+    border: 1px solid var(--border-light); border-bottom-left-radius: 5px;
+}
+
+.rpt-bbl-meta { font-size: 10.5px; color: var(--text-muted); margin-top: 5px; }
+.rpt-bbl-row.is-agent .rpt-bbl-meta { text-align: right; }
+
+/* awaiting */
+.awaiting-pill {
+    align-self: center; margin: 8px auto;
+    background: rgba(245,158,11,.08);
+    border: 1px dashed #f59e0b; border-radius: 20px;
+    padding: 8px 20px; font-size: 12px; color: #d97706; font-weight: 600;
+    display: flex; align-items: center; gap: 7px;
+}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.awaiting-dot { width:7px;height:7px;border-radius:50%;background:#f59e0b;animation:blink 1.4s infinite; }
+
+/* no selection */
+.rpt-placeholder {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    color: var(--text-muted); text-align: center; gap: 14px; padding: 40px;
+}
+
+/* ── Compose modal ──────────────────────── */
+.compose-overlay {
+    position: fixed; inset: 0; z-index: 1000;
+    background: rgba(0,0,0,.48);
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px; opacity: 0; pointer-events: none; transition: opacity .2s;
+}
+.compose-overlay.open { opacity: 1; pointer-events: all; }
+.compose-modal {
+    background: var(--bg-card); border-radius: 18px;
+    padding: 28px; width: 100%; max-width: 520px;
+    box-shadow: 0 24px 64px rgba(0,0,0,.28);
+    transform: scale(.96); transition: transform .22s;
+}
+.compose-overlay.open .compose-modal { transform: scale(1); }
+.compose-modal-title { font-size: 17px; font-weight: 800; color: var(--text-primary); margin-bottom: 18px; }
+.compose-fg { margin-bottom: 14px; }
+.compose-fg label { display: block; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px; }
+.compose-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+.btn-cncl { background: transparent; border: 1px solid var(--border-light); color: var(--text-secondary); border-radius: 10px; padding: 10px 20px; font-size: 13px; font-weight: 600; cursor: pointer; transition: background .14s; }
+.btn-cncl:hover { background: var(--bg-secondary); }
+.btn-send-rpt { background: linear-gradient(135deg,var(--sky-primary),var(--sky-secondary)); color: white; border: none; border-radius: 10px; padding: 10px 22px; font-size: 13px; font-weight: 700; cursor: pointer; transition: opacity .18s; }
+.btn-send-rpt:hover { opacity:.88; }
+
+/* ── Confirm delete ─────────────────────── */
+.del-confirm-overlay {
+    position: fixed; inset: 0; z-index: 1100;
+    background: rgba(0,0,0,.5);
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px; opacity: 0; pointer-events: none; transition: opacity .18s;
+}
+.del-confirm-overlay.open { opacity: 1; pointer-events: all; }
+.del-confirm-box {
+    background: var(--bg-card); border-radius: 16px; padding: 28px 24px;
+    max-width: 340px; width: 100%; text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,.25); transform: scale(.95); transition: transform .2s;
+}
+.del-confirm-overlay.open .del-confirm-box { transform: scale(1); }
+.del-confirm-btns { display: flex; gap: 10px; justify-content: center; margin-top: 20px; }
+.btn-del-cancel { border: 1px solid var(--border-light); background: transparent; color: var(--text-secondary); border-radius: 10px; padding: 9px 20px; font-size: 13px; font-weight: 600; cursor: pointer; }
+.btn-del-ok { background: #ef4444; color: white; border: none; border-radius: 10px; padding: 9px 20px; font-size: 13px; font-weight: 700; cursor: pointer; }
+
+/* Back button — hidden on desktop, shown on mobile */
+.rpt-back-btn { display: none; }
+
+/* ── Tablet (768–1024px) ─────────────────── */
+@media (min-width: 768px) and (max-width: 1024px) {
+    .rpt-shell { grid-template-columns: 240px 1fr; }
+    .rpt-bbl-group { max-width: 80%; }
+}
+
+/* ── Mobile (≤768px) ─────────────────────── */
+@media (max-width: 768px) {
+    /* Flush shell to screen edges */
+    .content-area:has(.rpt-shell) { padding: 0 !important; }
+
+    .rpt-shell {
+        display: block;
+        position: relative;
+        width: 100%;
+        height: calc(100dvh - 60px);
+        min-height: unset;
+        border-radius: 0;
+        border: none;
+        box-shadow: none;
+        overflow: hidden;
+    }
+    .rpt-sidebar {
+        position: absolute;
+        inset: 0;
+        height: 100%;
+        max-height: none;
+        border-right: none;
+        border-bottom: none;
+        transform: translateX(0);
+        transition: transform .3s cubic-bezier(.4,0,.2,1);
+        will-change: transform;
+        z-index: 2;
+    }
+    .rpt-chat {
+        position: absolute;
+        inset: 0;
+        height: 100%;
+        transform: translateX(105%);
+        transition: transform .3s cubic-bezier(.4,0,.2,1);
+        will-change: transform;
+        z-index: 1;
+        background: var(--bg-card);
+    }
+    .rpt-shell.mobile-show-chat .rpt-sidebar {
+        transform: translateX(-100%);
+        pointer-events: none;
+    }
+    .rpt-shell.mobile-show-chat .rpt-chat {
+        transform: translateX(0);
+    }
+    .rpt-back-btn { display: inline-flex !important; }
+    .rpt-bbl-group { max-width: 90%; }
+    .rpt-body { padding: 16px 14px; }
+    /* Touch targets */
+    .rpt-row { min-height: 60px; padding: 14px; }
+    .rpt-compose-btn { min-height: 46px; }
+}
+
+/* ── Extra-small phones (≤400px) ────────── */
+@media (max-width: 400px) {
+    .rpt-bbl { font-size: 13px; }
+    .rpt-bbl-group { max-width: 94%; }
+    .rpt-chat-hdr-subject { font-size: 13.5px; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Compose modal -->
+<div class="compose-overlay" id="composeOverlay" onclick="if(event.target===this)closeCompose()">
+    <div class="compose-modal">
+        <div class="compose-modal-title">✍️ {{ t.write_report }}</div>
+        <form method="POST" action="{% url 'agent_reports_portal' %}">
+            {% csrf_token %}
+            <div class="compose-fg">
+                <label>{{ t.report_subject }}</label>
+                <input type="text" name="subject" class="form-control" placeholder="{{ t.report_subject_ph }}" required maxlength="150" autocomplete="off">
+            </div>
+            <div class="compose-fg">
+                <label>{{ t.report_message }}</label>
+                <textarea name="message" class="form-control" rows="5" placeholder="{{ t.report_message_ph }}" required style="resize:vertical;"></textarea>
+            </div>
+            <div class="compose-actions">
+                <button type="button" class="btn-cncl" onclick="closeCompose()">{{ t.cancel }}</button>
+                <button type="submit" class="btn-send-rpt">📤 {{ t.report_send_btn }}</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Delete confirm -->
+<div class="del-confirm-overlay" id="delConfirmOverlay">
+    <div class="del-confirm-box">
+        <div style="font-size:36px;margin-bottom:10px;">🗑️</div>
+        <div style="font-size:16px;font-weight:800;color:var(--text-primary);margin-bottom:6px;">Supprimer ce rapport ?</div>
+        <div style="font-size:13px;color:var(--text-muted);">Le rapport sera définitivement supprimé.</div>
+        <div class="del-confirm-btns">
+            <button class="btn-del-cancel" onclick="closeDelConfirm()">{{ t.cancel }}</button>
+            <button class="btn-del-ok" id="delConfirmOkBtn" onclick="doDelReport()">Supprimer</button>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden delete forms -->
+{% for r in reports %}
+<form id="del-rpt-{{ r.id }}" method="POST" action="{% url 'report_delete' r.id %}" style="display:none;">{% csrf_token %}</form>
+{% endfor %}
+
+<!-- Shell -->
+<div class="rpt-shell">
+
+    <!-- Left -->
+    <div class="rpt-sidebar">
+        <div class="rpt-sidebar-top">
+            <div class="rpt-sidebar-title">
+                📨 {{ t.my_reports_portal }}
+                {% if reports %}<span class="rpt-count-chip">{{ reports|length }}</span>{% endif %}
+            </div>
+            <button class="rpt-compose-btn" onclick="openCompose()">✏️ {{ t.compose_new }}</button>
+        </div>
+        <div class="rpt-list">
+            {% if reports %}
+                {% for r in reports %}
+                <div class="rpt-row {% if selected and selected.id == r.id %}is-active{% endif %}"
+                     onclick="window.location='?r={{ r.id }}'">
+                    <div class="rpt-av">{{ auth_user.name|initials }}</div>
+                    <div class="rpt-row-info">
+                        <div class="rpt-row-subject">{{ r.subject }}</div>
+                        <div class="rpt-row-preview">{{ r.message|truncatechars:42 }}</div>
+                        {% if r.admin_reply %}
+                            <span class="rpt-status-chip chip-answered">✅ {{ t.report_status_answered }}</span>
+                        {% else %}
+                            <span class="rpt-status-chip chip-pending">⏳ {{ t.pending }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="rpt-row-right">
+                        <div class="rpt-row-date">{{ r.created_at|date:"d/m" }}</div>
+                        <button class="rpt-row-del" onclick="event.stopPropagation();confirmDelReport('{{ r.id }}')">🗑</button>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="rpt-empty">
+                    <div class="rpt-empty-icon">📭</div>
+                    <div style="font-size:13px;font-weight:600;">{{ t.no_reports }}</div>
+                    <div style="font-size:12px;margin-top:6px;">{{ t.portal_empty_hint }}</div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Right -->
+    <div class="rpt-chat">
+        {% if selected %}
+
+        <!-- Header -->
+        <div class="rpt-chat-hdr">
+            <a href="{% url 'agent_reports_portal' %}" class="rpt-back-btn ms-hdr-btn" style="display:none;" aria-label="Retour">← Retour</a>
+            <div class="rpt-av" style="width:44px;height:44px;font-size:16px;">{{ auth_user.name|initials }}</div>
+            <div class="rpt-chat-hdr-info">
+                <div class="rpt-chat-hdr-subject">{{ selected.subject }}</div>
+                <div class="rpt-chat-hdr-date">
+                    {{ t.sent_at }} {{ selected.created_at|date:"d/m/Y à H:i" }}
+                    {% if selected.admin_reply %} · {{ t.replied_on }} {{ selected.replied_at|date:"d/m/Y" }}{% endif %}
+                </div>
+            </div>
+            {% if selected.admin_reply %}
+                <span style="background:rgba(16,185,129,.12);color:#059669;border-radius:10px;padding:4px 10px;font-size:11px;font-weight:700;flex-shrink:0;">✅ {{ t.report_status_answered }}</span>
+            {% else %}
+                <span style="background:rgba(245,158,11,.12);color:#d97706;border-radius:10px;padding:4px 10px;font-size:11px;font-weight:700;flex-shrink:0;">⏳ {{ t.pending }}</span>
+            {% endif %}
+        </div>
+
+        <!-- Bubbles -->
+        <div class="rpt-body">
+            <!-- Agent bubble (right) -->
+            <div class="rpt-bbl-row is-agent">
+                <div class="rpt-bbl-av av-agent">{{ auth_user.name|initials }}</div>
+                <div class="rpt-bbl-group">
+                    <div class="rpt-bbl-sender">{{ t.you }}</div>
+                    <div class="rpt-bbl agent-bbl">{{ selected.message }}</div>
+                    <div class="rpt-bbl-meta">{{ selected.created_at|date:"d/m/Y · H:i" }}</div>
+                </div>
+            </div>
+
+            {% if selected.admin_reply %}
+            <!-- Admin bubble (left) -->
+            <div class="rpt-bbl-row">
+                <div class="rpt-bbl-av av-admin">🛡️</div>
+                <div class="rpt-bbl-group">
+                    <div class="rpt-bbl-sender">{{ t.admin_label }}</div>
+                    <div class="rpt-bbl admin-bbl">{{ selected.admin_reply }}</div>
+                    <div class="rpt-bbl-meta">{{ selected.replied_at|date:"d/m/Y · H:i" }}</div>
+                </div>
+            </div>
+            {% else %}
+            <div class="awaiting-pill">
+                <span class="awaiting-dot"></span>
+                {{ t.awaiting_reply }}
+            </div>
+            {% endif %}
+        </div>
+
+        {% else %}
+        <div class="rpt-placeholder">
+            <div style="font-size:56px;opacity:.35;">📨</div>
+            <div style="font-size:17px;font-weight:800;color:var(--text-primary);">{{ t.select_conversation }}</div>
+            <div style="font-size:13px;">{{ t.portal_empty_hint }}</div>
+            <button class="rpt-compose-btn" style="max-width:210px;" onclick="openCompose()">✏️ {{ t.compose_new }}</button>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function openCompose(){ document.getElementById('composeOverlay').classList.add('open'); setTimeout(()=>{ var i=document.querySelector('.compose-modal input[name="subject"]'); if(i) i.focus(); },200); }
+function closeCompose(){ document.getElementById('composeOverlay').classList.remove('open'); }
+
+var _pendingRptId = null;
+function confirmDelReport(id){ _pendingRptId = id; document.getElementById('delConfirmOverlay').classList.add('open'); }
+function closeDelConfirm(){ document.getElementById('delConfirmOverlay').classList.remove('open'); _pendingRptId=null; }
+function doDelReport(){ if(_pendingRptId){ document.getElementById('del-rpt-'+_pendingRptId).submit(); } }
+
+document.addEventListener('keydown',function(e){ if(e.key==='Escape'){ closeCompose(); closeDelConfirm(); }});
+
+/* ── Mobile: auto-show report detail when a report is selected ── */
+{% if selected %}
+(function(){
+    if(window.innerWidth <= 768){
+        var shell = document.querySelector('.rpt-shell');
+        if(shell) shell.classList.add('mobile-show-chat');
+    }
+})();
+{% endif %}
+</script>
+{% endblock %}

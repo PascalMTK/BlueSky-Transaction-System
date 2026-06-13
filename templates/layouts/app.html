@@ -1,0 +1,247 @@
+{% load static bluesky_tags %}
+<!DOCTYPE html>
+<html lang="{{ locale|default:'fr' }}" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <title>{% block title %}Dashboard{% endblock %} — BLUESKY</title>
+    <link rel="icon" href="{% static 'images/WhatsApp_Image_2026-01-27_at_11.11.59_PM__1_-removebg-preview.png' %}" type="image/png">
+    <link href="{% static 'css/bluesky.css' %}" rel="stylesheet">
+    <script>(function(){ const t=localStorage.getItem('bluesky-theme')||'light'; document.documentElement.setAttribute('data-theme',t); })();</script>
+    {% block styles %}{% endblock %}
+</head>
+<body>
+
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<aside class="sidebar" id="sidebar">
+    <!-- Brand -->
+    <a href="{% if auth_user and auth_user.is_admin %}{% url 'admin_dashboard' %}{% else %}{% url 'agent_dashboard' %}{% endif %}" class="sidebar-brand">
+        <img src="{% static 'images/WhatsApp_Image_2026-01-27_at_11.11.59_PM__1_-removebg-preview.png' %}"
+             data-logo-light="{% static 'images/WhatsApp_Image_2026-01-27_at_11.11.59_PM__1_-removebg-preview.png' %}"
+             data-logo-dark="{% static 'images/WhatsApp_Image_2026-01-27_at_11.11.59_PM-removebg-preview.png' %}"
+             alt="BLUESKY" class="brand-logo-img">
+        <div class="brand-text">
+            <div class="brand-name">BLUESKY</div>
+            <div class="brand-tagline">{{ t.money_transfer }}</div>
+        </div>
+    </a>
+
+    <!-- Profile mini -->
+    {% if auth_user %}
+    <a href="{% url 'profile_show' %}" style="display:flex;align-items:center;gap:11px;padding:12px 14px;margin:8px 10px;border-radius:11px;background:rgba(255,255,255,0.06);text-decoration:none;transition:background .2s;border:1px solid rgba(255,255,255,0.07);">
+        {% if auth_user.photo_url %}
+            <img src="{{ auth_user.photo_url }}" alt="Photo" style="width:38px;height:38px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,.25);flex-shrink:0;">
+        {% else %}
+            <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--sky-primary),var(--sky-secondary));display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:14px;flex-shrink:0;">{{ auth_user.name|initials }}</div>
+        {% endif %}
+        <div style="flex:1;min-width:0;">
+            <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,.9);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ auth_user.name|limit:20 }}</div>
+            <div style="font-size:10.5px;color:rgba(255,255,255,.4);margin-top:1px;display:flex;align-items:center;gap:5px;">
+                <span>{% if auth_user.is_admin %}🛡️ {{ t.role_admin }}{% else %}🏢 {{ t.role_agent }}{% endif %}</span>
+                {% if auth_user.country %}<span style="font-size:13px;line-height:1;" title="{{ auth_user.country.name }}">{{ auth_user.country.flag_emoji }}</span>{% endif %}
+            </div>
+        </div>
+        <span style="font-size:12px;color:rgba(255,255,255,.3);">✏️</span>
+    </a>
+    {% endif %}
+
+    <div class="nav-section">
+        {% if auth_user and auth_user.is_admin %}
+            <div class="nav-section-title">{{ t.administration }}</div>
+            <div class="nav-item">
+                <a href="{% url 'admin_dashboard' %}" class="nav-link {% block nav_admin_dashboard %}{% endblock %}">
+                    <span class="nav-icon">📊</span> {{ t.dashboard }}
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="{% url 'admin_transactions' %}" class="nav-link {% block nav_admin_tx %}{% endblock %}">
+                    <span class="nav-icon">💸</span> {{ t.all_transactions }}
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="{% url 'admin_agents' %}" class="nav-link {% block nav_admin_agents %}{% endblock %}">
+                    <span class="nav-icon">👥</span> {{ t.agent_management }}
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="{% url 'admin_reports' %}" class="nav-link {% block nav_admin_reports %}{% endblock %}">
+                    <span class="nav-icon">📨</span> {{ t.reports_nav }}
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="{% url 'messages_list' %}" class="nav-link {% block nav_admin_messages %}{% endblock %}">
+                    <span class="nav-icon">💬</span> {{ t.messages_nav }}
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="{% url 'admin_countries' %}" class="nav-link {% block nav_admin_countries %}{% endblock %}">
+                    <span class="nav-icon">🌍</span> {{ t.operating_countries }}
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="{% url 'admin_statistics' %}" class="nav-link {% block nav_admin_stats %}{% endblock %}">
+                    <span class="nav-icon">📈</span> {{ t.statistics }}
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="{% url 'admin_export_csv' %}" class="nav-link"><span class="nav-icon">📤</span> {{ t.export_csv }}</a>
+            </div>
+            <div class="nav-section-title" style="margin-top:12px;">{{ t.my_space }}</div>
+        {% endif %}
+        <div class="nav-item">
+            <a href="{% url 'agent_dashboard' %}" class="nav-link {% block nav_agent_dashboard %}{% endblock %}">
+                <span class="nav-icon">🏠</span> {{ t.my_space }}
+            </a>
+        </div>
+        <div class="nav-item">
+            <a href="{% url 'tx_create' %}" class="nav-link {% block nav_tx_create %}{% endblock %}">
+                <span class="nav-icon">➕</span> {{ t.new_transaction }}
+            </a>
+        </div>
+        <div class="nav-item">
+            <a href="{% url 'tx_index' %}" class="nav-link {% block nav_tx_index %}{% endblock %}">
+                <span class="nav-icon">📋</span> {{ t.my_transactions }}
+            </a>
+        </div>
+        <div class="nav-item">
+            <a href="{% url 'tx_network' %}" class="nav-link {% block nav_network %}{% endblock %}">
+                <span class="nav-icon">🌐</span> {{ t.network_nav }}
+            </a>
+        </div>
+        <div class="nav-item">
+            <a href="{% url 'messages_list' %}" class="nav-link {% block nav_messages %}{% endblock %}">
+                <span class="nav-icon">💬</span> {{ t.messages_nav }}
+            </a>
+        </div>
+        <div class="nav-item">
+            <a href="{% url 'agent_reports_portal' %}" class="nav-link {% block nav_agent_reports %}{% endblock %}">
+                <span class="nav-icon">📨</span> {{ t.reports_nav_agent }}
+            </a>
+        </div>
+        <div class="nav-item">
+            <a href="{% url 'profile_show' %}" class="nav-link {% block nav_profile %}{% endblock %}">
+                <span class="nav-icon">👤</span> {{ t.my_profile }}
+            </a>
+        </div>
+        <div class="nav-item">
+            <a href="{% url 'agent_export_csv' %}" class="nav-link">
+                <span class="nav-icon">📥</span> {{ t.export_my_data }}
+            </a>
+        </div>
+    </div>
+
+    <!-- Countries flags -->
+    {% if active_countries %}
+    <div class="countries-panel">
+        <div class="countries-title">{{ t.active_countries }}</div>
+        <div class="countries-grid">
+            {% for c in active_countries %}
+                <span class="country-flag" title="{{ c.name }}">{{ c.flag_emoji }}</span>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div style="padding:10px 10px 16px;">
+        <a href="{% url 'logout' %}" class="nav-link" style="color:rgba(255,100,100,.8);">
+            <span class="nav-icon">🚪</span> {{ t.logout }}
+        </a>
+    </div>
+</aside>
+
+<div class="main-wrapper">
+    <!-- Topbar -->
+    <header class="topbar" id="mainTopbar">
+        <div class="topbar-left">
+            <button class="menu-toggle" onclick="toggleSidebar()" aria-label="Menu">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            </button>
+            <div>
+                <div class="topbar-title">{% block page_title %}Dashboard{% endblock %}</div>
+                <div class="topbar-subtitle">{% block page_subtitle %}BLUESKY Transactions{% endblock %}</div>
+            </div>
+        </div>
+        <div class="topbar-right">
+            <div class="topbar-date">🕐 <span id="liveClock">--:--:--</span></div>
+            <button class="theme-toggle" id="themeToggle" onclick="ThemeManager.toggle()" aria-label="{{ t.dark_mode }}">🌙</button>
+            <div class="lang-switcher">
+                <a href="{% url 'lang_switch' 'fr' %}" class="lang-btn {% if locale == 'fr' or not locale %}active{% endif %}">🇫🇷 <span class="lang-text">FR</span></a>
+                <div class="lang-divider"></div>
+                <a href="{% url 'lang_switch' 'en' %}" class="lang-btn {% if locale == 'en' %}active{% endif %}">🇬🇧 <span class="lang-text">EN</span></a>
+            </div>
+            <div class="dropdown">
+                <div class="user-menu" onclick="toggleDropdown(this)">
+                    {% if auth_user and auth_user.photo_url %}
+                        <img src="{{ auth_user.photo_url }}" style="width:32px;height:32px;border-radius:8px;object-fit:cover;flex-shrink:0;" alt="photo">
+                    {% else %}
+                        <div class="user-avatar">{% if auth_user %}{{ auth_user.name|initials }}{% else %}?{% endif %}</div>
+                    {% endif %}
+                    {% if auth_user %}
+                    <div>
+                        <div class="user-info-name">{{ auth_user.name|limit:16 }}</div>
+                        <div class="user-info-role" style="display:flex;align-items:center;gap:4px;">
+                            <span>{% if auth_user.is_admin %}🛡️ {{ t.role_admin }}{% else %}🏢 {{ t.role_agent }}{% endif %}</span>
+                            {% if auth_user.country %}<span style="font-size:13px;line-height:1;" title="{{ auth_user.country.name }}">{{ auth_user.country.flag_emoji }}</span>{% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="color:var(--text-muted);flex-shrink:0;"><polyline points="6,9 12,15 18,9"/></svg>
+                </div>
+                <div class="dropdown-menu" id="userDropdown">
+                    {% if auth_user and auth_user.agent_code %}
+                        <div class="dropdown-item" style="cursor:default;color:var(--text-muted);font-size:11px;pointer-events:none;font-family:monospace;">🔑 {{ auth_user.agent_code }}</div>
+                        <div class="dropdown-divider"></div>
+                    {% endif %}
+                    <a href="{% url 'profile_show' %}" class="dropdown-item">👤 {{ t.my_profile }}</a>
+                    <div class="dropdown-divider"></div>
+                    <a href="{% url 'logout' %}" class="dropdown-item danger">🚪 {{ t.logout }}</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Flash messages -->
+    <div class="alerts-wrapper">
+        {% for message in messages %}
+            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %}" style="margin-top:14px;">
+                {% if message.tags == 'error' %}❌{% elif message.tags == 'success' %}✅{% elif message.tags == 'warning' %}⚠️{% else %}ℹ️{% endif %}
+                {{ message }}
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Page content -->
+    <div class="content-area page-enter">
+        {% block content %}{% endblock %}
+    </div>
+</div>
+
+<!-- ── Mobile bottom navigation ── -->
+<nav class="mob-nav" aria-label="Navigation mobile">
+    <a href="{% if auth_user and auth_user.is_admin %}{% url 'admin_dashboard' %}{% else %}{% url 'agent_dashboard' %}{% endif %}"
+       class="mob-nav-item {% block mob_home %}{% endblock %}">
+        <span class="mob-icon">🏠</span><span class="mob-label">{{ t.my_space }}</span>
+    </a>
+    <a href="{% url 'tx_index' %}" class="mob-nav-item {% block mob_tx %}{% endblock %}">
+        <span class="mob-icon">💸</span><span class="mob-label">{{ t.my_transactions }}</span>
+    </a>
+    <a href="{% url 'tx_create' %}" class="mob-nav-item mob-nav-fab {% block mob_create %}{% endblock %}">
+        <span class="mob-icon" style="font-size:20px;">➕</span>
+    </a>
+    <a href="{% url 'messages_list' %}" class="mob-nav-item {% block mob_msg %}{% endblock %}">
+        <span class="mob-icon">💬</span><span class="mob-label">Messages</span>
+    </a>
+    <a href="{% url 'profile_show' %}" class="mob-nav-item {% block mob_profile %}{% endblock %}">
+        <span class="mob-icon">👤</span><span class="mob-label">{{ t.my_profile }}</span>
+    </a>
+</nav>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="{% static 'js/bluesky.js' %}"></script>
+{% block scripts %}{% endblock %}
+<script src="https://cdn.jsdelivr.net/npm/twemoji@14.0.2/dist/twemoji.min.js" crossorigin="anonymous"></script>
+<script>twemoji.parse(document.body,{folder:'svg',ext:'.svg'});</script>
+</body>
+</html>
