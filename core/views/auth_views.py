@@ -32,6 +32,67 @@ def welcome(request):
     return render(request, 'welcome.html')
 
 
+def _notify_admin_pending_login(user):
+    """Send email to all admins when a pending user tries to log in."""
+    admin_emails = list(User.objects.filter(role='admin', status='active').values_list('email', flat=True))
+    if not admin_emails:
+        return
+    subject = f'[BLUESKY] Connexion en attente — {user.name}'
+    body = f"""Un utilisateur en attente de validation a tenté de se connecter.
+
+Nom    : {user.name}
+Email  : {user.email}
+Tél.   : {user.phone or '—'}
+Code   : {user.agent_code or '—'}
+
+Connectez-vous au panneau d'administration pour valider ou rejeter ce compte.
+"""
+    html_body = f"""
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"></head>
+<body style="font-family:Inter,sans-serif;background:#f0f4f8;padding:30px 20px;margin:0;">
+  <div style="max-width:520px;margin:0 auto;background:white;border-radius:16px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.12);">
+    <div style="background:linear-gradient(135deg,#f59e0b,#d97706);padding:28px 32px;text-align:center;">
+      <div style="font-size:36px;margin-bottom:8px;">⏳</div>
+      <div style="color:white;font-size:20px;font-weight:900;letter-spacing:.5px;">BLUESKY TRANSACTIONS</div>
+      <div style="color:rgba(255,255,255,.8);font-size:13px;margin-top:4px;">Tentative de connexion — compte en attente</div>
+    </div>
+    <div style="padding:32px;">
+      <p style="color:#334155;font-size:15px;margin:0 0 16px;">Bonjour Administrateur,</p>
+      <p style="color:#64748b;font-size:14px;margin:0 0 24px;line-height:1.6;">
+        L'utilisateur suivant a tenté de se connecter mais son compte est encore <strong>en attente de validation</strong>.
+      </p>
+      <table style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:24px;">
+        <tr style="background:#f8fafc;"><td style="padding:10px 14px;color:#64748b;font-weight:600;border-radius:4px;">Nom</td><td style="padding:10px 14px;color:#1e293b;">{user.name}</td></tr>
+        <tr><td style="padding:10px 14px;color:#64748b;font-weight:600;">Email</td><td style="padding:10px 14px;color:#1e293b;">{user.email}</td></tr>
+        <tr style="background:#f8fafc;"><td style="padding:10px 14px;color:#64748b;font-weight:600;">Téléphone</td><td style="padding:10px 14px;color:#1e293b;">{user.phone or '—'}</td></tr>
+        <tr><td style="padding:10px 14px;color:#64748b;font-weight:600;">Code agent</td><td style="padding:10px 14px;color:#1e293b;">{user.agent_code or '—'}</td></tr>
+      </table>
+      <div style="background:#fef9c3;border-radius:8px;padding:14px 16px;margin-bottom:24px;">
+        <p style="margin:0;font-size:13px;color:#92400e;">⚠️ Veuillez valider ou rejeter ce compte depuis le panneau d'administration.</p>
+      </div>
+    </div>
+    <div style="background:#f8fafc;border-top:1px solid #e8edf2;padding:16px;text-align:center;">
+      <p style="margin:0;font-size:11px;color:#94a3b8;">© 2025 BLUESKY Transactions — Tous droits réservés</p>
+    </div>
+  </div>
+</body>
+</html>
+"""
+    try:
+        send_mail(
+            subject=subject,
+            message=body,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=admin_emails,
+            html_message=html_body,
+            fail_silently=True,
+        )
+    except Exception as e:
+        print(f'[BLUESKY] Admin notify error: {e}')
+
+
 def login_view(request):
     if request.session.get('user_id'):
         return redirect('welcome')
@@ -43,6 +104,7 @@ def login_view(request):
             if user.check_password(password):
                 if user.status == 'pending':
                     messages.error(request, 'Votre compte est en attente de validation.')
+                    _notify_admin_pending_login(user)
                 elif user.status == 'inactive':
                     messages.error(request, 'Votre compte a été désactivé.')
                 else:

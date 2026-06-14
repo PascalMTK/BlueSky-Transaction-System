@@ -8,6 +8,7 @@ load_dotenv(BASE_DIR / '.env')
 SECRET_KEY = 'bluesky-django-secret-key-change-in-production'
 DEBUG = True
 ALLOWED_HOSTS = ['*']
+CSRF_TRUSTED_ORIGINS = ['https://*.ngrok-free.dev', 'https://*.ngrok-free.app', 'https://*.ngrok.io']
 
 INSTALLED_APPS = [
     'django.contrib.contenttypes',
