@@ -229,7 +229,7 @@
 
         <div class="form-group">
             <label class="form-label">📧 {{ t.email }} <span class="required">*</span></label>
-            <input type="email" name="email" class="form-control" placeholder="votre@email.com" required>
+            <input type="email" name="email" class="form-control" placeholder="{{ t.email_placeholder }}" required>
         </div>
 
         <div class="form-group">
@@ -250,14 +250,14 @@
                 <label class="form-label">🔒 {{ t.password }} <span class="required">*</span></label>
                 <div class="pw-wrap">
                     <input type="password" name="password" id="regPw1" class="form-control" placeholder="Min. 8 chars" required minlength="8">
-                    <button type="button" class="pw-toggle" onclick="togglePw('regPw1','regEye1')" aria-label="Voir le mot de passe"><span id="regEye1">👁</span></button>
+                    <button type="button" class="pw-toggle" onclick="togglePw('regPw1','regEye1')" aria-label="{{ t.pw_toggle_label }}"><span id="regEye1">👁</span></button>
                 </div>
             </div>
             <div class="form-group">
                 <label class="form-label">🔒 {{ t.confirm_password }} <span class="required">*</span></label>
                 <div class="pw-wrap">
                     <input type="password" name="password_confirmation" id="regPw2" class="form-control" placeholder="..." required>
-                    <button type="button" class="pw-toggle" onclick="togglePw('regPw2','regEye2')" aria-label="Voir le mot de passe"><span id="regEye2">👁</span></button>
+                    <button type="button" class="pw-toggle" onclick="togglePw('regPw2','regEye2')" aria-label="{{ t.pw_toggle_label }}"><span id="regEye2">👁</span></button>
                 </div>
             </div>
         </div>
@@ -270,11 +270,11 @@
                 <!-- Preview img, hidden until a file is chosen -->
                 <img id="photoPreview" class="photo-avatar" src="" alt="preview" style="display:none;">
                 <div class="photo-text">
-                    <strong id="photoLabel">Choisir une photo</strong>
-                    <span id="photoSub">JPEG · PNG · WebP — max 3 Mo</span>
+                    <strong id="photoLabel">{{ t.choose_photo }}</strong>
+                    <span id="photoSub">{{ t.photo_sub_hint }}</span>
                 </div>
                 <input type="file" name="profile_photo" id="photoInput" class="photo-input-hidden" accept=".jpg,.jpeg,.png,.webp" onchange="previewPhoto(event)">
-                <button type="button" class="photo-remove" id="photoRemove" onclick="removePhoto(event)" title="Supprimer">✕</button>
+                <button type="button" class="photo-remove" id="photoRemove" onclick="removePhoto(event)" title="{{ t.photo_remove_label }}">✕</button>
             </div>
         </div>
 
@@ -345,7 +345,7 @@ function removePhoto(event) {
     placeholder.style.display = 'flex';
     area.classList.remove('has-photo');
     label.textContent = 'Choisir une photo';
-    sub.textContent   = 'JPEG · PNG · WebP — max 3 Mo';
+    sub.textContent   = 'JPEG · PNG · WebP — max 5 Mo';
 }
 function togglePw(inputId, eyeId){
     var inp = document.getElementById(inputId);
@@ -360,5 +360,20 @@ function togglePw(inputId, eyeId){
     });
 })();
 </script>
+    <!-- Mobile bottom nav (auth pages) -->
+    <nav class="auth-mob-nav">
+        <a href="{% url 'welcome' %}">
+            <span class="amn-icon">🏠</span>
+            <span>{{ t.home|default:"Home" }}</span>
+        </a>
+        <a href="{% url 'login' %}">
+            <span class="amn-icon">🔑</span>
+            <span>{{ t.login_title|default:"Login" }}</span>
+        </a>
+        <a href="{% url 'register' %}" class="active">
+            <span class="amn-icon">📝</span>
+            <span>{{ t.register_title|default:"Register" }}</span>
+        </a>
+    </nav>
 </body>
 </html>

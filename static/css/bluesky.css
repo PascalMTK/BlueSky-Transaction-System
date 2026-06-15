@@ -809,6 +809,7 @@ body {
     position: absolute; right: 0; top: calc(100% + 8px);
     background: var(--bg-card); border-radius: 12px; box-shadow: var(--shadow-lg);
     border: 1px solid var(--border); min-width: 200px; z-index: 500;
+    max-width: calc(100vw - 24px);
     overflow: hidden; display: none;
     animation: slideDown 0.2s ease;
     transition: background var(--transition), border-color var(--transition);
@@ -984,11 +985,32 @@ body {
     .rg-3 { grid-template-columns: 1fr 1fr; gap: 10px; }
     .summary-inner-grid { grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
 
-    /* Tables — horizontal scroll, sticky action column */
-    .table-card { border-radius: 10px; }
-    .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-    .bsky-table thead th { padding: 9px 10px; font-size: 9.5px; }
-    .bsky-table tbody td { padding: 10px; font-size: 12px; }
+    /* Tables — horizontal scroll */
+    .table-card {
+        border-radius: 10px;
+        overflow: visible !important; /* allow inner scroll-wrap to overflow */
+    }
+    .table-scroll {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        border-radius: 0 0 10px 10px;
+        /* CSS scroll-shadow: gradient edges signal scrollable content */
+        background:
+            linear-gradient(to right,  var(--bg-card,#fff) 0%,   transparent 100%),
+            linear-gradient(to left,   var(--bg-card,#fff) 0%,   transparent 100%) right,
+            radial-gradient(farthest-side at 0   50%, rgba(0,0,0,.10), transparent),
+            radial-gradient(farthest-side at 100% 50%, rgba(0,0,0,.10), transparent) right;
+        background-color: var(--bg-card,#fff);
+        background-size: 28px 100%, 28px 100%, 10px 100%, 10px 100%;
+        background-repeat: no-repeat;
+        background-attachment: local, local, scroll, scroll;
+    }
+    /* Visible scrollbar on mobile */
+    .table-scroll::-webkit-scrollbar { height: 5px; }
+    .table-scroll::-webkit-scrollbar-track { background: var(--border,#e2e8f0); }
+    .table-scroll::-webkit-scrollbar-thumb { background: var(--sky-primary,#0284c7); border-radius: 3px; }
+
+    /* Sticky action column */
     .bsky-table td:last-child, .bsky-table th:last-child {
         position: sticky; right: 0;
         background: var(--bg-card); z-index: 2;
@@ -996,6 +1018,23 @@ body {
     }
     .bsky-table thead th:last-child { background: var(--bg-table-head); }
     .bsky-table tbody tr:hover td:last-child { background: var(--bg-row-hover); }
+
+    .bsky-table thead th { padding: 9px 10px; font-size: 9.5px; }
+    .bsky-table tbody td { padding: 10px; font-size: 12px; }
+
+    /* Scroll hint bar — injected by JS, shown below table-header */
+    .table-scroll-hint {
+        display: flex; align-items: center; justify-content: center; gap: 5px;
+        padding: 5px 14px 0;
+        font-size: 10px; font-weight: 600;
+        color: var(--sky-primary,#0284c7);
+        letter-spacing: .2px;
+        animation: hintPulse 2s ease-in-out 1s both;
+    }
+    @keyframes hintPulse {
+        0%,100% { opacity:.55; }
+        50%      { opacity:1; }
+    }
 
     /* Hide less critical table columns on mobile */
     .hide-mobile { display: none; }
@@ -1008,6 +1047,10 @@ body {
     /* Buttons */
     .btn-lg { padding: 10px 18px; font-size: 14px; }
     .brand-name { font-size: 15px; }
+
+    /* Dropdown — prevent right-overflow on narrow screens */
+    .dropdown-menu { right: auto; left: 50%; transform: translateX(-50%); }
+    .topbar-right .dropdown:last-child .dropdown-menu { left: auto; right: 0; transform: none; }
 }
 
 /* ============================================================
@@ -1132,6 +1175,34 @@ body {
     .card-header { padding: 12px 14px; }
     .filters-bar { padding: 10px; gap: 6px; }
     .btn-lg { font-size: 13px; padding: 9px 14px; }
+}
+
+/* ============================================================
+   RESPONSIVE — Ultra-small phones (max 320px)
+   ============================================================ */
+@media (max-width: 320px) {
+    .stats-grid { grid-template-columns: 1fr !important; gap: 8px; }
+    .stat-card { padding: 10px; gap: 8px; }
+    .stat-value, .stat-number { font-size: 15px; }
+    .stat-icon { width: 30px; height: 30px; font-size: 14px; }
+
+    .topbar-title { font-size: 12px; }
+    .topbar { padding: 0 8px; height: 54px; }
+
+    .content-area { padding: 6px; }
+    .card-body { padding: 10px; }
+    .card-header { padding: 10px 12px; flex-direction: column; align-items: flex-start; }
+
+    .rg-2, .rg-3 { grid-template-columns: 1fr; }
+    .tx-type-grid { grid-template-columns: 1fr; }
+    .filters-bar { padding: 8px; gap: 6px; }
+    .filter-group, .filter-group-search { min-width: 100%; width: 100%; }
+
+    .bsky-table thead th { font-size: 8.5px; padding: 7px 6px; }
+    .bsky-table tbody td { font-size: 10.5px; padding: 8px 6px; }
+
+    .btn-lg { font-size: 12px; padding: 8px 12px; }
+    .brand-name { font-size: 12px; letter-spacing: 0; }
 }
 
 /* ============================================================
@@ -1728,6 +1799,78 @@ select, input, textarea {
 /* ── 9. Prevent horizontal scroll on body ───────────────── */
 html, body { overflow-x: hidden; max-width: 100%; }
 .content-area { overflow-x: hidden; }
+
+/* ============================================================
+   AUTH MOBILE BOTTOM NAV
+   (login, register, forgot, verify, reset — standalone pages)
+   ============================================================ */
+.auth-mob-nav {
+    display: none;
+}
+@media (max-width: 768px) {
+    .auth-mob-nav {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        position: fixed; bottom: 0; left: 0; right: 0; z-index: 999;
+        height: 58px;
+        background: var(--bg-card, #fff);
+        border-top: 1px solid var(--border, #e2e8f0);
+        box-shadow: 0 -4px 20px rgba(0,0,0,.08);
+    }
+    .auth-mob-nav.nav-2col { grid-template-columns: repeat(2, 1fr); }
+    body:has(.auth-mob-nav) { padding-bottom: calc(58px + env(safe-area-inset-bottom, 0px)); }
+    @supports (padding: env(safe-area-inset-bottom)) {
+        .auth-mob-nav {
+            height: calc(58px + env(safe-area-inset-bottom, 0px));
+            padding-bottom: env(safe-area-inset-bottom, 0px);
+        }
+    }
+    .auth-mob-nav a {
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        gap: 3px; text-decoration: none;
+        color: var(--text-muted, #94a3b8);
+        font-size: 9px; font-weight: 700;
+        letter-spacing: .3px; text-transform: uppercase;
+        transition: color .15s; padding: 0 4px;
+        border-right: 1px solid var(--border, #e2e8f0);
+    }
+    .auth-mob-nav a:last-child { border-right: none; }
+    .auth-mob-nav a:hover,
+    .auth-mob-nav a.active { color: var(--sky-primary, #0284c7); }
+    .auth-mob-nav a.active { position: relative; }
+    .auth-mob-nav a.active::before {
+        content: ''; position: absolute; top: 0; left: 20%; right: 20%;
+        height: 2px; background: var(--sky-primary, #0284c7);
+        border-radius: 0 0 2px 2px;
+    }
+    .auth-mob-nav .amn-icon { font-size: 18px; line-height: 1; }
+    .auth-mob-nav .amn-fab {
+        background: var(--sky-primary, #0284c7);
+        width: 40px; height: 40px; border-radius: 50%; margin: auto;
+        display: flex; align-items: center; justify-content: center;
+        color: white; font-size: 18px;
+        box-shadow: 0 4px 12px rgba(2,132,199,.35);
+    }
+    .auth-mob-nav .amn-fab + span { font-size: 9px; margin-top: 2px; }
+}
+
+/* Welcome page nav — sticky on mobile */
+@media (max-width: 768px) {
+    nav.welcome-nav {
+        position: sticky !important;
+        top: 0 !important;
+        z-index: 500 !important;
+        background: rgba(255,255,255,.95) !important;
+        backdrop-filter: blur(12px) !important;
+        -webkit-backdrop-filter: blur(12px) !important;
+        border-bottom: 1px solid rgba(0,0,0,.07) !important;
+        box-shadow: 0 2px 12px rgba(0,0,0,.08) !important;
+    }
+    [data-theme="dark"] nav.welcome-nav {
+        background: rgba(4,17,31,.95) !important;
+        border-bottom-color: rgba(255,255,255,.07) !important;
+    }
+}
 
 /* ============================================================
    TABLE ROW SELECTION

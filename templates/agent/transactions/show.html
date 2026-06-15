@@ -102,7 +102,7 @@
                 <div style="display:flex;flex-direction:column;">
                     <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-bottom:1px solid var(--divider);">
                         <span style="font-size:11px;color:var(--text-muted);font-weight:700;">{{ t.agent }}</span>
-                        <span style="font-size:13px;font-weight:700;color:var(--text-primary);">{{ transaction.agent.name }}</span>
+                        <span style="font-size:13px;font-weight:700;color:var(--text-primary);">{{ transaction.agent.name|default:"—" }}</span>
                     </div>
                     <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-bottom:1px solid var(--divider);">
                         <span style="font-size:11px;color:var(--text-muted);font-weight:700;">{{ t.payment_mode }}</span>

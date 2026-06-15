@@ -92,6 +92,10 @@ LOCALE_PATHS = [BASE_DIR / 'locale']
 
 MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
 
+# ── File upload limits ─────────────────────────────────────────────────────
+DATA_UPLOAD_MAX_MEMORY_SIZE = 6 * 1024 * 1024   # 6 MB (covers 5 MB photos + form fields)
+FILE_UPLOAD_MAX_MEMORY_SIZE = 6 * 1024 * 1024   # 6 MB in-memory threshold
+
 # ── Cache (OTP storage) ────────────────────────────────────────────────────
 CACHES = {
     'default': {

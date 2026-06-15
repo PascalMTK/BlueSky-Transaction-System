@@ -51,7 +51,7 @@ FR = {
     'pending_notice':        'Votre compte sera en attente de validation par un administrateur.',
     'join_network':          'Rejoignez notre réseau d\'agents',
     'photo_label':           'Photo de profil',
-    'photo_hint':            '(optionnel — JPEG/PNG, max 3 Mo)',
+    'photo_hint':            '(optionnel — JPEG/PNG, max 5 Mo)',
     'back_home':             '← Retour à l\'accueil',
 
     # ── Dashboard - Admin
@@ -340,7 +340,7 @@ FR = {
     'update_password':       'Mettre à jour le mot de passe',
     'agent_code_label':      'Code agent',
     'change_photo':          'Changer la photo',
-    'photo_tip':             'JPEG, PNG, WebP — max 3 Mo',
+    'photo_tip':             'JPEG, PNG, WebP — max 5 Mo',
 
     # ── Danger zone (dashboard)
     'danger_zone_title':     'Zone critique',
@@ -355,6 +355,7 @@ FR = {
 
     # ── Nav / misc labels
     'reports_nav':           'Rapports',
+    'agents_nav':            'Agents',
     'pending_lc':            'en attente',
     'tx_created':            'Créer une transaction',
     'selected_country':      'pays',
@@ -468,6 +469,14 @@ FR = {
     'pw_medium':             'Moyen',
     'pw_strong':             'Fort',
     'pw_very_strong':        'Très fort',
+
+    # ── Accessibility / placeholders
+    'email_placeholder':     'votre@email.com',
+    'pw_toggle_label':       'Voir le mot de passe',
+    'theme_toggle_label':    'Changer de mode',
+    'choose_photo':          'Choisir une photo',
+    'photo_sub_hint':        'JPEG · PNG · WebP — max 5 Mo',
+    'photo_remove_label':    'Supprimer la photo',
 }
 
 EN = {
@@ -518,7 +527,7 @@ EN = {
     'pending_notice':        'Your account will be pending activation by an administrator.',
     'join_network':          'Join our agent network',
     'photo_label':           'Profile photo',
-    'photo_hint':            '(optional — JPEG/PNG, max 3 MB)',
+    'photo_hint':            '(optional — JPEG/PNG, max 5 MB)',
     'back_home':             '← Back to home',
 
     # ── Dashboard - Admin
@@ -807,7 +816,7 @@ EN = {
     'update_password':       'Update password',
     'agent_code_label':      'Agent code',
     'change_photo':          'Change photo',
-    'photo_tip':             'JPEG, PNG, WebP — max 3 MB',
+    'photo_tip':             'JPEG, PNG, WebP — max 5 MB',
 
     # ── Danger zone
     'danger_zone_title':     'Critical zone',
@@ -822,6 +831,7 @@ EN = {
 
     # ── Nav / misc labels
     'reports_nav':           'Reports',
+    'agents_nav':            'Agents',
     'pending_lc':            'unread',
     'tx_created':            'Create a transaction',
     'selected_country':      'country',
@@ -935,6 +945,14 @@ EN = {
     'pw_medium':             'Medium',
     'pw_strong':             'Strong',
     'pw_very_strong':        'Very strong',
+
+    # ── Accessibility / placeholders
+    'email_placeholder':     'your@email.com',
+    'pw_toggle_label':       'Show password',
+    'theme_toggle_label':    'Toggle theme',
+    'choose_photo':          'Choose a photo',
+    'photo_sub_hint':        'JPEG · PNG · WebP — max 5 MB',
+    'photo_remove_label':    'Remove photo',
 }
 
 TRANSLATIONS = {'fr': FR, 'en': EN}

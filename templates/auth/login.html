@@ -158,13 +158,13 @@
         {% csrf_token %}
         <div class="form-group">
             <label class="form-label">📧 {{ t.email }}</label>
-            <input type="email" name="email" class="form-control" placeholder="votre@email.com" required autofocus>
+            <input type="email" name="email" class="form-control" placeholder="{{ t.email_placeholder }}" required autofocus>
         </div>
         <div class="form-group">
             <label class="form-label">🔒 {{ t.password }}</label>
             <div class="pw-wrap">
                 <input type="password" name="password" id="loginPw" class="form-control" placeholder="••••••••" required>
-                <button type="button" class="pw-toggle" onclick="togglePw('loginPw','loginEye')" aria-label="Voir le mot de passe"><span id="loginEye">👁</span></button>
+                <button type="button" class="pw-toggle" onclick="togglePw('loginPw','loginEye')" aria-label="{{ t.pw_toggle_label }}"><span id="loginEye">👁</span></button>
             </div>
         </div>
         <button type="submit" class="btn-main">🔑 {{ t.login_btn }}</button>
@@ -199,5 +199,20 @@ function togglePw(inputId, eyeId){
     });
 })();
 </script>
+    <!-- Mobile bottom nav (auth pages) -->
+    <nav class="auth-mob-nav">
+        <a href="{% url 'welcome' %}">
+            <span class="amn-icon">🏠</span>
+            <span>{{ t.home|default:"Home" }}</span>
+        </a>
+        <a href="{% url 'login' %}" class="active">
+            <span class="amn-icon">🔑</span>
+            <span>{{ t.login_title|default:"Login" }}</span>
+        </a>
+        <a href="{% url 'register' %}">
+            <span class="amn-icon">📝</span>
+            <span>{{ t.register_title|default:"Register" }}</span>
+        </a>
+    </nav>
 </body>
 </html>

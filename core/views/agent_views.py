@@ -1,4 +1,6 @@
 import uuid
+import base64
+import os
 import openpyxl
 from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
@@ -11,6 +13,18 @@ from django.conf import settings
 from core.models import User, Country, Transaction, AgentReport, DirectMessage
 from core.decorators import agent_required, get_auth_user
 
+
+# ── Logo base64 (cached at startup for email embedding) ────────────────────
+def _get_logo_b64() -> str:
+    try:
+        logo_path = os.path.join(settings.BASE_DIR, 'static', 'images',
+                                 'WhatsApp_Image_2026-01-27_at_11.11.59_PM__1_-removebg-preview.png')
+        with open(logo_path, 'rb') as f:
+            return base64.b64encode(f.read()).decode()
+    except Exception:
+        return ''
+
+_LOGO_B64 = _get_logo_b64()
 
 # ── SMS helper ─────────────────────────────────────────────────────────────
 
@@ -60,7 +74,8 @@ def _send_transaction_email(tx, client_email: str, locale: str = 'fr') -> bool:
     if not client_email or '@' not in client_email:
         return False
 
-    from django.core.mail import send_mail
+    from django.core.mail import EmailMultiAlternatives
+    from email.mime.image import MIMEImage
 
     # ── Labels (bilingual) ────────────────────────────────────────────────
     is_en = locale == 'en'
@@ -138,12 +153,8 @@ def _send_transaction_email(tx, client_email: str, locale: str = 'fr') -> bool:
         <!-- ── HEADER ─────────────────────────────────────────────── -->
         <tr><td style="background:linear-gradient(145deg,#002d6e 0%,#0055b3 50%,#0096d6 100%);border-radius:16px 16px 0 0;padding:32px 32px 24px;text-align:center;">
           <!-- Logo ring -->
-          <div style="width:68px;height:68px;border-radius:50%;background:#ffffff;display:inline-flex;align-items:center;justify-content:center;margin-bottom:16px;box-shadow:0 0 0 5px rgba(255,255,255,.18),0 6px 24px rgba(0,0,0,.25);">
-            <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="20" cy="20" r="19" fill="#0062c8"/>
-              <path d="M12 10h8.5a6.5 6.5 0 0 1 0 13H12V10z" fill="white"/>
-              <path d="M12 23h9a6.5 6.5 0 0 1 0 13H12V23z" fill="white" fill-opacity="0.72"/>
-            </svg>
+          <div style="width:86px;height:86px;border-radius:50%;background:#ffffff;display:inline-block;text-align:center;line-height:86px;margin-bottom:16px;box-shadow:0 0 0 5px rgba(255,255,255,.20),0 8px 28px rgba(0,0,0,.30);">
+            <img src="cid:bluesky_logo" alt="BLUESKY" width="64" height="64" style="width:64px;height:64px;object-fit:contain;vertical-align:middle;display:inline-block;">
           </div>
           <div style="color:#ffffff;font-size:24px;font-weight:900;letter-spacing:2px;line-height:1;">BLUESKY</div>
           <div style="color:rgba(255,255,255,.55);font-size:10px;letter-spacing:4px;text-transform:uppercase;margin-top:3px;">Transactions</div>
@@ -247,14 +258,24 @@ def _send_transaction_email(tx, client_email: str, locale: str = 'fr') -> bool:
     )
 
     try:
-        send_mail(
+        msg = EmailMultiAlternatives(
             subject=subject,
-            message=plain,
+            body=plain,
             from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[client_email],
-            html_message=html,
-            fail_silently=False,
+            to=[client_email],
         )
+        msg.attach_alternative(html, 'text/html')
+        msg.mixed_subtype = 'related'
+
+        # Attach logo as inline CID image so email clients display it
+        if _LOGO_B64:
+            logo_bytes = base64.b64decode(_LOGO_B64)
+            logo_mime = MIMEImage(logo_bytes, _subtype='png')
+            logo_mime.add_header('Content-ID', '<bluesky_logo>')
+            logo_mime.add_header('Content-Disposition', 'inline', filename='logo.png')
+            msg.attach(logo_mime)
+
+        msg.send(fail_silently=False)
         print(f'[BLUESKY EMAIL] confirmation sent to {client_email}')
         return True
     except Exception as e:

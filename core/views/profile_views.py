@@ -6,7 +6,7 @@ from core.decorators import login_required, get_auth_user
 import bcrypt
 
 ALLOWED_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.webp', '.gif'}
-MAX_PHOTO_SIZE     = 3 * 1024 * 1024  # 3 MB
+MAX_PHOTO_SIZE     = 5 * 1024 * 1024  # 5 MB
 
 
 @login_required
@@ -46,7 +46,7 @@ def profile_photo(request):
 
     # Validate size
     if photo.size > MAX_PHOTO_SIZE:
-        messages.error(request, f'Photo trop volumineuse ({photo.size // 1024} Ko). Maximum 3 Mo.')
+        messages.error(request, f'Photo trop volumineuse ({photo.size // 1024} Ko). Maximum 5 Mo.')
         return redirect('profile_show')
 
     user = get_auth_user(request)

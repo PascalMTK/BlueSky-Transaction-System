@@ -242,7 +242,7 @@
 <div class="bg"></div>
 <div class="bg-overlay"></div>
 
-<nav>
+<nav class="welcome-nav">
     <a href="{% url 'welcome' %}" class="nav-logo">BLUE<span>SKY</span></a>
     <div class="nav-links">
         <div class="lang-sw">
@@ -250,7 +250,7 @@
             <s>|</s>
             <a href="{% url 'lang_switch' 'en' %}" class="{% if locale == 'en' %}on{% endif %}">🇬🇧 EN</a>
         </div>
-        <button class="theme-btn" id="wThemeBtn" onclick="wToggleTheme()" aria-label="Changer de mode">🌙</button>
+        <button class="theme-btn" id="wThemeBtn" onclick="wToggleTheme()" aria-label="{{ t.theme_toggle_label }}">🌙</button>
         <a href="{% url 'login' %}" class="btn-o">{{ t.login_btn }}</a>
         <a href="{% url 'register' %}" class="btn-f">🚀 {{ t.nav_register }}</a>
     </div>

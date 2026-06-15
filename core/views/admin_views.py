@@ -236,11 +236,12 @@ def agent_destroy(request, agent_id):
         if agent.id == user.id:
             messages.error(request, 'Vous ne pouvez pas supprimer votre propre compte.')
             return redirect('admin_agents')
-        if Transaction.objects.filter(agent=agent).exists():
-            messages.error(request, 'Impossible de supprimer un agent ayant des transactions enregistrées.')
-            return redirect('admin_agents')
+        tx_count = Transaction.objects.filter(agent=agent).count()
         agent.delete()
-        messages.success(request, 'Agent supprimé.')
+        if tx_count:
+            messages.success(request, f'Agent supprimé. {tx_count} transaction(s) conservée(s).')
+        else:
+            messages.success(request, 'Agent supprimé.')
     return redirect('admin_agents')
 
 
@@ -564,7 +565,7 @@ def export_csv(request):
             t.destination_country.name,
             PAY_MAP.get(t.payment_method, t.payment_method),
             STA_MAP.get(t.status, t.status),
-            t.agent.name,
+            t.agent.name if t.agent else '—',
         ]
         for col_idx, val in enumerate(row, 1):
             ws.cell(row=row_idx, column=col_idx, value=val)
