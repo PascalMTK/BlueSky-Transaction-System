@@ -1,14 +1,24 @@
 import os
+import dj_database_url
 from pathlib import Path
 from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / '.env')
 
-SECRET_KEY = 'bluesky-django-secret-key-change-in-production'
-DEBUG = True
-ALLOWED_HOSTS = ['*']
-CSRF_TRUSTED_ORIGINS = ['https://*.ngrok-free.dev', 'https://*.ngrok-free.app', 'https://*.ngrok.io']
+# ── Security ────────────────────────────────────────────────────────────────
+SECRET_KEY = os.environ.get('SECRET_KEY', 'bluesky-django-secret-key-change-in-production')
+DEBUG      = os.environ.get('DEBUG', 'False') == 'True'
+
+_raw_hosts = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1')
+ALLOWED_HOSTS = [h.strip() for h in _raw_hosts.split(',') if h.strip()]
+
+_raw_origins = os.environ.get('CSRF_TRUSTED_ORIGINS', '')
+CSRF_TRUSTED_ORIGINS = (
+    [o.strip() for o in _raw_origins.split(',') if o.strip()]
+    if _raw_origins else
+    ['https://*.ngrok-free.dev', 'https://*.ngrok-free.app', 'https://*.ngrok.io']
+)
 
 INSTALLED_APPS = [
     'django.contrib.contenttypes',
@@ -20,6 +30,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',        # ← static files in production
     'django.contrib.sessions.middleware.SessionMiddleware',
     'core.middleware.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -49,38 +60,52 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'bluesky.wsgi.application'
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'bluesky_transactions',
-        'USER': 'root',
-        'PASSWORD': '',
-        'HOST': '127.0.0.1',
-        'PORT': '3306',
-        'OPTIONS': {'charset': 'utf8mb4'},
+# ── Database ─────────────────────────────────────────────────────────────────
+# Railway / production: uses DATABASE_URL env var
+# Local dev: falls back to local MySQL
+_db_url = os.environ.get('DATABASE_URL', '')
+if _db_url:
+    DATABASES = {'default': dj_database_url.parse(_db_url, conn_max_age=600)}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': os.environ.get('DB_NAME', 'bluesky_transactions'),
+            'USER': os.environ.get('DB_USER', 'root'),
+            'PASSWORD': os.environ.get('DB_PASSWORD', ''),
+            'HOST': os.environ.get('DB_HOST', '127.0.0.1'),
+            'PORT': os.environ.get('DB_PORT', '3306'),
+            'OPTIONS': {'charset': 'utf8mb4'},
+        }
     }
-}
 
-# Sessions
-SESSION_ENGINE = 'django.contrib.sessions.backends.db'
-SESSION_COOKIE_AGE = 86400  # 24h
+# ── Sessions ─────────────────────────────────────────────────────────────────
+SESSION_ENGINE     = 'django.contrib.sessions.backends.db'
+SESSION_COOKIE_AGE = 86400
 SESSION_COOKIE_NAME = 'bluesky_session'
 
-# Static & Media
+# ── Static & Media ────────────────────────────────────────────────────────────
 STATIC_URL  = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 MEDIA_URL  = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+# ── File upload limits ────────────────────────────────────────────────────────
+DATA_UPLOAD_MAX_MEMORY_SIZE = 6 * 1024 * 1024
+FILE_UPLOAD_MAX_MEMORY_SIZE = 6 * 1024 * 1024
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Locale
+# ── Locale ────────────────────────────────────────────────────────────────────
 LANGUAGE_CODE = 'fr'
 TIME_ZONE     = 'Africa/Kinshasa'
 USE_I18N      = True
 USE_TZ        = False
+
+LOCALE_PATHS = [BASE_DIR / 'locale']
 
 PASSWORD_HASHERS = [
     'core.hashers.LaravelBcryptHasher',
@@ -88,15 +113,9 @@ PASSWORD_HASHERS = [
     'django.contrib.auth.hashers.PBKDF2PasswordHasher',
 ]
 
-LOCALE_PATHS = [BASE_DIR / 'locale']
-
 MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
 
-# ── File upload limits ─────────────────────────────────────────────────────
-DATA_UPLOAD_MAX_MEMORY_SIZE = 6 * 1024 * 1024   # 6 MB (covers 5 MB photos + form fields)
-FILE_UPLOAD_MAX_MEMORY_SIZE = 6 * 1024 * 1024   # 6 MB in-memory threshold
-
-# ── Cache (OTP storage) ────────────────────────────────────────────────────
+# ── Cache (OTP storage) ───────────────────────────────────────────────────────
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
@@ -104,18 +123,27 @@ CACHES = {
     }
 }
 
-# ── Email ──────────────────────────────────────────────────────────────────
-EMAIL_BACKEND    = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST       = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
-EMAIL_PORT       = int(os.environ.get('EMAIL_PORT', 587))
-EMAIL_USE_TLS    = os.environ.get('EMAIL_USE_TLS', 'True') == 'True'
-EMAIL_HOST_USER  = os.environ.get('EMAIL_HOST_USER', '')
+# ── Email ─────────────────────────────────────────────────────────────────────
+EMAIL_BACKEND       = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST          = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT          = int(os.environ.get('EMAIL_PORT', 587))
+EMAIL_USE_TLS       = os.environ.get('EMAIL_USE_TLS', 'True') == 'True'
+EMAIL_HOST_USER     = os.environ.get('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 DEFAULT_FROM_EMAIL  = os.environ.get('EMAIL_FROM', 'BLUESKY Transactions <noreply@bluesky.com>')
-OTP_EXPIRY_SECONDS  = 600  # 10 minutes
+OTP_EXPIRY_SECONDS  = 600
 
-# ── Africa's Talking SMS ───────────────────────────────────────────────────
-AT_USERNAME   = os.environ.get('AT_USERNAME', 'sandbox')
-AT_API_KEY    = os.environ.get('AT_API_KEY', '')
-AT_SENDER_ID  = os.environ.get('AT_SENDER_ID', 'BLUESKY')
+# ── Africa's Talking SMS ──────────────────────────────────────────────────────
+AT_USERNAME    = os.environ.get('AT_USERNAME', 'sandbox')
+AT_API_KEY     = os.environ.get('AT_API_KEY', '')
+AT_SENDER_ID   = os.environ.get('AT_SENDER_ID', 'BLUESKY')
 AT_SMS_ENABLED = os.environ.get('AT_SMS_ENABLED', 'False') == 'True'
+
+# ── Production security (active when DEBUG=False) ─────────────────────────────
+if not DEBUG:
+    SECURE_PROXY_SSL_HEADER    = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SECURE_SSL_REDIRECT        = True
+    SESSION_COOKIE_SECURE      = True
+    CSRF_COOKIE_SECURE         = True
+    SECURE_BROWSER_XSS_FILTER  = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
