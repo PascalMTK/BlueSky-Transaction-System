@@ -311,14 +311,12 @@
                                     <button type="submit" class="ag-btn ag-btn-activate" title="Réactiver">▶ <span class="ag-btn-text">Réactiver</span></button>
                                 {% endif %}
                             </form>
-                            <!-- Promote to admin (only for active agents) -->
-                            {% if agent.status == 'active' %}
+                            <!-- Promote to admin -->
                             <form method="POST" action="{% url 'admin_agent_promote' agent.id %}" style="display:contents;"
                                   onsubmit="return confirm('Promouvoir {{ agent.name }} au rang d\'Admin ?');">
                                 {% csrf_token %}
                                 <button type="submit" class="ag-btn ag-btn-promote" title="Promouvoir Admin">⬆ <span class="ag-btn-text">Admin</span></button>
                             </form>
-                            {% endif %}
                             <!-- Delete -->
                             <form method="POST" action="{% url 'admin_agent_destroy' agent.id %}" style="display:contents;"
                                   onsubmit="return confirm('Supprimer cet agent ?');">
