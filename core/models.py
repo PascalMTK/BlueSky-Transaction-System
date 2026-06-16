@@ -2,19 +2,19 @@ from django.db import models
 
 
 class Country(models.Model):
-    name                 = models.CharField(max_length=100)
-    code                 = models.CharField(max_length=2, unique=True)
-    currency_code        = models.CharField(max_length=5)
-    currency_name        = models.CharField(max_length=60)
-    flag_emoji           = models.CharField(max_length=10)
-    phone_code           = models.CharField(max_length=10)
-    default_fee_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=3.00)
-    is_active            = models.BooleanField(default=True)
-    created_at           = models.DateTimeField(auto_now_add=True)
-    updated_at           = models.DateTimeField(auto_now=True)
+    name                    = models.CharField(max_length=100)
+    code                    = models.CharField(max_length=2, unique=True)
+    currency_code           = models.CharField(max_length=5)
+    currency_name           = models.CharField(max_length=60)
+    flag_emoji              = models.CharField(max_length=10)
+    phone_code              = models.CharField(max_length=10)
+    default_fee_percentage  = models.DecimalField(max_digits=5, decimal_places=2, default=3.00)
+    is_active               = models.BooleanField(default=True)
+    created_at              = models.DateTimeField(auto_now_add=True)
+    updated_at              = models.DateTimeField(auto_now=True)
 
     class Meta:
-        managed  = False
+        managed  = True
         db_table = 'countries'
         ordering = ['name']
 
@@ -46,7 +46,7 @@ class User(models.Model):
     updated_at    = models.DateTimeField(auto_now=True)
 
     class Meta:
-        managed  = False
+        managed  = True
         db_table = 'users'
 
     def __str__(self):
@@ -114,7 +114,7 @@ class Transaction(models.Model):
     updated_at          = models.DateTimeField(auto_now=True)
 
     class Meta:
-        managed  = False
+        managed  = True
         db_table = 'transactions'
         ordering = ['-created_at']
 
@@ -122,26 +122,15 @@ class Transaction(models.Model):
         return self.transaction_number
 
 
-# SQL to create the table (run once in your DB):
-# CREATE TABLE IF NOT EXISTS direct_messages (
-#   id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-#   sender_id BIGINT UNSIGNED NOT NULL,
-#   recipient_id BIGINT UNSIGNED NOT NULL,
-#   message TEXT NOT NULL,
-#   is_read TINYINT(1) NOT NULL DEFAULT 0,
-#   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-#   INDEX idx_dm_sender (sender_id),
-#   INDEX idx_dm_recipient (recipient_id)
-# );
 class DirectMessage(models.Model):
-    sender    = models.ForeignKey(User, related_name='sent_dms',     on_delete=models.CASCADE, db_column='sender_id')
-    recipient = models.ForeignKey(User, related_name='received_dms', on_delete=models.CASCADE, db_column='recipient_id')
-    message   = models.TextField()
-    is_read   = models.BooleanField(default=False)
+    sender     = models.ForeignKey(User, related_name='sent_dms',     on_delete=models.CASCADE, db_column='sender_id')
+    recipient  = models.ForeignKey(User, related_name='received_dms', on_delete=models.CASCADE, db_column='recipient_id')
+    message    = models.TextField()
+    is_read    = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        managed  = False
+        managed  = True
         db_table = 'direct_messages'
         ordering = ['created_at']
 
@@ -152,17 +141,17 @@ class DirectMessage(models.Model):
 class AgentReport(models.Model):
     STATUS_CHOICES = [('unread', 'Unread'), ('read', 'Read')]
 
-    agent      = models.ForeignKey(User, on_delete=models.CASCADE, db_column='agent_id')
-    subject    = models.CharField(max_length=150)
-    message    = models.TextField()
-    status     = models.CharField(max_length=10, choices=STATUS_CHOICES, default='unread')
-    admin_reply= models.TextField(null=True, blank=True)
-    replied_at = models.DateTimeField(null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    agent       = models.ForeignKey(User, on_delete=models.CASCADE, db_column='agent_id')
+    subject     = models.CharField(max_length=150)
+    message     = models.TextField()
+    status      = models.CharField(max_length=10, choices=STATUS_CHOICES, default='unread')
+    admin_reply = models.TextField(null=True, blank=True)
+    replied_at  = models.DateTimeField(null=True, blank=True)
+    created_at  = models.DateTimeField(auto_now_add=True)
+    updated_at  = models.DateTimeField(auto_now=True)
 
     class Meta:
-        managed  = False
+        managed  = True
         db_table = 'agent_reports'
         ordering = ['-created_at']
 
