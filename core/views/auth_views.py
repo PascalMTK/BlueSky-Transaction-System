@@ -314,6 +314,54 @@ Si vous n'avez pas fait cette demande, ignorez cet email.
         return False
 
 
+def _send_password_reset_confirm(user):
+    """Send confirmation email after successful password reset."""
+    subject = '[BLUESKY] 🔐 Votre mot de passe a été modifié'
+    html_body = f"""<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"></head>
+<body style="font-family:Inter,sans-serif;background:#f0f4f8;padding:30px 20px;margin:0;">
+  <div style="max-width:480px;margin:0 auto;background:white;border-radius:16px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.12);">
+    <div style="background:linear-gradient(135deg,#0284c7,#0ea5e9);padding:28px 32px;text-align:center;">
+      <div style="font-size:36px;margin-bottom:8px;">🔐</div>
+      <div style="color:white;font-size:20px;font-weight:900;letter-spacing:.5px;">BLUESKY TRANSACTIONS</div>
+      <div style="color:rgba(255,255,255,.8);font-size:13px;margin-top:4px;">Modification de mot de passe</div>
+    </div>
+    <div style="padding:32px;">
+      <p style="color:#334155;font-size:15px;margin:0 0 16px;">Bonjour <strong>{user.name}</strong>,</p>
+      <p style="color:#64748b;font-size:14px;margin:0 0 20px;line-height:1.7;">
+        Votre mot de passe BLUESKY a été <strong>modifié avec succès</strong>.
+      </p>
+      <div style="background:#f0fdf4;border-left:4px solid #22c55e;border-radius:8px;padding:14px 18px;margin-bottom:24px;">
+        <p style="margin:0;font-size:13px;color:#166534;">✅ Vous pouvez maintenant vous connecter avec votre nouveau mot de passe.</p>
+      </div>
+      <div style="background:#fef2f2;border-left:4px solid #ef4444;border-radius:8px;padding:14px 18px;margin-bottom:24px;">
+        <p style="margin:0;font-size:13px;color:#991b1b;">⚠️ Si vous n'êtes pas à l'origine de cette modification, contactez immédiatement l'administrateur.</p>
+      </div>
+      <p style="color:#94a3b8;font-size:12px;text-align:center;margin:0;">
+        Compte : <strong>{user.email}</strong>
+      </p>
+    </div>
+    <div style="background:#f8fafc;border-top:1px solid #e8edf2;padding:16px;text-align:center;">
+      <p style="margin:0;font-size:11px;color:#94a3b8;">© 2026 BLUESKY Transactions — Tous droits réservés</p>
+    </div>
+  </div>
+</body>
+</html>"""
+    plain = f"Bonjour {user.name},\n\nVotre mot de passe BLUESKY a été modifié avec succès.\n\nSi vous n'êtes pas à l'origine de cette modification, contactez l'administrateur.\n\n— L'équipe BLUESKY Transactions"
+    try:
+        send_mail(
+            subject=subject,
+            message=plain,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+            html_message=html_body,
+            fail_silently=True,
+        )
+    except Exception as e:
+        print(f'[BLUESKY] Password reset confirm error: {e}')
+
+
 def forgot_password(request):
     if request.method == 'POST':
         email = request.POST.get('email', '').strip().lower()
@@ -400,6 +448,7 @@ def reset_password(request):
                 user.save()
                 cache.delete(f'otp_verified:{email}')
                 del request.session['otp_email']
+                _send_password_reset_confirm(user)
                 messages.success(request, 'Mot de passe modifié avec succès. Connectez-vous.')
                 return redirect('login')
             except User.DoesNotExist:
