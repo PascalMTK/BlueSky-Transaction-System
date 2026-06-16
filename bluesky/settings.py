@@ -64,7 +64,16 @@ WSGI_APPLICATION = 'bluesky.wsgi.application'
 # Railway / production: uses DATABASE_URL env var
 # Local dev: falls back to local MySQL
 _db_url = os.environ.get('DATABASE_URL', '')
-if _db_url:
+_use_sqlite = os.environ.get('USE_SQLITE', 'False') == 'True'
+
+if _use_sqlite:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+elif _db_url:
     DATABASES = {'default': dj_database_url.parse(_db_url, conn_max_age=600)}
 else:
     DATABASES = {
