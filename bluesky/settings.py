@@ -133,7 +133,7 @@ CACHES = {
 }
 
 # ── Email ─────────────────────────────────────────────────────────────────────
-EMAIL_BACKEND       = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_BACKEND       = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
 EMAIL_HOST          = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
 EMAIL_PORT          = int(os.environ.get('EMAIL_PORT', 587))
 EMAIL_USE_TLS       = os.environ.get('EMAIL_USE_TLS', 'True') == 'True'
@@ -144,6 +144,7 @@ EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 DEFAULT_FROM_EMAIL  = os.environ.get('EMAIL_FROM', 'BLUESKY Transactions <noreply@bluesky.com>')
 SERVER_EMAIL        = os.environ.get('EMAIL_HOST_USER', 'noreply@bluesky.com')
 OTP_EXPIRY_SECONDS  = 600
+BREVO_API_KEY       = os.environ.get('BREVO_API_KEY', '')
 
 # ── Africa's Talking SMS ──────────────────────────────────────────────────────
 AT_USERNAME    = os.environ.get('AT_USERNAME', 'sandbox')
