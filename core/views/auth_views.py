@@ -254,7 +254,8 @@ Si vous n'avez pas fait cette demande, ignorez cet email.
         )
         return True
     except Exception as e:
-        print(f'[BLUESKY] Email error: {e}')
+        import logging
+        logging.getLogger('django').error(f'[BLUESKY] Email OTP error: {e}')
         return False
 
 

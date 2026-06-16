@@ -65,19 +65,27 @@ class Command(BaseCommand):
             f'✓ Pays : {created} créés, {updated} mis à jour — {active_count} actifs'
         ))
 
-        # Admin user
-        if not User.objects.filter(email='admin@bluesky.com').exists():
-            hashed = bcrypt.hashpw(b'Admin2026!', bcrypt.gensalt(10)).decode()
-            User.objects.create(
-                name='Administrateur',
-                email='admin@bluesky.com',
-                password=hashed,
-                role='admin',
-                status='active',
-                agent_code='ADMIN001',
-            )
+        # Admin user — always reset password to guarantee access
+        hashed = bcrypt.hashpw(b'Admin2026!', bcrypt.gensalt(10)).decode()
+        admin, created = User.objects.get_or_create(
+            email='admin@bluesky.com',
+            defaults={
+                'name': 'Administrateur',
+                'password': hashed,
+                'role': 'admin',
+                'status': 'active',
+                'agent_code': 'ADMIN001',
+            }
+        )
+        if not created:
+            admin.password = hashed
+            admin.role     = 'admin'
+            admin.status   = 'active'
+            admin.save()
+            self.stdout.write(self.style.SUCCESS(
+                '✓ Admin réinitialisé → email: admin@bluesky.com  |  mot de passe: Admin2026!'
+            ))
+        else:
             self.stdout.write(self.style.SUCCESS(
                 '✓ Admin créé → email: admin@bluesky.com  |  mot de passe: Admin2026!'
             ))
-        else:
-            self.stdout.write(self.style.WARNING('! Admin existe déjà'))

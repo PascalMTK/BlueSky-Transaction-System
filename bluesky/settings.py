@@ -127,8 +127,8 @@ MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
 # ── Cache (OTP storage) ───────────────────────────────────────────────────────
 CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'LOCATION': 'bluesky-otp',
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'bluesky_cache',
     }
 }
 
