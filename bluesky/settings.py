@@ -145,6 +145,8 @@ DEFAULT_FROM_EMAIL  = os.environ.get('EMAIL_FROM', 'BLUESKY Transactions <norepl
 SERVER_EMAIL        = os.environ.get('EMAIL_HOST_USER', 'noreply@bluesky.com')
 OTP_EXPIRY_SECONDS  = 600
 BREVO_API_KEY       = os.environ.get('BREVO_API_KEY', '')
+MAILJET_API_KEY     = os.environ.get('MAILJET_API_KEY', '')
+MAILJET_API_SECRET  = os.environ.get('MAILJET_API_SECRET', '')
 
 # ── Africa's Talking SMS ──────────────────────────────────────────────────────
 AT_USERNAME    = os.environ.get('AT_USERNAME', 'sandbox')
