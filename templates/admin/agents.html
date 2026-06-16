@@ -302,26 +302,20 @@
                                 {% csrf_token %}
                                 {% if agent.status == 'active' %}
                                     <input type="hidden" name="status" value="inactive">
-                                    <button type="submit" class="ag-btn ag-btn-deactivate" title="{{ t.deactivate }}">⏸</button>
+                                    <button type="submit" class="ag-btn ag-btn-deactivate" title="{{ t.deactivate }}">⏸ <span class="ag-btn-text">Désactiver</span></button>
                                 {% elif agent.status == 'pending' %}
                                     <input type="hidden" name="status" value="active">
-                                    <button type="submit" class="ag-btn ag-btn-activate" title="{{ t.activate }}">✅ <span class="ag-btn-text">{{ t.activate }}</span></button>
+                                    <button type="submit" class="ag-btn ag-btn-activate" title="{{ t.activate }}">✅ <span class="ag-btn-text">Activer</span></button>
                                 {% else %}
                                     <input type="hidden" name="status" value="active">
-                                    <button type="submit" class="ag-btn ag-btn-activate" title="{{ t.reactivate }}">▶</button>
+                                    <button type="submit" class="ag-btn ag-btn-activate" title="{{ t.reactivate }}">▶ <span class="ag-btn-text">Réactiver</span></button>
                                 {% endif %}
-                            </form>
-                            <!-- Promote -->
-                            <form method="POST" action="{% url 'admin_agent_promote' agent.id %}" style="display:contents;"
-                                  onsubmit="return confirm('{{ t.promote_confirm }}');">
-                                {% csrf_token %}
-                                <button type="submit" class="ag-btn ag-btn-promote" title="{{ t.promote_admin }}">⬆</button>
                             </form>
                             <!-- Delete -->
                             <form method="POST" action="{% url 'admin_agent_destroy' agent.id %}" style="display:contents;"
-                                  onsubmit="return confirm('{{ t.delete_confirm }}');">
+                                  onsubmit="return confirm('Supprimer cet agent ?');">
                                 {% csrf_token %}
-                                <button type="submit" class="ag-btn ag-btn-delete" title="Supprimer">🗑</button>
+                                <button type="submit" class="ag-btn ag-btn-delete" title="Supprimer">🗑 <span class="ag-btn-text">Supprimer</span></button>
                             </form>
                         </div>
                     </td>

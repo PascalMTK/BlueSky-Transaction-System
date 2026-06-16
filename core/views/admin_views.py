@@ -170,6 +170,8 @@ def dashboard(request):
         for i, r in enumerate(country_qs)
     ]
 
+    pending_agents_list = User.objects.filter(role='agent', status='pending').select_related('country').order_by('created_at')
+
     return render(request, 'admin/dashboard.html', {
         'stats':               stats,
         'recent_tx':           recent_tx,
@@ -180,6 +182,7 @@ def dashboard(request):
         'monthly_data_json':   json.dumps(monthly_data),
         'country_tx_json':     json.dumps(country_tx_data),
         'country_tx_data':     country_tx_data,
+        'pending_agents_list': pending_agents_list,
         'auth_user':           user,
     })
 
