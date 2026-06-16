@@ -32,6 +32,60 @@ def welcome(request):
     return render(request, 'welcome.html')
 
 
+def _notify_agent_pending(user):
+    """Send confirmation email to agent after registration."""
+    subject = '[BLUESKY] Votre candidature a été reçue — En attente de validation'
+    html_body = f"""<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"></head>
+<body style="font-family:Inter,sans-serif;background:#f0f4f8;padding:30px 20px;margin:0;">
+  <div style="max-width:520px;margin:0 auto;background:white;border-radius:16px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.12);">
+    <div style="background:linear-gradient(135deg,#0099e6,#0052b2);padding:28px 32px;text-align:center;">
+      <div style="font-size:40px;margin-bottom:8px;">📋</div>
+      <div style="color:white;font-size:20px;font-weight:900;letter-spacing:.5px;">BLUESKY TRANSACTIONS</div>
+      <div style="color:rgba(255,255,255,.8);font-size:13px;margin-top:4px;">Confirmation de candidature</div>
+    </div>
+    <div style="padding:32px;">
+      <p style="color:#334155;font-size:15px;margin:0 0 16px;">Bonjour <strong>{user.name}</strong>,</p>
+      <p style="color:#64748b;font-size:14px;margin:0 0 20px;line-height:1.7;">
+        Nous avons bien reçu votre demande d'inscription sur la plateforme <strong>BLUESKY Transactions</strong>.<br>
+        Votre compte est actuellement <strong>en attente de validation</strong> par un administrateur.
+      </p>
+      <div style="background:#fffbeb;border-left:4px solid #f59e0b;border-radius:8px;padding:16px 20px;margin-bottom:24px;">
+        <div style="font-size:13px;color:#92400e;font-weight:700;margin-bottom:6px;">⏳ Statut : En attente</div>
+        <div style="font-size:13px;color:#78350f;line-height:1.6;">
+          Un administrateur examinera votre dossier et vous recevrez un email dès que votre compte sera activé.
+        </div>
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:24px;">
+        <tr style="background:#f8fafc;"><td style="padding:10px 14px;color:#64748b;font-weight:600;">Nom</td><td style="padding:10px 14px;color:#1e293b;">{user.name}</td></tr>
+        <tr><td style="padding:10px 14px;color:#64748b;font-weight:600;">Email</td><td style="padding:10px 14px;color:#1e293b;">{user.email}</td></tr>
+        <tr style="background:#f8fafc;"><td style="padding:10px 14px;color:#64748b;font-weight:600;">Code agent</td><td style="padding:10px 14px;color:#1e293b;font-family:monospace;font-weight:700;">{user.agent_code or '—'}</td></tr>
+      </table>
+      <p style="color:#94a3b8;font-size:12px;text-align:center;margin:0;">
+        Si vous n'avez pas créé ce compte, ignorez cet email.
+      </p>
+    </div>
+    <div style="background:#f8fafc;border-top:1px solid #e8edf2;padding:16px;text-align:center;">
+      <p style="margin:0;font-size:11px;color:#94a3b8;">© 2026 BLUESKY Transactions — Tous droits réservés</p>
+    </div>
+  </div>
+</body>
+</html>"""
+    plain = f"Bonjour {user.name},\n\nVotre candidature BLUESKY a bien été reçue.\nVotre compte est en attente de validation par un administrateur.\n\nCode agent : {user.agent_code or '—'}\n\n— L'équipe BLUESKY Transactions"
+    try:
+        send_mail(
+            subject=subject,
+            message=plain,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+            html_message=html_body,
+            fail_silently=True,
+        )
+    except Exception as e:
+        print(f'[BLUESKY] Pending notify error: {e}')
+
+
 def _notify_admin_pending_login(user):
     """Send email to all admins when a pending user tries to log in."""
     admin_emails = list(User.objects.filter(role='admin', status='active').values_list('email', flat=True))
@@ -173,6 +227,7 @@ def register_view(request):
                     user.profile_photo = rel
                     user.save()
 
+            _notify_agent_pending(user)
             messages.success(request, 'Compte créé avec succès. En attente de validation par l\'administrateur.')
             return redirect('login')
     return render(request, 'auth/register.html', {'countries': countries})

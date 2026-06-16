@@ -7,8 +7,69 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.http import HttpResponse
 from django.db.models import Sum, Count, Q
+from django.conf import settings
+from django.core.mail import send_mail
 from core.models import User, Country, Transaction, AgentReport
 from core.decorators import admin_required, get_auth_user
+
+
+def _notify_agent_activated(agent):
+    """Send activation email to agent when admin activates their account."""
+    subject = '[BLUESKY] ✅ Votre compte a été activé — Vous pouvez vous connecter'
+    html_body = f"""<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"></head>
+<body style="font-family:Inter,sans-serif;background:#f0f4f8;padding:30px 20px;margin:0;">
+  <div style="max-width:520px;margin:0 auto;background:white;border-radius:16px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.12);">
+    <div style="background:linear-gradient(135deg,#22c55e,#15803d);padding:28px 32px;text-align:center;">
+      <div style="font-size:40px;margin-bottom:8px;">✅</div>
+      <div style="color:white;font-size:20px;font-weight:900;letter-spacing:.5px;">BLUESKY TRANSACTIONS</div>
+      <div style="color:rgba(255,255,255,.85);font-size:13px;margin-top:4px;">Compte activé avec succès</div>
+    </div>
+    <div style="padding:32px;">
+      <p style="color:#334155;font-size:15px;margin:0 0 16px;">Bonjour <strong>{agent.name}</strong>,</p>
+      <p style="color:#64748b;font-size:14px;margin:0 0 20px;line-height:1.7;">
+        Excellente nouvelle ! Votre compte <strong>BLUESKY Transactions</strong> vient d'être <strong style="color:#16a34a;">activé</strong> par l'administrateur.<br>
+        Vous pouvez maintenant vous connecter et commencer à traiter des transactions.
+      </p>
+      <div style="background:#f0fdf4;border-left:4px solid #22c55e;border-radius:8px;padding:16px 20px;margin-bottom:24px;">
+        <div style="font-size:13px;color:#15803d;font-weight:700;margin-bottom:6px;">🎉 Statut : Actif</div>
+        <div style="font-size:13px;color:#166534;line-height:1.6;">
+          Votre accès à la plateforme est maintenant disponible. Connectez-vous avec votre email et votre mot de passe.
+        </div>
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:24px;">
+        <tr style="background:#f8fafc;"><td style="padding:10px 14px;color:#64748b;font-weight:600;">Nom</td><td style="padding:10px 14px;color:#1e293b;">{agent.name}</td></tr>
+        <tr><td style="padding:10px 14px;color:#64748b;font-weight:600;">Email de connexion</td><td style="padding:10px 14px;color:#1e293b;">{agent.email}</td></tr>
+        <tr style="background:#f8fafc;"><td style="padding:10px 14px;color:#64748b;font-weight:600;">Code agent</td><td style="padding:10px 14px;color:#0284c7;font-family:monospace;font-weight:700;">{agent.agent_code or '—'}</td></tr>
+      </table>
+      <div style="text-align:center;margin-bottom:20px;">
+        <a href="#" style="display:inline-block;padding:14px 32px;background:linear-gradient(135deg,#0099e6,#0052b2);color:white;text-decoration:none;border-radius:10px;font-size:14px;font-weight:700;">
+          Se connecter à BLUESKY
+        </a>
+      </div>
+      <p style="color:#94a3b8;font-size:12px;text-align:center;margin:0;">
+        Si vous n'êtes pas à l'origine de cette demande, contactez l'administrateur.
+      </p>
+    </div>
+    <div style="background:#f8fafc;border-top:1px solid #e8edf2;padding:16px;text-align:center;">
+      <p style="margin:0;font-size:11px;color:#94a3b8;">© 2026 BLUESKY Transactions — Tous droits réservés</p>
+    </div>
+  </div>
+</body>
+</html>"""
+    plain = f"Bonjour {agent.name},\n\nVotre compte BLUESKY Transactions a été activé.\nVous pouvez maintenant vous connecter.\n\nEmail : {agent.email}\nCode agent : {agent.agent_code or '—'}\n\n— L'équipe BLUESKY Transactions"
+    try:
+        send_mail(
+            subject=subject,
+            message=plain,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[agent.email],
+            html_message=html_body,
+            fail_silently=True,
+        )
+    except Exception as e:
+        print(f'[BLUESKY] Activation notify error: {e}')
 
 
 @admin_required
@@ -214,8 +275,11 @@ def agent_status(request, agent_id):
         agent  = get_object_or_404(User, pk=agent_id, role='agent')
         status = request.POST.get('status')
         if status in ('active', 'inactive', 'pending'):
+            was_pending = agent.status == 'pending'
             agent.status = status
             agent.save()
+            if status == 'active' and was_pending:
+                _notify_agent_activated(agent)
             messages.success(request, f'Statut de {agent.name} mis à jour.')
     return redirect('admin_agents')
 
