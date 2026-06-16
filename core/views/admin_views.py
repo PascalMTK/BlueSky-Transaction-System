@@ -292,6 +292,25 @@ def agent_promote(request, agent_id):
         agent.status = 'active'
         agent.save()
         messages.success(request, f'{agent.name} est maintenant administrateur.')
+    next_url = request.POST.get('next', 'admin_agents')
+    return redirect(next_url)
+
+
+@admin_required
+def agent_set_password(request, agent_id):
+    if request.method == 'POST':
+        agent      = get_object_or_404(User, pk=agent_id, role='agent')
+        new_pw     = request.POST.get('new_password', '')
+        confirm_pw = request.POST.get('confirm_password', '')
+        if len(new_pw) < 8:
+            messages.error(request, 'Le mot de passe doit contenir au moins 8 caractères.')
+        elif new_pw != confirm_pw:
+            messages.error(request, 'Les mots de passe ne correspondent pas.')
+        else:
+            import bcrypt as _bcrypt
+            agent.password = _bcrypt.hashpw(new_pw.encode(), _bcrypt.gensalt(10)).decode()
+            agent.save()
+            messages.success(request, f'Mot de passe de {agent.name} modifié avec succès.')
     return redirect('admin_agents')
 
 

@@ -25,9 +25,10 @@ urlpatterns = [
 
     # ── Admin — Agents ────────────────────────────────────────────────────
     path('admin/agents/',                 admin_views.agents,             name='admin_agents'),
-    path('admin/agents/<int:agent_id>/status/',  admin_views.agent_status,   name='admin_agent_status'),
-    path('admin/agents/<int:agent_id>/promote/', admin_views.agent_promote,  name='admin_agent_promote'),
-    path('admin/agents/<int:agent_id>/delete/',  admin_views.agent_destroy,  name='admin_agent_destroy'),
+    path('admin/agents/<int:agent_id>/status/',   admin_views.agent_status,       name='admin_agent_status'),
+    path('admin/agents/<int:agent_id>/promote/',  admin_views.agent_promote,      name='admin_agent_promote'),
+    path('admin/agents/<int:agent_id>/password/', admin_views.agent_set_password, name='admin_agent_set_password'),
+    path('admin/agents/<int:agent_id>/delete/',   admin_views.agent_destroy,      name='admin_agent_destroy'),
 
     # ── Admin — Transactions ──────────────────────────────────────────────
     path('admin/transactions/',           admin_views.transactions,       name='admin_transactions'),

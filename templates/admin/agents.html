@@ -93,6 +93,44 @@
 .ag-btn-promote:hover   { background: rgba(139,92,246,.20); }
 .ag-btn-delete    { background: rgba(239,68,68,.10);  color: #dc2626; }
 .ag-btn-delete:hover    { background: rgba(239,68,68,.20); }
+.ag-btn-pw        { background: rgba(2,132,199,.10);  color: #0284c7; }
+.ag-btn-pw:hover        { background: rgba(2,132,199,.20); }
+
+/* ── Password modal ─────────────────────────────── */
+#pwModal {
+    display: none; position: fixed; inset: 0; z-index: 9999;
+    background: rgba(0,0,0,.55); backdrop-filter: blur(3px);
+    align-items: center; justify-content: center; padding: 16px;
+}
+#pwModal.open { display: flex; }
+.pw-box {
+    background: var(--bg-card); border-radius: 18px;
+    padding: 32px; width: 100%; max-width: 420px;
+    box-shadow: 0 24px 80px rgba(0,0,0,.35);
+    border: 1px solid var(--border);
+}
+.pw-title { font-size: 17px; font-weight: 900; color: var(--text-primary); margin: 0 0 6px; }
+.pw-sub   { font-size: 13px; color: var(--text-muted); margin: 0 0 24px; }
+.pw-field { margin-bottom: 16px; }
+.pw-label { display: block; font-size: 12.5px; font-weight: 700; color: var(--text-secondary); margin-bottom: 6px; }
+.pw-input {
+    width: 100%; padding: 10px 14px; font-size: 14px; font-family: inherit;
+    border: 1px solid var(--border); border-radius: 10px;
+    background: var(--bg-secondary); color: var(--text-primary);
+    transition: border-color .15s;
+}
+.pw-input:focus { outline: none; border-color: var(--sky-primary); }
+.pw-actions { display: flex; gap: 10px; margin-top: 24px; }
+.pw-cancel {
+    flex: 1; padding: 11px; background: var(--bg-secondary); border: 1px solid var(--border);
+    border-radius: 10px; cursor: pointer; font-size: 13px; font-weight: 700;
+    color: var(--text-secondary); font-family: inherit;
+}
+.pw-submit {
+    flex: 2; padding: 11px; background: linear-gradient(135deg,#0284c7,#0ea5e9);
+    color: white; border: none; border-radius: 10px; cursor: pointer;
+    font-size: 13px; font-weight: 800; font-family: inherit;
+}
 
 /* ── Empty state ────────────────────────────────── */
 .ag-empty {
@@ -317,6 +355,12 @@
                                 {% csrf_token %}
                                 <button type="submit" class="ag-btn ag-btn-promote" title="Promouvoir Admin">⬆ <span class="ag-btn-text">Admin</span></button>
                             </form>
+                            <!-- Change password -->
+                            <button type="button" class="ag-btn ag-btn-pw"
+                                    onclick="openPwModal({{ agent.id }}, '{{ agent.name|escapejs }}')"
+                                    title="Changer mot de passe">
+                                🔑 <span class="ag-btn-text">Mot de passe</span>
+                            </button>
                             <!-- Delete -->
                             <form method="POST" action="{% url 'admin_agent_destroy' agent.id %}" style="display:contents;"
                                   onsubmit="return confirm('Supprimer cet agent ?');">
@@ -336,6 +380,29 @@
             <div class="ag-empty-text">{{ t.no_agents }}</div>
         </div>
         {% endif %}
+    </div>
+</div>
+
+<!-- Password Modal -->
+<div id="pwModal">
+    <div class="pw-box">
+        <div class="pw-title">🔑 Changer le mot de passe</div>
+        <div class="pw-sub" id="pwAgentName"></div>
+        <form id="pwForm" method="POST">
+            {% csrf_token %}
+            <div class="pw-field">
+                <label class="pw-label">Nouveau mot de passe</label>
+                <input type="password" name="new_password" class="pw-input" placeholder="Min. 8 caractères" required minlength="8" autocomplete="new-password">
+            </div>
+            <div class="pw-field">
+                <label class="pw-label">Confirmer le mot de passe</label>
+                <input type="password" name="confirm_password" class="pw-input" placeholder="Répétez le mot de passe" required minlength="8" autocomplete="new-password">
+            </div>
+            <div class="pw-actions">
+                <button type="button" class="pw-cancel" onclick="closePwModal()">Annuler</button>
+                <button type="submit" class="pw-submit">✅ Enregistrer</button>
+            </div>
+        </form>
     </div>
 </div>
 
@@ -361,5 +428,20 @@
     if(ei) ei.textContent = ic;
     if(pd && pc > 0) pd.style.display = 'block';
 })();
+
+function openPwModal(agentId, agentName) {
+    document.getElementById('pwAgentName').textContent = 'Agent : ' + agentName;
+    document.getElementById('pwForm').action = '/admin/agents/' + agentId + '/password/';
+    document.getElementById('pwModal').classList.add('open');
+    document.querySelector('#pwForm input[name="new_password"]').value = '';
+    document.querySelector('#pwForm input[name="confirm_password"]').value = '';
+    document.querySelector('#pwForm input[name="new_password"]').focus();
+}
+function closePwModal() {
+    document.getElementById('pwModal').classList.remove('open');
+}
+document.getElementById('pwModal').addEventListener('click', function(e) {
+    if (e.target === this) closePwModal();
+});
 </script>
 {% endblock %}
