@@ -392,7 +392,7 @@
                         <div class="tx-result-arrow">→</div>
                         <div class="tx-total-panel" id="totalPanel">
                             <div>
-                                <div class="tx-total-panel-label">{{ t.total_client }}</div>
+                                <div class="tx-total-panel-label" id="totalLabel">{{ t.tx_receiver_gets }}</div>
                             </div>
                             <div class="tx-total-panel-right" id="totalPanelRight">
                                 <div class="tx-total-panel-empty" id="totalEmpty">—</div>
@@ -408,7 +408,7 @@
                     <div class="tx-calc-bar" id="calcBar" style="display:none;">
                         <span class="tx-calc-val" id="calcAmt"></span>
                         <span class="tx-calc-cur" id="calcCur1"></span>
-                        <span class="tx-calc-sep">+</span>
+                        <span class="tx-calc-sep" id="calcSep">−</span>
                         <span class="tx-calc-val" id="calcFee"></span>
                         <span class="tx-calc-cur" id="calcCur2"></span>
                         <span style="font-size:10px;color:var(--text-muted);" id="calcPct"></span>
@@ -597,7 +597,7 @@ function pickIp(hiddenId, val, btn){
     row.querySelectorAll('.ip-btn').forEach(function(b){ b.classList.remove('ip-active'); });
     btn.classList.add('ip-active');
     document.getElementById(hiddenId).value = val;
-    if(hiddenId === 'txType') updateNotifPreview();
+    if(hiddenId === 'txType') { updateNotifPreview(); calcTotal(); }
 }
 
 // ── Accordéon toggle ─────────────────────────────────────────────────────
@@ -618,7 +618,7 @@ function pickIpToggle(hiddenId, val, btn, chosenId, label){
         document.getElementById(hiddenId).value = '';
         if(chosenId) document.getElementById(chosenId).textContent = '—';
     }
-    if(hiddenId === 'txType') updateNotifPreview();
+    if(hiddenId === 'txType') { updateNotifPreview(); calcTotal(); }
 }
 
 // ── Flags & fees ─────────────────────────────────────────────────────────
@@ -653,26 +653,43 @@ function loadFee() {
     }
 })();
 
+var LABEL_RECEIVER = '{{ t.tx_receiver_gets }}';
+var LABEL_SENDER   = '{{ t.tx_sender_pays }}';
+
 function calcTotal() {
-    const amt   = parseFloat(document.getElementById('amountInput').value) || 0;
-    const pct   = parseFloat(document.getElementById('feeInput').value) || 0;
-    const fee   = Math.round(amt * pct / 100 * 100) / 100;
-    const total = Math.round((amt + fee) * 100) / 100;
-    const cur   = (document.getElementById('currencyInput').value || '').toUpperCase();
-    /* total panel */
+    const amt    = parseFloat(document.getElementById('amountInput').value) || 0;
+    const pct    = parseFloat(document.getElementById('feeInput').value) || 0;
+    const cur    = (document.getElementById('currencyInput').value || '').toUpperCase();
+    const txType = document.getElementById('txType').value;
+    const isReceive = (txType === 'receive' || txType === 'withdrawal');
+
+    const fee          = Math.round(amt * pct / 100 * 100) / 100;
+    // SEND:    sender pays amt, fee deducted → recipient gets (amt - fee)
+    // RECEIVE: recipient should get amt, fee added → sender pays (amt + fee)
+    const displayAmt   = isReceive
+        ? Math.round((amt + fee) * 100) / 100
+        : Math.round((amt - fee) * 100) / 100;
+    const panelLabel   = isReceive ? LABEL_SENDER : LABEL_RECEIVER;
+    const sepSign      = isReceive ? '+' : '−';
+
     const empty  = document.getElementById('totalEmpty');
     const filled = document.getElementById('totalFilled');
+    const lbl    = document.getElementById('totalLabel');
+
     if (amt > 0) {
         empty.style.display  = 'none';
         filled.style.display = 'block';
-        document.getElementById('totalDisplay').textContent   = total.toLocaleString('fr-FR');
-        document.getElementById('totalCurLabel').textContent  = cur;
+        if (lbl) lbl.textContent = panelLabel;
+        document.getElementById('totalDisplay').textContent  = displayAmt.toLocaleString('fr-FR');
+        document.getElementById('totalCurLabel').textContent = cur;
         /* calc bar */
         document.getElementById('calcBar').style.display = 'flex';
         document.getElementById('calcAmt').textContent    = amt.toLocaleString('fr-FR');
         document.getElementById('calcFee').textContent    = fee.toLocaleString('fr-FR');
-        document.getElementById('calcTotal2').textContent = total.toLocaleString('fr-FR');
+        document.getElementById('calcTotal2').textContent = displayAmt.toLocaleString('fr-FR');
         document.getElementById('calcPct').textContent    = pct > 0 ? '(' + pct + '%)' : '';
+        var sep = document.getElementById('calcSep');
+        if (sep) sep.textContent = sepSign;
         ['calcCur1','calcCur2','calcCur3'].forEach(function(id){ document.getElementById(id).textContent = cur; });
     } else {
         empty.style.display  = 'block';

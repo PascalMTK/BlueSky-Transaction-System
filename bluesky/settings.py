@@ -1,10 +1,23 @@
 import os
+import codecs
 import dj_database_url
 from pathlib import Path
 from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-load_dotenv(BASE_DIR / '.env')
+
+# BOM-safe .env loading (PythonAnywhere file editor adds UTF-8 BOM)
+def _load_env_safe():
+    _path = BASE_DIR / '.env'
+    try:
+        with codecs.open(str(_path), 'r', 'utf-8-sig') as _f:
+            _content = _f.read()
+        from io import StringIO
+        load_dotenv(stream=StringIO(_content))
+    except Exception:
+        load_dotenv(_path)
+
+_load_env_safe()
 
 # ── Security ────────────────────────────────────────────────────────────────
 SECRET_KEY = os.environ.get('SECRET_KEY', 'bluesky-django-secret-key-change-in-production')
@@ -133,7 +146,11 @@ CACHES = {
 }
 
 # ── Email ─────────────────────────────────────────────────────────────────────
-EMAIL_BACKEND       = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
+# Auto-use Mailjet if API key present (overrides EMAIL_BACKEND env var)
+if os.environ.get('MAILJET_API_KEY'):
+    EMAIL_BACKEND = 'core.email_backends.MailjetEmailBackend'
+else:
+    EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
 EMAIL_HOST          = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
 EMAIL_PORT          = int(os.environ.get('EMAIL_PORT', 587))
 EMAIL_USE_TLS       = os.environ.get('EMAIL_USE_TLS', 'True') == 'True'
