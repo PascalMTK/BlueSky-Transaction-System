@@ -6,14 +6,20 @@ from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# BOM-safe .env loading (PythonAnywhere file editor adds UTF-8 BOM)
+# Robust .env loader — bypasses python-dotenv BOM/parse issues entirely
 def _load_env_safe():
     _path = BASE_DIR / '.env'
     try:
         with codecs.open(str(_path), 'r', 'utf-8-sig') as _f:
-            _content = _f.read()
-        from io import StringIO
-        load_dotenv(stream=StringIO(_content))
+            for _line in _f:
+                _line = _line.strip()
+                if not _line or _line.startswith('#') or '=' not in _line:
+                    continue
+                _key, _, _val = _line.partition('=')
+                _key = _key.strip()
+                _val = _val.strip().strip('"').strip("'")
+                if _key and _key not in os.environ:
+                    os.environ[_key] = _val
     except Exception:
         load_dotenv(_path)
 

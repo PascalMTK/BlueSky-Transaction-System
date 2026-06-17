@@ -1,6 +1,7 @@
 import json
 import base64
 import urllib.request
+import urllib.error
 from email.utils import parseaddr
 from django.core.mail.backends.base import BaseEmailBackend
 from django.conf import settings
@@ -62,7 +63,9 @@ class MailjetEmailBackend(BaseEmailBackend):
             },
             method='POST',
         )
-        with urllib.request.urlopen(req, timeout=30) as resp:
-            if resp.status not in (200, 201):
-                body = resp.read().decode()
-                raise Exception(f'Mailjet {resp.status}: {body}')
+        try:
+            with urllib.request.urlopen(req, timeout=30) as resp:
+                resp.read()
+        except urllib.error.HTTPError as e:
+            body = e.read().decode('utf-8', errors='replace')
+            raise Exception(f'Mailjet HTTP {e.code}: {body}') from e
