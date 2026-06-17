@@ -152,8 +152,10 @@ CACHES = {
 }
 
 # ── Email ─────────────────────────────────────────────────────────────────────
-# Auto-use Mailjet if API key present (overrides EMAIL_BACKEND env var)
-if os.environ.get('MAILJET_API_KEY'):
+# Priority: SendGrid > Mailjet > explicit EMAIL_BACKEND > SMTP
+if os.environ.get('SENDGRID_API_KEY'):
+    EMAIL_BACKEND = 'core.email_backends.SendGridEmailBackend'
+elif os.environ.get('MAILJET_API_KEY'):
     EMAIL_BACKEND = 'core.email_backends.MailjetEmailBackend'
 else:
     EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
@@ -167,6 +169,7 @@ EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 DEFAULT_FROM_EMAIL  = os.environ.get('EMAIL_FROM', 'BLUESKY Transactions <noreply@bluesky.com>')
 SERVER_EMAIL        = os.environ.get('EMAIL_HOST_USER', 'noreply@bluesky.com')
 OTP_EXPIRY_SECONDS  = 600
+SENDGRID_API_KEY    = os.environ.get('SENDGRID_API_KEY', '')
 BREVO_API_KEY       = os.environ.get('BREVO_API_KEY', '')
 MAILJET_API_KEY     = os.environ.get('MAILJET_API_KEY', '')
 MAILJET_API_SECRET  = os.environ.get('MAILJET_API_SECRET', '')
