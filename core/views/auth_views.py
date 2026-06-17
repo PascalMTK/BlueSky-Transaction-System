@@ -362,27 +362,64 @@ def _send_password_reset_confirm(user):
         print(f'[BLUESKY] Password reset confirm error: {e}')
 
 
+def _send_otp_sms(phone: str, otp: str, user_name: str) -> bool:
+    """Send OTP via Africa's Talking SMS. Returns True on success."""
+    if not getattr(settings, 'AT_SMS_ENABLED', False):
+        return False
+    if not getattr(settings, 'AT_API_KEY', ''):
+        return False
+    if not phone:
+        return False
+    try:
+        phone = phone.strip().replace(' ', '')
+        if not phone.startswith('+'):
+            phone = '+' + phone.lstrip('0')
+        import africastalking
+        africastalking.initialize(settings.AT_USERNAME, settings.AT_API_KEY)
+        sms = africastalking.SMS
+        message = f'BLUESKY - Votre code OTP : {otp}\nValable 10 min. Ne le partagez pas.'
+        sms.send(message, [phone], sender_id=settings.AT_SENDER_ID or None)
+        return True
+    except Exception as e:
+        import logging
+        logging.getLogger('django').error(f'[BLUESKY] SMS OTP error: {e}')
+        return False
+
+
 def forgot_password(request):
     if request.method == 'POST':
         email = request.POST.get('email', '').strip().lower()
         try:
             user = User.objects.get(email=email)
         except User.DoesNotExist:
-            # Don't reveal if email exists — same message either way
             messages.success(request, 'Si cet email existe, un code vous a été envoyé.')
             return redirect('forgot_password')
 
         otp = _generate_otp()
         cache.set(f'otp:{email}', otp, timeout=settings.OTP_EXPIRY_SECONDS)
-        cache.delete(f'otp_verified:{email}')   # reset any old verified state
+        cache.delete(f'otp_verified:{email}')
 
-        sent = _send_otp_email(email, otp, user.name)
-        if sent:
+        # SMS en priorité si disponible, sinon email
+        sent_via = None
+        if getattr(settings, 'AT_SMS_ENABLED', False) and user.phone:
+            if _send_otp_sms(user.phone, otp, user.name):
+                sent_via = 'sms'
+
+        if not sent_via:
+            if _send_otp_email(email, otp, user.name):
+                sent_via = 'email'
+
+        if sent_via == 'sms':
+            request.session['otp_email'] = email
+            phone_masked = user.phone[-4:] if user.phone else ''
+            messages.success(request, f'Code envoyé par SMS (****{phone_masked}).')
+            return redirect('verify_otp')
+        elif sent_via == 'email':
             request.session['otp_email'] = email
             messages.success(request, f'Code envoyé à {email}. Vérifiez votre boîte mail.')
             return redirect('verify_otp')
         else:
-            messages.error(request, 'Erreur d\'envoi email. Vérifiez la configuration SMTP.')
+            messages.error(request, 'Impossible d\'envoyer le code. Contactez l\'administrateur.')
 
     return render(request, 'auth/forgot_password.html')
 
