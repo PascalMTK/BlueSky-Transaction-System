@@ -1,8 +1,12 @@
 import os
 import codecs
-import dj_database_url
 from pathlib import Path
 from dotenv import load_dotenv
+
+try:
+    import dj_database_url
+except ImportError:
+    dj_database_url = None
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -92,7 +96,7 @@ if _use_sqlite:
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
-elif _db_url:
+elif _db_url and dj_database_url:
     DATABASES = {'default': dj_database_url.parse(_db_url, conn_max_age=600)}
 else:
     DATABASES = {
