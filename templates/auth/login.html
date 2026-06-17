@@ -170,10 +170,6 @@
         <button type="submit" class="btn-main">🔑 {{ t.login_btn }}</button>
     </form>
 
-    <div style="text-align:right;margin-top:10px;margin-bottom:4px;">
-        <a href="{% url 'forgot_password' %}" style="font-size:12.5px;color:var(--sky-primary);text-decoration:none;font-weight:600;">{{ t.forgot_pw_link }}</a>
-    </div>
-
     <div class="divider">{{ t.no_account }}</div>
     <a href="{% url 'register' %}" class="btn-sec">🚀 {{ t.create_agent }}</a>
 

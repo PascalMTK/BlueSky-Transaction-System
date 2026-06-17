@@ -440,12 +440,6 @@ def tx_create(request):
             )
             tx.save()
             locale = request.session.get('locale', 'fr')
-            # Free email confirmation — single client_email field + notif_locale from form
-            client_email  = request.POST.get('client_email', '').strip()
-            notif_locale  = request.POST.get('notif_locale', locale)
-            if client_email:
-                _send_transaction_email(tx, client_email, notif_locale)
-            # SMS (Africa's Talking, requires AT_SMS_ENABLED=True)
             _send_transaction_sms(tx, locale)
             messages.success(request, f'Transaction {tx_num} créée avec succès.')
             return redirect('tx_show', tx_id=tx.id)
