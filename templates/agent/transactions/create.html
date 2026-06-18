@@ -481,43 +481,6 @@
                 <textarea name="notes" class="form-control" rows="2" placeholder="{{ t.notes_ph }}"></textarea>
             </div>
 
-            <!-- Email client (optionnel) -->
-            <div style="border:1.5px solid var(--border);border-radius:12px;padding:14px;margin-top:14px;">
-                <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
-                    <span style="font-size:13px;font-weight:700;color:var(--text-secondary);">📧 Email du client</span>
-                    <span style="background:rgba(2,132,199,.1);border-radius:5px;padding:2px 7px;font-size:10px;font-weight:700;color:var(--sky-primary);">OPTIONNEL</span>
-                </div>
-                <div style="display:grid;grid-template-columns:1fr 130px;gap:12px;align-items:end;" class="form-grid">
-                    <div class="form-group" style="margin:0;">
-                        <div style="position:relative;">
-                            <input type="email" name="client_email" id="clientEmailInput" class="form-control"
-                                placeholder="client@email.com" oninput="updateNotifPreview()" style="padding-right:36px;">
-                            <span id="emailCheckIcon" style="position:absolute;right:11px;top:50%;transform:translateY(-50%);font-size:15px;display:none;">✅</span>
-                        </div>
-                    </div>
-                    <div class="form-group" style="margin:0;">
-                        <select name="notif_locale" id="notifLocale" class="form-control" onchange="updateNotifPreview()">
-                            <option value="fr" {% if locale == 'fr' or not locale %}selected{% endif %}>🇫🇷 Français</option>
-                            <option value="en" {% if locale == 'en' %}selected{% endif %}>🇬🇧 English</option>
-                        </select>
-                    </div>
-                </div>
-                <div id="notifHint" style="margin-top:8px;font-size:11.5px;color:var(--text-muted);">
-                    💡 <span id="notifHintText">Le client reçoit instantanément un reçu complet par email.</span>
-                </div>
-                <div id="notifPreview" style="display:none;margin-top:10px;border-radius:8px;border:1px solid rgba(2,132,199,.2);overflow:hidden;">
-                    <div style="background:linear-gradient(135deg,#0052b2,#0284c7);padding:8px 12px;display:flex;align-items:center;gap:8px;">
-                        <div style="width:20px;height:20px;background:rgba(255,255,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#fff;flex-shrink:0;">B</div>
-                        <div style="font-size:11px;font-weight:800;color:#fff;letter-spacing:.4px;">BLUESKY</div>
-                        <div style="font-size:10px;color:rgba(255,255,255,.65);" id="previewTo">→ client@email.com</div>
-                        <div style="margin-left:auto;background:rgba(255,255,255,.15);border-radius:4px;padding:2px 7px;font-size:10px;color:#fff;font-weight:700;">APERÇU</div>
-                    </div>
-                    <div style="padding:10px 12px;background:var(--bg-primary);">
-                        <div id="previewBody" style="font-size:12px;color:var(--text-secondary);line-height:1.7;"></div>
-                    </div>
-                </div>
-            </div>
-
             <!-- Actions -->
             <div class="tx-actions">
                 <button type="submit" class="btn btn-primary tx-btn-save">✅ {{ t.save_tx }}</button>
@@ -530,74 +493,13 @@
 
 {% block scripts %}
 <script>
-// ── Notification preview ──────────────────────────────────────────────────
-function updateNotifPreview() {
-    var emailVal  = document.getElementById('clientEmailInput').value.trim();
-    var locale    = document.getElementById('notifLocale').value;
-    var preview   = document.getElementById('notifPreview');
-    var hint      = document.getElementById('notifHint');
-    var checkIcon = document.getElementById('emailCheckIcon');
-    var previewTo = document.getElementById('previewTo');
-    var previewBody = document.getElementById('previewBody');
-    var hintText  = document.getElementById('notifHintText');
-
-    var validEmail = emailVal && emailVal.indexOf('@') > 0 && emailVal.indexOf('.') > emailVal.indexOf('@');
-
-    checkIcon.style.display = validEmail ? 'block' : 'none';
-
-    if (!validEmail) {
-        preview.style.display = 'none';
-        hint.style.display    = 'flex';
-        hintText.textContent  = locale === 'en'
-            ? "Enter the client's email — they will instantly receive a full receipt with all transaction details."
-            : "Entrez l'email du client — il recevra instantanément un reçu complet avec tous les détails de la transaction.";
-        return;
-    }
-
-    // Show preview
-    preview.style.display = 'block';
-    hint.style.display    = 'none';
-    previewTo.textContent = '→ ' + emailVal;
-
-    // Get client name from form for personalization
-    var txType = document.querySelector('[name="transaction_type"]') ? document.querySelector('[name="transaction_type"]').value : 'send';
-    var clientName = txType === 'send'
-        ? (document.getElementById('senderNameInput') ? document.getElementById('senderNameInput').value.split(' ')[0] : '')
-        : (document.getElementById('receiverNameInput') ? document.getElementById('receiverNameInput').value.split(' ')[0] : '');
-    var nameStr = clientName ? clientName : (locale === 'en' ? 'Client' : 'Client');
-
-    if (locale === 'en') {
-        previewBody.innerHTML =
-            '<strong>Hello ' + nameStr + ',</strong><br>' +
-            'Your transfer has been successfully recorded at BLUESKY Transactions.<br>' +
-            'A full receipt with reference number, amount, countries and date will be attached.<br><br>' +
-            '<em style="color:#0284c7;">Thank you for trusting BLUESKY Transactions! 💙</em>';
-    } else {
-        previewBody.innerHTML =
-            '<strong>Bonjour ' + nameStr + ',</strong><br>' +
-            'Votre transaction a été enregistrée avec succès chez BLUESKY Transactions.<br>' +
-            'Un reçu complet avec numéro de référence, montant, pays et date sera inclus.<br><br>' +
-            '<em style="color:#0284c7;">Merci de faire confiance à BLUESKY Transactions ! 💙</em>';
-    }
-}
-
-// Also update preview when sender/receiver name changes
-document.addEventListener('input', function(e) {
-    if (e.target.id === 'senderNameInput' || e.target.id === 'receiverNameInput') {
-        updateNotifPreview();
-    }
-});
-document.addEventListener('change', function(e) {
-    if (e.target.name === 'transaction_type') updateNotifPreview();
-});
-
 // ── Icon picker — requis (statut) ──────────────────────────────────────
 function pickIp(hiddenId, val, btn){
     var row = btn.closest('.ip-row');
     row.querySelectorAll('.ip-btn').forEach(function(b){ b.classList.remove('ip-active'); });
     btn.classList.add('ip-active');
     document.getElementById(hiddenId).value = val;
-    if(hiddenId === 'txType') { updateNotifPreview(); calcTotal(); }
+    if(hiddenId === 'txType') { calcTotal(); }
 }
 
 // ── Accordéon toggle ─────────────────────────────────────────────────────
@@ -618,7 +520,7 @@ function pickIpToggle(hiddenId, val, btn, chosenId, label){
         document.getElementById(hiddenId).value = '';
         if(chosenId) document.getElementById(chosenId).textContent = '—';
     }
-    if(hiddenId === 'txType') { updateNotifPreview(); calcTotal(); }
+    if(hiddenId === 'txType') { calcTotal(); }
 }
 
 // ── Flags & fees ─────────────────────────────────────────────────────────
