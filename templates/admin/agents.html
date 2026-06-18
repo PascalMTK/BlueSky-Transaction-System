@@ -90,26 +90,35 @@
 /* ── Action buttons ── */
 .ag-card-actions {
     padding: 14px 18px;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    display: flex;
+    flex-wrap: wrap;
     gap: 8px;
+}
+.ag-card-actions form {
+    flex: 1 1 calc(50% - 4px);
+    display: flex;
+    min-width: 0;
+}
+.ag-card-actions form.form-full {
+    flex: 1 1 100%;
 }
 .ac-btn {
     display: flex; align-items: center; justify-content: center; gap: 6px;
     padding: 9px 12px; border-radius: 10px; font-size: 13px; font-weight: 700;
     border: none; cursor: pointer; text-decoration: none; font-family: inherit;
     transition: opacity .15s, transform .1s;
+    flex: 1 1 auto;
 }
 .ac-btn:hover { opacity: .88; transform: translateY(-1px); }
 .ac-btn:active { transform: scale(.97); }
-.ac-btn-edit    { background: linear-gradient(135deg,#0284c7,#0ea5e9); color: #fff; }
-.ac-btn-pw      { background: linear-gradient(135deg,#7c3aed,#8b5cf6); color: #fff; }
+.ac-btn-edit    { background: linear-gradient(135deg,#0284c7,#0ea5e9); color: #fff; flex: 1 1 calc(50% - 4px); }
+.ac-btn-pw      { background: linear-gradient(135deg,#7c3aed,#8b5cf6); color: #fff; flex: 1 1 calc(50% - 4px); }
 .ac-btn-activate{ background: linear-gradient(135deg,#16a34a,#22c55e); color: #fff; }
 .ac-btn-deactivate{ background: linear-gradient(135deg,#b45309,#f59e0b); color: #fff; }
 .ac-btn-promote { background: linear-gradient(135deg,#6d28d9,#7c3aed); color: #fff; }
 .ac-btn-archive { background: rgba(239,68,68,.12); color: #dc2626; border: 1px solid rgba(239,68,68,.2); }
 .ac-btn-restore { background: rgba(34,197,94,.12); color: #16a34a; border: 1px solid rgba(34,197,94,.2); }
-.ac-btn-full { grid-column: 1 / -1; }
+.ac-btn-full { flex: 1 1 100%; }
 
 /* ── Filters ── */
 .ag-search-bar {
@@ -263,37 +272,36 @@
 
         <!-- Change password -->
         <button type="button" class="ac-btn ac-btn-pw"
-                onclick="openPwModal({{ agent.id }}, '{{ agent.name|escapejs }}')">
+                data-agent-id="{{ agent.id }}" data-agent-name="{{ agent.name }}"
+                onclick="openPwModal(this.dataset.agentId, this.dataset.agentName)">
             🔑 Mot de passe
         </button>
 
         <!-- Activate / Deactivate -->
-        <form method="POST" action="{% url 'admin_agent_status' agent.id %}" style="display:contents;">
+        <form method="POST" action="{% url 'admin_agent_status' agent.id %}">
             {% csrf_token %}
             {% if agent.status == 'active' %}
                 <input type="hidden" name="status" value="inactive">
-                <button type="submit" class="ac-btn ac-btn-deactivate">⏸ Désactiver</button>
+                <button type="submit" class="ac-btn ac-btn-deactivate" style="width:100%;">⏸ Désactiver</button>
             {% elif agent.status == 'pending' %}
                 <input type="hidden" name="status" value="active">
-                <button type="submit" class="ac-btn ac-btn-activate">✅ Activer</button>
+                <button type="submit" class="ac-btn ac-btn-activate" style="width:100%;">✅ Activer</button>
             {% else %}
                 <input type="hidden" name="status" value="active">
-                <button type="submit" class="ac-btn ac-btn-activate">▶ Réactiver</button>
+                <button type="submit" class="ac-btn ac-btn-activate" style="width:100%;">▶ Réactiver</button>
             {% endif %}
         </form>
 
         <!-- Promote to admin -->
-        <form method="POST" action="{% url 'admin_agent_promote' agent.id %}" style="display:contents;"
-              onsubmit="return confirm('Promouvoir {{ agent.name }} comme Administrateur ?');">
+        <form method="POST" action="{% url 'admin_agent_promote' agent.id %}">
             {% csrf_token %}
-            <button type="submit" class="ac-btn ac-btn-promote">⬆ Promouvoir Admin</button>
+            <button type="submit" class="ac-btn ac-btn-promote" style="width:100%;">⬆ Promouvoir Admin</button>
         </form>
 
         <!-- Archive (soft delete) -->
-        <form method="POST" action="{% url 'admin_agent_destroy' agent.id %}" style="display:contents;"
-              onsubmit="return confirm('Archiver {{ agent.name }} ? Ses données seront conservées.');">
+        <form method="POST" action="{% url 'admin_agent_destroy' agent.id %}" class="form-full">
             {% csrf_token %}
-            <button type="submit" class="ac-btn ac-btn-archive ac-btn-full">🗂 Archiver (données conservées)</button>
+            <button type="submit" class="ac-btn ac-btn-archive">🗂 Archiver (données conservées)</button>
         </form>
 
     </div>
@@ -337,16 +345,17 @@
             </div>
             <div class="ag-card-actions">
                 <!-- Restore -->
-                <form method="POST" action="{% url 'admin_agent_status' agent.id %}" style="display:contents;">
+                <form method="POST" action="{% url 'admin_agent_status' agent.id %}" class="form-full">
                     {% csrf_token %}
                     <input type="hidden" name="status" value="inactive">
-                    <button type="submit" class="ac-btn ac-btn-restore ac-btn-full">↩ Restaurer cet agent</button>
+                    <button type="submit" class="ac-btn ac-btn-restore">↩ Restaurer cet agent</button>
                 </form>
                 <!-- Edit -->
                 <a href="{% url 'admin_agent_edit' agent.id %}" class="ac-btn ac-btn-edit">✏️ Modifier</a>
                 <!-- Password -->
                 <button type="button" class="ac-btn ac-btn-pw"
-                        onclick="openPwModal({{ agent.id }}, '{{ agent.name|escapejs }}')">
+                        data-agent-id="{{ agent.id }}" data-agent-name="{{ agent.name }}"
+                        onclick="openPwModal(this.dataset.agentId, this.dataset.agentName)">
                     🔑 Mot de passe
                 </button>
             </div>
