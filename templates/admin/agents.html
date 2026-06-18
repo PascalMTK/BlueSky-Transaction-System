@@ -9,431 +9,351 @@
 
 {% block styles %}
 <style>
-/* ── Stat chips ─────────────────────────────────── */
-.ag-chips {
+/* ── Stats ── */
+.ag-stats {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
-    margin-bottom: 16px;
+    gap: 12px;
+    margin-bottom: 20px;
 }
-.ag-chip {
-    display: flex; align-items: center; gap: 11px;
+.ag-stat {
     background: var(--bg-card);
     border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 12px 16px;
-    transition: transform .15s, box-shadow .15s;
+    border-radius: 14px;
+    padding: 16px;
+    text-align: center;
 }
-.ag-chip:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
-.ag-chip-icon {
-    width: 38px; height: 38px; border-radius: 10px;
+.ag-stat-num { font-size: 28px; font-weight: 900; }
+.ag-stat-lbl { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .5px; margin-top: 2px; }
+.ag-stat.active .ag-stat-num  { color: #22c55e; }
+.ag-stat.pending .ag-stat-num { color: #f59e0b; }
+.ag-stat.inactive .ag-stat-num{ color: #ef4444; }
+
+/* ── Cards grid ── */
+.ag-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+    margin-top: 8px;
+}
+
+/* ── Agent card ── */
+.ag-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: box-shadow .2s, transform .2s;
+}
+.ag-card:hover { box-shadow: 0 8px 32px rgba(0,0,0,.12); transform: translateY(-2px); }
+.ag-card.pending { border-color: #f59e0b; border-width: 2px; }
+.ag-card.deleted { opacity: .7; }
+
+.ag-card-top {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 18px 18px 12px;
+    border-bottom: 1px solid var(--border);
+}
+.ag-card-avatar {
+    width: 52px; height: 52px; border-radius: 50%; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
-    font-size: 18px; flex-shrink: 0;
-}
-.ag-chip-val  { font-size: 22px; font-weight: 900; line-height: 1; color: var(--text-heading); }
-.ag-chip-lbl  { font-size: 10px; font-weight: 700; color: var(--text-muted);
-                text-transform: uppercase; letter-spacing: .5px; margin-top: 2px; }
-
-/* chip color variants */
-.ag-chip-total  .ag-chip-icon { background: rgba(2,132,199,.10); }
-.ag-chip-active .ag-chip-icon { background: rgba(34,197,94,.10); }
-.ag-chip-active .ag-chip-val  { color: #22c55e; }
-.ag-chip-pending .ag-chip-icon{ background: rgba(245,158,11,.10); }
-.ag-chip-pending .ag-chip-val { color: #f59e0b; }
-.ag-chip-inactive .ag-chip-icon{ background: rgba(239,68,68,.10); }
-.ag-chip-inactive .ag-chip-val { color: #ef4444; }
-
-.ag-pulse {
-    display: none; width: 8px; height: 8px; border-radius: 50%;
-    background: #f59e0b; margin-left: auto; flex-shrink: 0;
-    animation: pulse 1.4s infinite;
-}
-
-/* ── Agent avatar cell ──────────────────────────── */
-.ag-cell-name { display: flex; align-items: center; gap: 10px; }
-.ag-avatar {
-    width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 13px; font-weight: 800; color: white;
-    background: linear-gradient(135deg, var(--sky-primary), var(--sky-secondary));
+    font-size: 18px; font-weight: 900; color: white;
+    background: linear-gradient(135deg, #0284c7, #0ea5e9);
     overflow: hidden;
 }
-.ag-avatar img { width: 100%; height: 100%; object-fit: cover; }
-.ag-name  { font-size: 13.5px; font-weight: 700; color: var(--text-primary); }
-.ag-addr  { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+.ag-card-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.ag-card-name { font-size: 15px; font-weight: 800; color: var(--text-primary); }
+.ag-card-code { font-size: 11px; font-family: monospace; font-weight: 700; color: var(--text-muted); background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; margin-top: 3px; display: inline-block; }
 
-/* ── Code badge ─────────────────────────────────── */
-.ag-code {
-    font-family: monospace; font-size: 11px; font-weight: 700;
-    background: var(--bg-secondary); color: var(--text-secondary);
-    border: 1px solid var(--border); border-radius: 5px;
-    padding: 2px 7px; letter-spacing: .4px;
+.ag-card-badge {
+    margin-left: auto; flex-shrink: 0;
+    font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px;
 }
+.ag-card-badge.active   { background: rgba(34,197,94,.12);  color: #16a34a; }
+.ag-card-badge.pending  { background: rgba(245,158,11,.15); color: #b45309; }
+.ag-card-badge.inactive { background: rgba(239,68,68,.12);  color: #dc2626; }
+.ag-card-badge.deleted  { background: rgba(100,116,139,.12); color: #64748b; }
 
-/* ── Country pill ───────────────────────────────── */
-.ag-country {
-    display: inline-flex; align-items: center; gap: 5px;
-    font-size: 12px; font-weight: 600; color: var(--text-secondary);
-    white-space: nowrap;
+.ag-card-info {
+    padding: 12px 18px;
+    display: flex; flex-direction: column; gap: 5px;
+    border-bottom: 1px solid var(--border);
 }
-
-/* ── Action buttons ─────────────────────────────── */
-.ag-actions { display: flex; gap: 5px; align-items: center; flex-wrap: nowrap; }
-.ag-btn {
-    display: inline-flex; align-items: center; justify-content: center; gap: 4px;
-    border: none; border-radius: 8px; cursor: pointer; font-size: 11.5px;
-    font-weight: 700; padding: 5px 10px; transition: all .15s; text-decoration: none;
-    font-family: inherit; white-space: nowrap;
+.ag-card-row {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--text-secondary);
 }
-.ag-btn-activate  { background: rgba(34,197,94,.12);  color: #16a34a; }
-.ag-btn-activate:hover  { background: rgba(34,197,94,.22); }
-.ag-btn-deactivate{ background: rgba(245,158,11,.12); color: #b45309; }
-.ag-btn-deactivate:hover{ background: rgba(245,158,11,.22); }
-.ag-btn-promote   { background: rgba(139,92,246,.10); color: #7c3aed; }
-.ag-btn-promote:hover   { background: rgba(139,92,246,.20); }
-.ag-btn-delete    { background: rgba(239,68,68,.10);  color: #dc2626; }
-.ag-btn-delete:hover    { background: rgba(239,68,68,.20); }
-.ag-btn-pw        { background: rgba(2,132,199,.10);  color: #0284c7; }
-.ag-btn-pw:hover        { background: rgba(2,132,199,.20); }
+.ag-card-row span:first-child { font-size: 14px; width: 20px; text-align: center; flex-shrink: 0; }
 
-/* ── Password modal ─────────────────────────────── */
+/* ── Action buttons ── */
+.ag-card-actions {
+    padding: 14px 18px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+.ac-btn {
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 9px 12px; border-radius: 10px; font-size: 13px; font-weight: 700;
+    border: none; cursor: pointer; text-decoration: none; font-family: inherit;
+    transition: opacity .15s, transform .1s;
+}
+.ac-btn:hover { opacity: .88; transform: translateY(-1px); }
+.ac-btn:active { transform: scale(.97); }
+.ac-btn-edit    { background: linear-gradient(135deg,#0284c7,#0ea5e9); color: #fff; }
+.ac-btn-pw      { background: linear-gradient(135deg,#7c3aed,#8b5cf6); color: #fff; }
+.ac-btn-activate{ background: linear-gradient(135deg,#16a34a,#22c55e); color: #fff; }
+.ac-btn-deactivate{ background: linear-gradient(135deg,#b45309,#f59e0b); color: #fff; }
+.ac-btn-promote { background: linear-gradient(135deg,#6d28d9,#7c3aed); color: #fff; }
+.ac-btn-archive { background: rgba(239,68,68,.12); color: #dc2626; border: 1px solid rgba(239,68,68,.2); }
+.ac-btn-restore { background: rgba(34,197,94,.12); color: #16a34a; border: 1px solid rgba(34,197,94,.2); }
+.ac-btn-full { grid-column: 1 / -1; }
+
+/* ── Filters ── */
+.ag-search-bar {
+    display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end;
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 14px; padding: 16px 18px; margin-bottom: 20px;
+}
+.ag-search-bar input, .ag-search-bar select {
+    padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 10px;
+    background: var(--bg-secondary); color: var(--text-primary);
+    font-size: 13px; min-width: 140px;
+}
+.ag-search-bar input:focus, .ag-search-bar select:focus { outline: none; border-color: var(--sky-primary); }
+
+/* ── Archive section ── */
+.ag-archive-section {
+    margin-top: 28px; border-radius: 14px;
+    border: 1.5px dashed var(--border); overflow: hidden;
+}
+.ag-archive-header {
+    padding: 14px 20px; display: flex; align-items: center; gap: 10px;
+    cursor: pointer; font-size: 14px; font-weight: 700; color: var(--text-muted);
+    background: var(--bg-secondary);
+    user-select: none;
+}
+.ag-archive-body { display: none; padding: 16px; }
+.ag-archive-body.open { display: block; }
+
+/* ── Password Modal ── */
 #pwModal {
     display: none; position: fixed; inset: 0; z-index: 9999;
-    background: rgba(0,0,0,.55); backdrop-filter: blur(3px);
+    background: rgba(0,0,0,.55); backdrop-filter: blur(4px);
     align-items: center; justify-content: center; padding: 16px;
 }
 #pwModal.open { display: flex; }
 .pw-box {
-    background: var(--bg-card); border-radius: 18px;
+    background: var(--bg-card); border-radius: 20px;
     padding: 32px; width: 100%; max-width: 420px;
     box-shadow: 0 24px 80px rgba(0,0,0,.35);
     border: 1px solid var(--border);
 }
-.pw-title { font-size: 17px; font-weight: 900; color: var(--text-primary); margin: 0 0 6px; }
-.pw-sub   { font-size: 13px; color: var(--text-muted); margin: 0 0 24px; }
-.pw-field { margin-bottom: 16px; }
-.pw-label { display: block; font-size: 12.5px; font-weight: 700; color: var(--text-secondary); margin-bottom: 6px; }
+.pw-title { font-size: 18px; font-weight: 900; color: var(--text-primary); margin: 0 0 4px; }
+.pw-sub   { font-size: 13px; color: var(--text-muted); margin: 0 0 22px; }
+.pw-field { margin-bottom: 14px; }
+.pw-label { display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px; }
 .pw-input {
-    width: 100%; padding: 10px 14px; font-size: 14px; font-family: inherit;
-    border: 1px solid var(--border); border-radius: 10px;
-    background: var(--bg-secondary); color: var(--text-primary);
-    transition: border-color .15s;
+    width: 100%; padding: 11px 14px; font-size: 14px; font-family: inherit;
+    border: 1.5px solid var(--border); border-radius: 10px;
+    background: var(--bg-secondary); color: var(--text-primary); box-sizing: border-box;
 }
 .pw-input:focus { outline: none; border-color: var(--sky-primary); }
-.pw-actions { display: flex; gap: 10px; margin-top: 24px; }
-.pw-cancel {
-    flex: 1; padding: 11px; background: var(--bg-secondary); border: 1px solid var(--border);
-    border-radius: 10px; cursor: pointer; font-size: 13px; font-weight: 700;
-    color: var(--text-secondary); font-family: inherit;
-}
-.pw-submit {
-    flex: 2; padding: 11px; background: linear-gradient(135deg,#0284c7,#0ea5e9);
-    color: white; border: none; border-radius: 10px; cursor: pointer;
-    font-size: 13px; font-weight: 800; font-family: inherit;
-}
+.pw-actions { display: flex; gap: 10px; margin-top: 22px; }
+.pw-cancel { flex: 1; padding: 11px; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 10px; cursor: pointer; font-size: 13px; font-weight: 700; color: var(--text-muted); font-family: inherit; }
+.pw-submit { flex: 2; padding: 11px; background: linear-gradient(135deg,#7c3aed,#8b5cf6); color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 13px; font-weight: 800; font-family: inherit; }
 
-/* ── Empty state ────────────────────────────────── */
-.ag-empty {
-    text-align: center; padding: 60px 20px; color: var(--text-muted);
-}
+/* ── Empty ── */
+.ag-empty { text-align: center; padding: 60px 20px; color: var(--text-muted); }
 .ag-empty-icon { font-size: 48px; margin-bottom: 12px; opacity: .4; }
-.ag-empty-text { font-size: 15px; font-weight: 600; }
 
-/* ── Responsive ─────────────────────────────────── */
-@media (max-width: 900px) {
-    .ag-chips { grid-template-columns: 1fr 1fr; }
-}
-
-/* Tablet 768px */
-@media (max-width: 768px) {
-    .ag-cell-name { gap: 8px; }
-    .ag-avatar    { width: 32px; height: 32px; font-size: 11px; }
-    .ag-name      { font-size: 12.5px; }
-    .ag-addr      { display: none; }
-    .ag-country   { font-size: 11px; }
-    .ag-btn       { padding: 4px 8px; font-size: 11px; }
-}
-
-/* Mobile 480px */
-@media (max-width: 480px) {
-    .ag-chips     { grid-template-columns: 1fr 1fr; gap: 8px; }
-    .ag-chip      { padding: 10px 12px; }
-    .ag-chip-val  { font-size: 18px; }
-    .ag-chip-icon { width: 32px; height: 32px; font-size: 15px; }
-
-    .ag-name      { font-size: 12px; }
-    .ag-avatar    { width: 30px; height: 30px; font-size: 10px; }
-    .ag-cell-name { gap: 7px; }
-
-    /* Hide button text on mobile — keep only icon */
-    .ag-btn-text  { display: none; }
-    .ag-btn       { padding: 5px 8px; font-size: 13px; border-radius: 8px; }
-    .ag-actions   { gap: 3px; }
-
-    /* Badge compact */
-    .badge-status { font-size: 10.5px; padding: 3px 7px; gap: 3px; }
-}
-
-/* Small phone 360px */
-@media (max-width: 360px) {
-    .ag-chips     { grid-template-columns: 1fr 1fr; gap: 6px; }
-    .ag-chip      { padding: 8px 10px; gap: 8px; }
-    .ag-chip-val  { font-size: 16px; }
-    .ag-chip-icon { width: 28px; height: 28px; font-size: 13px; }
-    .ag-chip-lbl  { font-size: 9px; }
-
-    .ag-btn       { padding: 4px 6px; font-size: 12px; }
-    .ag-actions   { gap: 2px; }
+@media(max-width:900px){ .ag-stats { grid-template-columns: 1fr 1fr; } }
+@media(max-width:580px){
+    .ag-grid { grid-template-columns: 1fr; }
+    .ag-stats { grid-template-columns: repeat(4,1fr); gap: 8px; }
+    .ag-stat { padding: 12px 8px; }
+    .ag-stat-num { font-size: 22px; }
 }
 </style>
 {% endblock %}
 
 {% block content %}
+{% include 'partials/messages.html' %}
 
-<!-- Filters -->
-<div class="filters-bar">
-    <form method="GET" action="{% url 'admin_agents' %}" style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;width:100%;">
-        <div class="filter-group filter-group-search">
-            <label class="filter-label">🔍 {{ t.search }}</label>
-            <input type="text" name="q" class="filter-control" placeholder="{{ t.search_agent }}" value="{{ q }}">
-        </div>
-        <div class="filter-group">
-            <label class="filter-label">📋 {{ t.status }}</label>
-            <select name="status" class="filter-control">
-                <option value="">{{ t.all_status }}</option>
-                <option value="active"   {% if status_filter == 'active' %}selected{% endif %}>✅ {{ t.status_active }}</option>
-                <option value="pending"  {% if status_filter == 'pending' %}selected{% endif %}>⏳ {{ t.status_pending }}</option>
-                <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>❌ {{ t.status_inactive }}</option>
-            </select>
-        </div>
-        <div class="filter-group">
-            <label class="filter-label">🌍 {{ t.operating_countries }}</label>
-            <select name="country_id" class="filter-control">
-                <option value="">{{ t.all_countries_filter }}</option>
-                {% for c in countries %}
-                    <option value="{{ c.id }}" {% if country_filter == c.id|stringformat:"s" %}selected{% endif %}>{{ c.flag_emoji }} {{ c.name }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;">
-            <button type="submit" class="btn btn-primary btn-sm">🔍 {{ t.filter_btn }}</button>
-            <a href="{% url 'admin_agents' %}" class="btn btn-secondary btn-sm">↺</a>
-        </div>
-    </form>
+<!-- Search / Filters -->
+<form method="GET" action="{% url 'admin_agents' %}">
+<div class="ag-search-bar">
+    <input type="text" name="q" placeholder="🔍 Rechercher un agent..." value="{{ q }}">
+    <select name="status">
+        <option value="">Tous les statuts</option>
+        <option value="active"   {% if status_filter == 'active' %}selected{% endif %}>✅ Actif</option>
+        <option value="pending"  {% if status_filter == 'pending' %}selected{% endif %}>⏳ En attente</option>
+        <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>❌ Inactif</option>
+    </select>
+    <select name="country_id">
+        <option value="">Tous les pays</option>
+        {% for c in countries %}
+        <option value="{{ c.id }}" {% if country_filter == c.id|stringformat:"s" %}selected{% endif %}>{{ c.flag_emoji }} {{ c.name }}</option>
+        {% endfor %}
+    </select>
+    <button type="submit" style="padding:8px 18px;background:linear-gradient(135deg,#0284c7,#0ea5e9);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;">Filtrer</button>
+    <a href="{% url 'admin_agents' %}" style="padding:8px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;font-weight:700;color:var(--text-muted);text-decoration:none;">↺</a>
 </div>
+</form>
 
-<!-- Stat chips -->
-<div class="ag-chips">
-    <div class="ag-chip ag-chip-total">
-        <div class="ag-chip-icon">👥</div>
-        <div>
-            <div class="ag-chip-val">{{ agents|length }}</div>
-            <div class="ag-chip-lbl">{{ t.agent_found }}</div>
-        </div>
+<!-- Stats -->
+<div class="ag-stats">
+    <div class="ag-stat">
+        <div class="ag-stat-num" style="color:var(--sky-primary);" id="sTotal">{{ agents|length }}</div>
+        <div class="ag-stat-lbl">Total</div>
     </div>
-    <div class="ag-chip ag-chip-active">
-        <div class="ag-chip-icon">✅</div>
-        <div>
-            <div class="ag-chip-val" id="aActive">—</div>
-            <div class="ag-chip-lbl">{{ t.status_active }}</div>
-        </div>
+    <div class="ag-stat active">
+        <div class="ag-stat-num" id="sActive">—</div>
+        <div class="ag-stat-lbl">Actifs</div>
     </div>
-    <div class="ag-chip ag-chip-pending" style="position:relative;">
-        <div class="ag-chip-icon">⏳</div>
-        <div>
-            <div class="ag-chip-val" id="aPending">—</div>
-            <div class="ag-chip-lbl">{{ t.status_pending }}</div>
-        </div>
-        <div class="ag-pulse" id="pendingDot"></div>
+    <div class="ag-stat pending">
+        <div class="ag-stat-num" id="sPending">—</div>
+        <div class="ag-stat-lbl">En attente</div>
     </div>
-    <div class="ag-chip ag-chip-inactive">
-        <div class="ag-chip-icon">❌</div>
-        <div>
-            <div class="ag-chip-val" id="aInactive">—</div>
-            <div class="ag-chip-lbl">{{ t.status_inactive }}</div>
-        </div>
+    <div class="ag-stat inactive">
+        <div class="ag-stat-num" id="sInactive">—</div>
+        <div class="ag-stat-lbl">Inactifs</div>
     </div>
 </div>
 
-<!-- Table card -->
-<div class="table-card card">
-    <div class="card-header">
+<!-- Agent cards -->
+{% if agents %}
+<div class="ag-grid">
+{% for agent in agents %}
+<div class="ag-card {{ agent.status }}" data-status="{{ agent.status }}">
+
+    <!-- Top: avatar + name + badge -->
+    <div class="ag-card-top">
+        <div class="ag-card-avatar">
+            {% if agent.photo_url %}<img src="{{ agent.photo_url }}" alt="">{% else %}{{ agent.name|initials }}{% endif %}
+        </div>
         <div>
-            <div class="card-title">👥 {{ t.agents_title }}</div>
-            <div class="card-subtitle">{{ agents|length }} {{ t.agent_found }}</div>
+            <div class="ag-card-name">{{ agent.name }}</div>
+            {% if agent.agent_code %}<span class="ag-card-code">{{ agent.agent_code }}</span>{% endif %}
         </div>
+        <span class="ag-card-badge {{ agent.status }}">
+            {% if agent.status == 'active' %}✅ Actif
+            {% elif agent.status == 'pending' %}⏳ En attente
+            {% else %}❌ Inactif{% endif %}
+        </span>
     </div>
-    <div class="table-scroll">
-        {% if agents %}
-        <table class="bsky-table">
-            <thead>
-                <tr>
-                    <th>{{ t.agent_col }}</th>
-                    <th class="hide-mobile">{{ t.email }}</th>
-                    <th class="hide-mobile">{{ t.phone }}</th>
-                    <th class="hide-mobile">{{ t.code }}</th>
-                    <th>{{ t.operating_countries }}</th>
-                    <th>{{ t.status }}</th>
-                    <th class="hide-mobile">{{ t.registration }}</th>
-                    <th>{{ t.actions }}</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for agent in agents %}
-                <tr class="agent-row" data-status="{{ agent.status }}"
-                    {% if agent.status == 'pending' %}style="background:rgba(245,158,11,.03);"{% endif %}>
 
-                    <!-- Agent name + avatar -->
-                    <td>
-                        <div class="ag-cell-name">
-                            <div class="ag-avatar">
-                                {% if agent.photo_url %}<img src="{{ agent.photo_url }}" alt="">{% else %}{{ agent.name|initials }}{% endif %}
-                            </div>
-                            <div>
-                                <div class="ag-name">{{ agent.name }}</div>
-                                {% if agent.address %}<div class="ag-addr">{{ agent.address|limit:28 }}</div>{% endif %}
-                            </div>
-                        </div>
-                    </td>
+    <!-- Info rows -->
+    <div class="ag-card-info">
+        <div class="ag-card-row"><span>✉️</span><span>{{ agent.email }}</span></div>
+        {% if agent.phone %}<div class="ag-card-row"><span>📞</span><span>{{ agent.phone }}</span></div>{% endif %}
+        {% if agent.country %}<div class="ag-card-row"><span>🌍</span><span>{{ agent.country.flag_emoji }} {{ agent.country.name }}</span></div>{% endif %}
+        <div class="ag-card-row"><span>📅</span><span>{{ agent.created_at|date:"d/m/Y" }}</span></div>
+    </div>
 
-                    <!-- Email -->
-                    <td class="hide-mobile" style="font-size:13px;color:var(--text-secondary);">
-                        {{ agent.email }}
-                    </td>
+    <!-- Action buttons -->
+    <div class="ag-card-actions">
 
-                    <!-- Phone -->
-                    <td class="hide-mobile" style="font-size:13px;color:var(--text-secondary);">
-                        {{ agent.phone|default:"—" }}
-                    </td>
+        <!-- Edit -->
+        <a href="{% url 'admin_agent_edit' agent.id %}" class="ac-btn ac-btn-edit">
+            ✏️ Modifier
+        </a>
 
-                    <!-- Code -->
-                    <td class="hide-mobile">
-                        {% if agent.agent_code %}<span class="ag-code">{{ agent.agent_code }}</span>{% else %}—{% endif %}
-                    </td>
+        <!-- Change password -->
+        <button type="button" class="ac-btn ac-btn-pw"
+                onclick="openPwModal({{ agent.id }}, '{{ agent.name|escapejs }}')">
+            🔑 Mot de passe
+        </button>
 
-                    <!-- Country -->
-                    <td>
-                        {% if agent.country %}
-                        <span class="ag-country">{{ agent.country.flag_emoji }} {{ agent.country.name }}</span>
-                        {% else %}—{% endif %}
-                    </td>
+        <!-- Activate / Deactivate -->
+        <form method="POST" action="{% url 'admin_agent_status' agent.id %}" style="display:contents;">
+            {% csrf_token %}
+            {% if agent.status == 'active' %}
+                <input type="hidden" name="status" value="inactive">
+                <button type="submit" class="ac-btn ac-btn-deactivate">⏸ Désactiver</button>
+            {% elif agent.status == 'pending' %}
+                <input type="hidden" name="status" value="active">
+                <button type="submit" class="ac-btn ac-btn-activate">✅ Activer</button>
+            {% else %}
+                <input type="hidden" name="status" value="active">
+                <button type="submit" class="ac-btn ac-btn-activate">▶ Réactiver</button>
+            {% endif %}
+        </form>
 
-                    <!-- Status badge -->
-                    <td>
-                        <span class="badge-status status-{{ agent.status }}">
-                            {% if agent.status == 'active' %}✅ {{ t.status_active }}
-                            {% elif agent.status == 'pending' %}⏳ {{ t.status_pending }}
-                            {% else %}❌ {{ t.status_inactive }}{% endif %}
-                        </span>
-                    </td>
+        <!-- Promote to admin -->
+        <form method="POST" action="{% url 'admin_agent_promote' agent.id %}" style="display:contents;"
+              onsubmit="return confirm('Promouvoir {{ agent.name }} comme Administrateur ?');">
+            {% csrf_token %}
+            <button type="submit" class="ac-btn ac-btn-promote">⬆ Promouvoir Admin</button>
+        </form>
 
-                    <!-- Date -->
-                    <td class="hide-mobile" style="font-size:12px;color:var(--text-muted);">
-                        {{ agent.created_at|date:"d/m/Y" }}
-                    </td>
+        <!-- Archive (soft delete) -->
+        <form method="POST" action="{% url 'admin_agent_destroy' agent.id %}" style="display:contents;"
+              onsubmit="return confirm('Archiver {{ agent.name }} ? Ses données seront conservées.');">
+            {% csrf_token %}
+            <button type="submit" class="ac-btn ac-btn-archive ac-btn-full">🗂 Archiver (données conservées)</button>
+        </form>
 
-                    <!-- Actions -->
-                    <td>
-                        <div class="ag-actions">
-                            <!-- Activate / Deactivate -->
-                            <form method="POST" action="{% url 'admin_agent_status' agent.id %}" style="display:contents;">
-                                {% csrf_token %}
-                                {% if agent.status == 'active' %}
-                                    <input type="hidden" name="status" value="inactive">
-                                    <button type="submit" class="ag-btn ag-btn-deactivate" title="Désactiver">⏸ <span class="ag-btn-text">Désactiver</span></button>
-                                {% elif agent.status == 'pending' %}
-                                    <input type="hidden" name="status" value="active">
-                                    <button type="submit" class="ag-btn ag-btn-activate" title="Activer">✅ <span class="ag-btn-text">Activer</span></button>
-                                {% else %}
-                                    <input type="hidden" name="status" value="active">
-                                    <button type="submit" class="ag-btn ag-btn-activate" title="Réactiver">▶ <span class="ag-btn-text">Réactiver</span></button>
-                                {% endif %}
-                            </form>
-                            <!-- Promote to admin -->
-                            <form method="POST" action="{% url 'admin_agent_promote' agent.id %}" style="display:contents;"
-                                  onsubmit="return confirm('Promouvoir {{ agent.name }} au rang d\'Admin ?');">
-                                {% csrf_token %}
-                                <button type="submit" class="ag-btn ag-btn-promote" title="Promouvoir Admin">⬆ <span class="ag-btn-text">Admin</span></button>
-                            </form>
-                            <!-- Change password -->
-                            <button type="button" class="ag-btn ag-btn-pw"
-                                    onclick="openPwModal({{ agent.id }}, '{{ agent.name|escapejs }}')"
-                                    title="Changer mot de passe">
-                                🔑 <span class="ag-btn-text">Mot de passe</span>
-                            </button>
-                            <!-- Edit -->
-                            <a href="{% url 'admin_agent_edit' agent.id %}" class="ag-btn" title="Modifier"
-                               style="background:linear-gradient(135deg,#0284c7,#0ea5e9);color:#fff;text-decoration:none;display:inline-flex;align-items:center;gap:4px;">
-                               ✏️ <span class="ag-btn-text">Modifier</span>
-                            </a>
-                            <!-- Delete -->
-                            <form method="POST" action="{% url 'admin_agent_destroy' agent.id %}" style="display:contents;"
-                                  onsubmit="return confirm('Supprimer cet agent ?');">
-                                {% csrf_token %}
-                                <button type="submit" class="ag-btn ag-btn-delete" title="Supprimer">🗑 <span class="ag-btn-text">Supprimer</span></button>
-                            </form>
-                        </div>
-                    </td>
-
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        {% else %}
-        <div class="ag-empty">
-            <div class="ag-empty-icon">👥</div>
-            <div class="ag-empty-text">{{ t.no_agents }}</div>
-        </div>
-        {% endif %}
     </div>
 </div>
+{% endfor %}
+</div>
 
-<!-- Deleted agents archive -->
+{% else %}
+<div class="ag-empty">
+    <div class="ag-empty-icon">👥</div>
+    <div style="font-size:15px;font-weight:600;">Aucun agent trouvé</div>
+</div>
+{% endif %}
+
+<!-- Archived agents -->
 {% if deleted_agents %}
-<div class="card" style="margin-top:24px;">
-    <details>
-        <summary style="cursor:pointer;padding:16px 20px;font-weight:700;font-size:14px;color:var(--sky-text-muted);list-style:none;display:flex;align-items:center;gap:8px;">
-            🗂 Agents archivés ({{ deleted_agents|length }}) — données conservées
-        </summary>
-        <div style="overflow-x:auto;">
-            <table class="ag-table" style="opacity:.75;">
-                <thead><tr>
-                    <th>Nom</th><th>Email</th><th>Code</th><th>Pays</th><th>Actions</th>
-                </tr></thead>
-                <tbody>
-                {% for agent in deleted_agents %}
-                <tr>
-                    <td><strong>{{ agent.name }}</strong></td>
-                    <td style="font-size:12px;">{{ agent.email }}</td>
-                    <td><code style="font-size:11px;">{{ agent.agent_code }}</code></td>
-                    <td>{{ agent.country.flag_emoji|default:"" }} {{ agent.country.name|default:"—" }}</td>
-                    <td>
-                        <div style="display:flex;gap:6px;flex-wrap:wrap;">
-                            <!-- Restore -->
-                            <form method="POST" action="{% url 'admin_agent_status' agent.id %}" style="display:contents;">
-                                {% csrf_token %}
-                                <input type="hidden" name="status" value="inactive">
-                                <button type="submit" class="ag-btn ag-btn-activate" title="Restaurer">↩ Restaurer</button>
-                            </form>
-                            <!-- Edit -->
-                            <a href="{% url 'admin_agent_edit' agent.id %}" class="ag-btn" title="Modifier"
-                               style="background:linear-gradient(135deg,#0284c7,#0ea5e9);color:#fff;text-decoration:none;display:inline-flex;align-items:center;gap:4px;">
-                               ✏️ Modifier
-                            </a>
-                            <!-- Password -->
-                            <button type="button" class="ag-btn ag-btn-pw"
-                                    onclick="openPwModal({{ agent.id }}, '{{ agent.name|escapejs }}')"
-                                    title="Changer mot de passe">
-                                🔑 Mot de passe
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-                {% endfor %}
-                </tbody>
-            </table>
+<div class="ag-archive-section">
+    <div class="ag-archive-header" onclick="toggleArchive()">
+        <span>🗂</span>
+        <span>Agents archivés — données conservées ({{ deleted_agents|length }})</span>
+        <span id="archiveChevron" style="margin-left:auto;">▼</span>
+    </div>
+    <div class="ag-archive-body" id="archiveBody">
+        <div class="ag-grid">
+        {% for agent in deleted_agents %}
+        <div class="ag-card deleted">
+            <div class="ag-card-top">
+                <div class="ag-card-avatar" style="background:linear-gradient(135deg,#64748b,#94a3b8);">
+                    {{ agent.name|initials }}
+                </div>
+                <div>
+                    <div class="ag-card-name">{{ agent.name }}</div>
+                    {% if agent.agent_code %}<span class="ag-card-code">{{ agent.agent_code }}</span>{% endif %}
+                </div>
+                <span class="ag-card-badge deleted">🗂 Archivé</span>
+            </div>
+            <div class="ag-card-info">
+                <div class="ag-card-row"><span>✉️</span><span>{{ agent.email }}</span></div>
+                {% if agent.phone %}<div class="ag-card-row"><span>📞</span><span>{{ agent.phone }}</span></div>{% endif %}
+                {% if agent.country %}<div class="ag-card-row"><span>🌍</span><span>{{ agent.country.flag_emoji }} {{ agent.country.name }}</span></div>{% endif %}
+            </div>
+            <div class="ag-card-actions">
+                <!-- Restore -->
+                <form method="POST" action="{% url 'admin_agent_status' agent.id %}" style="display:contents;">
+                    {% csrf_token %}
+                    <input type="hidden" name="status" value="inactive">
+                    <button type="submit" class="ac-btn ac-btn-restore ac-btn-full">↩ Restaurer cet agent</button>
+                </form>
+                <!-- Edit -->
+                <a href="{% url 'admin_agent_edit' agent.id %}" class="ac-btn ac-btn-edit">✏️ Modifier</a>
+                <!-- Password -->
+                <button type="button" class="ac-btn ac-btn-pw"
+                        onclick="openPwModal({{ agent.id }}, '{{ agent.name|escapejs }}')">
+                    🔑 Mot de passe
+                </button>
+            </div>
         </div>
-    </details>
+        {% endfor %}
+        </div>
+    </div>
 </div>
 {% endif %}
 
@@ -446,15 +366,15 @@
             {% csrf_token %}
             <div class="pw-field">
                 <label class="pw-label">Nouveau mot de passe</label>
-                <input type="password" name="new_password" class="pw-input" placeholder="Min. 8 caractères" required minlength="8" autocomplete="new-password">
+                <input type="password" name="new_password" class="pw-input" placeholder="Minimum 8 caractères" required minlength="8" autocomplete="new-password">
             </div>
             <div class="pw-field">
                 <label class="pw-label">Confirmer le mot de passe</label>
-                <input type="password" name="confirm_password" class="pw-input" placeholder="Répétez le mot de passe" required minlength="8" autocomplete="new-password">
+                <input type="password" name="confirm_password" class="pw-input" placeholder="Répéter le mot de passe" required minlength="8" autocomplete="new-password">
             </div>
             <div class="pw-actions">
                 <button type="button" class="pw-cancel" onclick="closePwModal()">Annuler</button>
-                <button type="submit" class="pw-submit">✅ Enregistrer</button>
+                <button type="submit" class="pw-submit">🔑 Enregistrer</button>
             </div>
         </form>
     </div>
@@ -465,26 +385,21 @@
 {% block scripts %}
 <script>
 (function(){
-    var rows = document.querySelectorAll('.agent-row');
+    var cards = document.querySelectorAll('.ag-card[data-status]');
     var ac=0, pc=0, ic=0;
-    rows.forEach(function(r){
-        var s = r.dataset.status;
+    cards.forEach(function(c){
+        var s = c.dataset.status;
         if(s==='active') ac++;
         else if(s==='pending') pc++;
-        else ic++;
+        else if(s==='inactive') ic++;
     });
-    var ea = document.getElementById('aActive');
-    var ep = document.getElementById('aPending');
-    var ei = document.getElementById('aInactive');
-    var pd = document.getElementById('pendingDot');
-    if(ea) ea.textContent = ac;
-    if(ep) ep.textContent = pc;
-    if(ei) ei.textContent = ic;
-    if(pd && pc > 0) pd.style.display = 'block';
+    document.getElementById('sActive').textContent  = ac;
+    document.getElementById('sPending').textContent = pc;
+    document.getElementById('sInactive').textContent= ic;
 })();
 
 function openPwModal(agentId, agentName) {
-    document.getElementById('pwAgentName').textContent = 'Agent : ' + agentName;
+    document.getElementById('pwAgentName').textContent = agentName;
     document.getElementById('pwForm').action = '/admin/agents/' + agentId + '/password/';
     document.getElementById('pwModal').classList.add('open');
     document.querySelector('#pwForm input[name="new_password"]').value = '';
@@ -497,5 +412,12 @@ function closePwModal() {
 document.getElementById('pwModal').addEventListener('click', function(e) {
     if (e.target === this) closePwModal();
 });
+
+function toggleArchive() {
+    var body = document.getElementById('archiveBody');
+    var chev = document.getElementById('archiveChevron');
+    body.classList.toggle('open');
+    chev.textContent = body.classList.contains('open') ? '▲' : '▼';
+}
 </script>
 {% endblock %}
