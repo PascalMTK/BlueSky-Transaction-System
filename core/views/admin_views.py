@@ -251,7 +251,7 @@ def dashboard(request):
 @admin_required
 def agents(request):
     user = get_auth_user(request)
-    qs = User.objects.filter(role='agent').select_related('country').order_by('-created_at')
+    qs = User.objects.filter(role='agent').exclude(status='deleted').select_related('country').order_by('-created_at')
     q          = request.GET.get('q', '')
     status_f   = request.GET.get('status', '')
     country_f  = request.GET.get('country_id', '')
@@ -259,13 +259,15 @@ def agents(request):
     if status_f: qs = qs.filter(status=status_f)
     if country_f: qs = qs.filter(country_id=country_f)
     countries = Country.objects.filter(is_active=True)
+    deleted_agents = User.objects.filter(role='agent', status='deleted').select_related('country').order_by('-updated_at')
     return render(request, 'admin/agents.html', {
-        'agents':    qs,
-        'countries': countries,
-        'q':         q,
+        'agents':         qs,
+        'deleted_agents': deleted_agents,
+        'countries':      countries,
+        'q':              q,
         'status_filter':  status_f,
         'country_filter': country_f,
-        'auth_user': user,
+        'auth_user':      user,
     })
 
 
@@ -354,11 +356,9 @@ def agent_destroy(request, agent_id):
             messages.error(request, 'Vous ne pouvez pas supprimer votre propre compte.')
             return redirect('admin_agents')
         tx_count = Transaction.objects.filter(agent=agent).count()
-        agent.delete()
-        if tx_count:
-            messages.success(request, f'Agent supprimé. {tx_count} transaction(s) conservée(s).')
-        else:
-            messages.success(request, 'Agent supprimé.')
+        agent.status = 'deleted'
+        agent.save()
+        messages.success(request, f'{agent.name} archivé. {tx_count} transaction(s) conservée(s).')
     return redirect('admin_agents')
 
 
