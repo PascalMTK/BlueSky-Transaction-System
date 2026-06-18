@@ -1555,11 +1555,15 @@ img.emoji {
     border-top: 1px solid var(--border);
     padding-bottom: env(safe-area-inset-bottom, 0px);
     z-index: 500;
-    grid-template-columns: repeat(5, 1fr);
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
     align-items: stretch;
     box-shadow: 0 -4px 20px rgba(0,0,0,.08);
     transition: background var(--transition), border-color var(--transition);
 }
+.mob-nav::-webkit-scrollbar { display: none; }
 [data-theme="dark"] .mob-nav {
     box-shadow: 0 -4px 20px rgba(0,0,0,.4), 0 -1px 0 rgba(255,255,255,.05);
 }
@@ -1567,7 +1571,9 @@ img.emoji {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     gap: 2px; text-decoration: none;
     color: var(--text-muted); font-size: 9px; font-weight: 600;
-    padding: 6px 2px;
+    padding: 6px 10px;
+    min-width: 58px;
+    flex-shrink: 0;
     transition: color .15s;
     position: relative;
 }
@@ -1583,7 +1589,10 @@ img.emoji {
 .mob-label { font-size: 9px; white-space: nowrap; }
 .mob-nav-fab {
     background: linear-gradient(135deg, var(--sky-primary), var(--sky-secondary));
-    width: 44px; height: 44px; border-radius: 50%; margin: auto;
+    width: 40px; height: 40px; border-radius: 50%;
+    align-self: center;
+    min-width: 40px;
+    margin: 0 4px;
     display: flex; align-items: center; justify-content: center;
     color: white; box-shadow: 0 4px 14px rgba(2,132,199,.40);
     padding: 0;
@@ -1592,7 +1601,7 @@ img.emoji {
 .mob-nav-fab::after { display: none; }
 
 @media (max-width: 768px) {
-    .mob-nav { display: grid; }
+    .mob-nav { display: flex; }
     .main-wrapper { padding-bottom: calc(58px + env(safe-area-inset-bottom, 0px)); }
 }
 

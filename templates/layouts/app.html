@@ -220,39 +220,66 @@
 
 <!-- ── Mobile bottom navigation ── -->
 {% if auth_user and auth_user.is_admin %}
-<nav class="mob-nav" aria-label="Navigation mobile">
+<nav class="mob-nav" id="mobNav" aria-label="Navigation mobile">
     <a href="{% url 'admin_dashboard' %}" class="mob-nav-item {% block mob_adm_home %}{% endblock %}">
-        <span class="mob-icon">🏠</span><span class="mob-label">{{ t.my_space }}</span>
+        <span class="mob-icon">📊</span><span class="mob-label">{{ t.dashboard }}</span>
     </a>
     <a href="{% url 'admin_agents' %}" class="mob-nav-item {% block mob_adm_agents %}{% endblock %}">
         <span class="mob-icon">👥</span><span class="mob-label">{{ t.agents_nav }}</span>
     </a>
-    <a href="{% url 'admin_transactions' %}" class="mob-nav-item mob-nav-fab {% block mob_adm_tx %}{% endblock %}">
-        <span class="mob-icon" style="font-size:20px;">💸</span>
+    <a href="{% url 'admin_transactions' %}" class="mob-nav-item {% block mob_adm_tx %}{% endblock %}">
+        <span class="mob-icon">💸</span><span class="mob-label">{{ t.all_transactions }}</span>
+    </a>
+    <a href="{% url 'messages_list' %}" class="mob-nav-item {% block mob_adm_messages %}{% endblock %}">
+        <span class="mob-icon">💬</span><span class="mob-label">{{ t.messages_nav }}</span>
     </a>
     <a href="{% url 'admin_reports' %}" class="mob-nav-item {% block mob_adm_reports %}{% endblock %}">
-        <span class="mob-icon">📊</span><span class="mob-label">{{ t.reports_nav }}</span>
+        <span class="mob-icon">📨</span><span class="mob-label">{{ t.reports_nav }}</span>
+    </a>
+    <a href="{% url 'admin_countries' %}" class="mob-nav-item {% block mob_adm_countries %}{% endblock %}">
+        <span class="mob-icon">🌍</span><span class="mob-label">{{ t.countries_nav }}</span>
+    </a>
+    <a href="{% url 'admin_statistics' %}" class="mob-nav-item {% block mob_adm_stats %}{% endblock %}">
+        <span class="mob-icon">📈</span><span class="mob-label">{{ t.statistics }}</span>
+    </a>
+    <a href="{% url 'admin_export_csv' %}" class="mob-nav-item">
+        <span class="mob-icon">📤</span><span class="mob-label">{{ t.export_csv }}</span>
     </a>
     <a href="{% url 'profile_show' %}" class="mob-nav-item {% block mob_adm_profile %}{% endblock %}">
         <span class="mob-icon">👤</span><span class="mob-label">{{ t.my_profile }}</span>
     </a>
+    <a href="{% url 'logout' %}" class="mob-nav-item" style="color:rgba(220,60,60,.8);">
+        <span class="mob-icon">🚪</span><span class="mob-label">{{ t.logout }}</span>
+    </a>
 </nav>
 {% else %}
-<nav class="mob-nav" aria-label="Navigation mobile">
+<nav class="mob-nav" id="mobNav" aria-label="Navigation mobile">
     <a href="{% url 'agent_dashboard' %}" class="mob-nav-item {% block mob_home %}{% endblock %}">
         <span class="mob-icon">🏠</span><span class="mob-label">{{ t.my_space }}</span>
     </a>
-    <a href="{% url 'tx_index' %}" class="mob-nav-item {% block mob_tx %}{% endblock %}">
-        <span class="mob-icon">💸</span><span class="mob-label">{{ t.my_transactions }}</span>
-    </a>
     <a href="{% url 'tx_create' %}" class="mob-nav-item mob-nav-fab {% block mob_create %}{% endblock %}">
-        <span class="mob-icon" style="font-size:20px;">➕</span>
+        <span class="mob-icon" style="font-size:18px;">➕</span>
+    </a>
+    <a href="{% url 'tx_index' %}" class="mob-nav-item {% block mob_tx %}{% endblock %}">
+        <span class="mob-icon">📋</span><span class="mob-label">{{ t.my_transactions }}</span>
+    </a>
+    <a href="{% url 'tx_network' %}" class="mob-nav-item {% block mob_network %}{% endblock %}">
+        <span class="mob-icon">🌐</span><span class="mob-label">{{ t.network_nav }}</span>
     </a>
     <a href="{% url 'messages_list' %}" class="mob-nav-item {% block mob_msg %}{% endblock %}">
         <span class="mob-icon">💬</span><span class="mob-label">{{ t.messages_nav }}</span>
     </a>
+    <a href="{% url 'agent_reports_portal' %}" class="mob-nav-item {% block mob_agent_reports %}{% endblock %}">
+        <span class="mob-icon">📨</span><span class="mob-label">{{ t.reports_nav }}</span>
+    </a>
     <a href="{% url 'profile_show' %}" class="mob-nav-item {% block mob_profile %}{% endblock %}">
         <span class="mob-icon">👤</span><span class="mob-label">{{ t.my_profile }}</span>
+    </a>
+    <a href="{% url 'agent_export_csv' %}" class="mob-nav-item">
+        <span class="mob-icon">📥</span><span class="mob-label">{{ t.export_my_data }}</span>
+    </a>
+    <a href="{% url 'logout' %}" class="mob-nav-item" style="color:rgba(220,60,60,.8);">
+        <span class="mob-icon">🚪</span><span class="mob-label">{{ t.logout }}</span>
     </a>
 </nav>
 {% endif %}
@@ -262,6 +289,31 @@
 {% block scripts %}{% endblock %}
 <script src="https://cdn.jsdelivr.net/npm/twemoji@14.0.2/dist/twemoji.min.js" crossorigin="anonymous"></script>
 <script>twemoji.parse(document.body,{folder:'svg',ext:'.svg'});</script>
+<script>
+/* ── Auto-activate mob-nav item based on current URL ── */
+(function () {
+    var path = window.location.pathname;
+    var nav = document.getElementById('mobNav');
+    if (!nav) return;
+    var best = null, bestLen = 0;
+    nav.querySelectorAll('.mob-nav-item').forEach(function (item) {
+        var href = item.getAttribute('href');
+        if (!href || href.length < 2) return;
+        if (path === href || path.startsWith(href)) {
+            if (href.length > bestLen) { best = item; bestLen = href.length; }
+        }
+    });
+    if (best) {
+        nav.querySelectorAll('.mob-nav-item').forEach(function (i) { i.classList.remove('active'); });
+        best.classList.add('active');
+        /* Scroll active item into view */
+        var navRect = nav.getBoundingClientRect();
+        var itemRect = best.getBoundingClientRect();
+        var offset = itemRect.left - navRect.left - (nav.offsetWidth / 2) + (best.offsetWidth / 2);
+        nav.scrollLeft += offset;
+    }
+})();
+</script>
 <script>
 /* ── Mobile horizontal scroll hint for tables ── */
 (function () {
