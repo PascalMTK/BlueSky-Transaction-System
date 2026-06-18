@@ -1,5 +1,6 @@
 import uuid
 import os
+import base64
 import openpyxl
 from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
@@ -12,6 +13,18 @@ from django.conf import settings
 from core.models import User, Country, Transaction, AgentReport, DirectMessage
 from core.decorators import agent_required, get_auth_user
 
+
+# ── Logo base64 (cached at startup for email embedding) ────────────────────
+def _get_logo_b64() -> str:
+    try:
+        logo_path = os.path.join(settings.BASE_DIR, 'static', 'images',
+                                 'WhatsApp_Image_2026-01-27_at_11.11.59_PM__1_-removebg-preview.png')
+        with open(logo_path, 'rb') as f:
+            return base64.b64encode(f.read()).decode()
+    except Exception:
+        return ''
+
+_LOGO_B64 = _get_logo_b64()
 
 # ── SMS helper ─────────────────────────────────────────────────────────────
 
@@ -55,6 +68,158 @@ def _build_sms_message(tx, locale='fr'):
                 f"Merci de faire confiance à BLUESKY Transactions !"
             )
 
+
+
+def _send_transaction_email(tx, client_email: str, locale: str = 'fr') -> bool:
+    """Send a styled HTML confirmation email to the client."""
+    if not client_email or '@' not in client_email:
+        return False
+
+    from django.core.mail import EmailMultiAlternatives
+    from email.mime.image import MIMEImage
+
+    is_en   = locale == 'en'
+    is_send = tx.transaction_type == 'send'
+
+    client_name = (tx.sender_name if is_send else tx.receiver_name) or 'Client'
+    first_name  = client_name.split()[0]
+    amount_str  = f"{tx.total_amount:,.0f} {tx.currency}"
+    base_str    = f"{tx.amount:,.0f} {tx.currency}"
+    fee_str     = f"{tx.fee_amount:,.0f} {tx.currency}"
+    date_str    = tx.sent_at.strftime('%d/%m/%Y  %H:%M') if tx.sent_at else '—'
+    year        = tx.sent_at.year if tx.sent_at else '2026'
+    origin_name = tx.origin_country.name      if tx.origin_country      else '—'
+    dest_name   = tx.destination_country.name if tx.destination_country else '—'
+    origin_flag = tx.origin_country.flag_emoji      if tx.origin_country      else ''
+    dest_flag   = tx.destination_country.flag_emoji if tx.destination_country else ''
+    agent_name  = tx.agent.name if tx.agent else 'BLUESKY'
+
+    if is_en:
+        subject      = f"✅ Transfer confirmed — {tx.transaction_number}"
+        hi           = f"Hello {first_name},"
+        intro        = (f"Your transfer of <b>{amount_str}</b> has been recorded successfully."
+                        if is_send else
+                        f"Your withdrawal of <b>{amount_str}</b> has been recorded successfully.")
+        lbl_ref      = "Reference"; lbl_type  = "Operation"; lbl_origin = "Origin"
+        lbl_dest     = "Destination"; lbl_date = "Date"; lbl_agent  = "Agent"
+        lbl_base     = "Amount"; lbl_fee   = "Fees"; lbl_total  = "Total paid"
+        type_val     = "Transfer" if is_send else "Withdrawal"
+        thanks       = "Thank you for choosing <b>BLUESKY Transactions</b>."
+        footer_note  = "Automated notification — please do not reply."
+        lbl_summary  = "TRANSACTION SUMMARY"; lbl_financial = "FINANCIAL DETAILS"
+    else:
+        subject      = f"✅ Transaction confirmée — {tx.transaction_number}"
+        hi           = f"Bonjour {first_name},"
+        intro        = (f"Votre transfert de <b>{amount_str}</b> a été enregistré avec succès."
+                        if is_send else
+                        f"Votre retrait de <b>{amount_str}</b> a été enregistré avec succès.")
+        lbl_ref      = "Référence"; lbl_type  = "Opération"; lbl_origin = "Origine"
+        lbl_dest     = "Destination"; lbl_date = "Date"; lbl_agent  = "Agent"
+        lbl_base     = "Montant"; lbl_fee   = "Frais"; lbl_total  = "Total payé"
+        type_val     = "Transfert" if is_send else "Retrait"
+        thanks       = "Merci de faire confiance à <b>BLUESKY Transactions</b>."
+        footer_note  = "Notification automatique — merci de ne pas répondre."
+        lbl_summary  = "RÉSUMÉ DE LA TRANSACTION"; lbl_financial = "DÉTAILS FINANCIERS"
+
+    html = f"""<!DOCTYPE html>
+<html lang="{locale}">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#eef2f7;font-family:Inter,Helvetica,Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#eef2f7;padding:32px 16px;">
+<tr><td align="center">
+<table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">
+
+<tr><td style="background:linear-gradient(145deg,#002d6e,#0055b3,#0096d6);border-radius:16px 16px 0 0;padding:32px 32px 24px;text-align:center;">
+  <div style="width:86px;height:86px;border-radius:50%;background:#fff;display:inline-block;line-height:86px;margin-bottom:16px;box-shadow:0 0 0 5px rgba(255,255,255,.20),0 8px 28px rgba(0,0,0,.30);">
+    <img src="cid:bluesky_logo" alt="BLUESKY" width="64" height="64" style="width:64px;height:64px;object-fit:contain;vertical-align:middle;display:inline-block;">
+  </div>
+  <div style="color:#fff;font-size:24px;font-weight:900;letter-spacing:2px;">BLUESKY</div>
+  <div style="color:rgba(255,255,255,.55);font-size:10px;letter-spacing:4px;text-transform:uppercase;margin-top:3px;">Transactions</div>
+  <div style="margin-top:18px;"><span style="display:inline-block;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);border-radius:50px;padding:7px 20px;color:#fff;font-size:13px;font-weight:700;">&#10003; {subject.split(' — ')[0].replace('✅ ','')}</span></div>
+</td></tr>
+
+<tr><td style="background:#ffffff;padding:28px 32px 0;">
+  <p style="margin:0 0 6px;color:#0f172a;font-size:17px;font-weight:800;">{hi}</p>
+  <p style="margin:0 0 24px;color:#475569;font-size:14px;line-height:1.75;">{intro}</p>
+</td></tr>
+
+<tr><td style="background:#ffffff;padding:0 32px 20px;">
+  <div style="background:#f0f7ff;border-left:4px solid #0284c7;border-radius:0 8px 8px 0;padding:12px 16px;">
+    <span style="color:#64748b;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;">{lbl_ref}&nbsp;</span>
+    <span style="color:#0284c7;font-size:14px;font-weight:900;font-family:monospace;">{tx.transaction_number}</span>
+  </div>
+</td></tr>
+
+<tr><td style="background:#ffffff;padding:0 32px 20px;">
+  <div style="font-size:10px;font-weight:800;color:#94a3b8;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:10px;">{lbl_summary}</div>
+  <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #e8edf2;border-radius:10px;overflow:hidden;font-size:13.5px;">
+    <tr style="border-bottom:1px solid #e8edf2;"><td style="padding:10px 14px;color:#64748b;font-weight:600;width:45%;">{lbl_type}</td><td style="padding:10px 14px;color:#0f172a;font-weight:700;text-align:right;">{type_val}</td></tr>
+    <tr style="border-bottom:1px solid #e8edf2;background:#fafbfc;"><td style="padding:10px 14px;color:#64748b;font-weight:600;">{lbl_origin}</td><td style="padding:10px 14px;color:#0f172a;text-align:right;">{origin_flag} {origin_name}</td></tr>
+    <tr style="border-bottom:1px solid #e8edf2;"><td style="padding:10px 14px;color:#64748b;font-weight:600;">{lbl_dest}</td><td style="padding:10px 14px;color:#0f172a;text-align:right;">{dest_flag} {dest_name}</td></tr>
+    <tr style="border-bottom:1px solid #e8edf2;background:#fafbfc;"><td style="padding:10px 14px;color:#64748b;font-weight:600;">{lbl_date}</td><td style="padding:10px 14px;color:#0f172a;text-align:right;">{date_str}</td></tr>
+    <tr><td style="padding:10px 14px;color:#64748b;font-weight:600;">{lbl_agent}</td><td style="padding:10px 14px;color:#0f172a;text-align:right;">{agent_name}</td></tr>
+  </table>
+</td></tr>
+
+<tr><td style="background:#ffffff;padding:0 32px 28px;">
+  <div style="font-size:10px;font-weight:800;color:#94a3b8;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:10px;">{lbl_financial}</div>
+  <table width="100%" cellpadding="0" cellspacing="0" style="font-size:13.5px;">
+    <tr><td style="padding:6px 0;color:#64748b;">{lbl_base}</td><td style="padding:6px 0;color:#0f172a;font-weight:600;text-align:right;">{base_str}</td></tr>
+    <tr><td style="padding:6px 0;color:#64748b;">{lbl_fee} ({tx.fee_percentage:.1f}%)</td><td style="padding:6px 0;color:#0f172a;font-weight:600;text-align:right;">{fee_str}</td></tr>
+  </table>
+  <div style="margin-top:12px;background:linear-gradient(135deg,#0055b3,#0096d6);border-radius:10px;padding:14px 18px;">
+    <table width="100%" cellpadding="0" cellspacing="0">
+      <tr><td style="color:rgba(255,255,255,.8);font-size:13px;font-weight:700;">{lbl_total}</td><td style="color:#fff;font-size:22px;font-weight:900;text-align:right;">{amount_str}</td></tr>
+    </table>
+  </div>
+</td></tr>
+
+<tr><td style="background:#f8fafc;border-top:1px solid #e8edf2;padding:20px 32px;text-align:center;">
+  <p style="margin:0;color:#475569;font-size:13.5px;line-height:1.75;">{thanks}</p>
+</td></tr>
+<tr><td style="background:#f1f5f9;border-radius:0 0 16px 16px;padding:16px 32px;text-align:center;border-top:1px solid #e2e8f0;">
+  <p style="margin:0;color:#94a3b8;font-size:11px;">{footer_note}</p>
+  <p style="margin:6px 0 0;color:#cbd5e1;font-size:10.5px;">© {year} BLUESKY Transactions</p>
+</td></tr>
+
+</table>
+</td></tr>
+</table>
+</body>
+</html>"""
+
+    plain = (
+        f"{hi}\n\n{intro.replace('<b>','').replace('</b>','')}\n\n"
+        f"{lbl_ref}: {tx.transaction_number}\n"
+        f"{lbl_type}: {type_val}\n"
+        f"{lbl_origin}: {origin_name}\n"
+        f"{lbl_dest}: {dest_name}\n"
+        f"{lbl_date}: {date_str}\n"
+        f"{lbl_total}: {amount_str}\n\n"
+        f"{thanks.replace('<b>','').replace('</b>','')}"
+    )
+
+    try:
+        msg = EmailMultiAlternatives(
+            subject=subject,
+            body=plain,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[client_email],
+        )
+        msg.attach_alternative(html, 'text/html')
+        msg.mixed_subtype = 'related'
+        if _LOGO_B64:
+            logo_bytes = base64.b64decode(_LOGO_B64)
+            logo_mime  = MIMEImage(logo_bytes, _subtype='png')
+            logo_mime.add_header('Content-ID', '<bluesky_logo>')
+            logo_mime.add_header('Content-Disposition', 'inline', filename='logo.png')
+            msg.attach(logo_mime)
+        msg.send(fail_silently=False)
+        print(f'[BLUESKY EMAIL] sent to {client_email}')
+        return True
+    except Exception as e:
+        print(f'[BLUESKY EMAIL] error: {e}')
+        return False
 
 
 def _send_transaction_sms(tx, locale='fr'):
@@ -215,6 +380,9 @@ def tx_create(request):
             tx.save()
             locale = request.session.get('locale', 'fr')
             _send_transaction_sms(tx, locale)
+            client_email = request.POST.get('client_email', '').strip()
+            if client_email:
+                _send_transaction_email(tx, client_email, locale)
             messages.success(request, f'Transaction {tx_num} créée avec succès.')
             return redirect('tx_show', tx_id=tx.id)
         except ValueError:

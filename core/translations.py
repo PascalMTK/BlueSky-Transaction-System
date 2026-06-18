@@ -436,6 +436,8 @@ FR = {
     'optional':              'optionnel',
     'required_field':        'requis',
     'export_my_data':        'Exporter mes données',
+    'client_email_label':    'Email du client',
+    'client_email_hint':     'Un email de confirmation sera envoyé au client',
 
     # ── Forgot password / OTP flow
     'forgot_pw_title':       'Mot de passe oublié',
@@ -914,6 +916,9 @@ EN = {
     'optional':              'optional',
     'required_field':        'required',
     'export_my_data':        'Export my data',
+    'client_email_label':    'Client email',
+    'client_email_hint':     'A confirmation email will be sent to the client',
+
 
     # ── Forgot password / OTP flow
     'forgot_pw_title':       'Forgot password',
