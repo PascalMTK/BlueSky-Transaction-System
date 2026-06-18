@@ -2,7 +2,7 @@
 
 > **International money transfer management platform for Africa**
 
-**Live demo:** [BlueSky02.pythonanywhere.com](https://BlueSky02.pythonanywhere.com)
+**Live demo:** [pascal02.pythonanywhere.com](https://pascal02.pythonanywhere.com)
 
 ---
 
@@ -18,7 +18,7 @@ Created by **Pascal Mutaka**
 
 - GitHub: [github.com/PascalMTK](https://github.com/PascalMTK)
 - Email: vandervloger@gmail.com
-- Deployed: [BlueSky02.pythonanywhere.com](https://BlueSky02.pythonanywhere.com)
+- Deployed: [pascal02.pythonanywhere.com](https://pascal02.pythonanywhere.com)
 
 ---
 
@@ -117,8 +117,8 @@ The project is deployed on PythonAnywhere (paid plan).
 ```env
 USE_SQLITE=True
 DEBUG=False
-ALLOWED_HOSTS=BlueSky02.pythonanywhere.com
-CSRF_TRUSTED_ORIGINS=https://BlueSky02.pythonanywhere.com
+ALLOWED_HOSTS=pascal02.pythonanywhere.com
+CSRF_TRUSTED_ORIGINS=https://pascal02.pythonanywhere.com
 SECRET_KEY=your-secret-key
 ```
 

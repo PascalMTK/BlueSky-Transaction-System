@@ -129,6 +129,15 @@
     .profile-form-2col { grid-template-columns: 1fr !important; }
     .profile-form-3col { grid-template-columns: 1fr !important; }
 }
+/* ── Mobile: profile card full-width with correct spacing ── */
+@media (max-width: 480px) {
+    .profile-cover    { height: 76px; }
+    .profile-avatar-wrap { margin-top: -38px !important; }
+}
+@media (max-width: 360px) {
+    .profile-info-row { padding: 9px 12px; }
+    .profile-info-val { max-width: 55%; font-size: 12px; }
+}
 </style>
 {% endblock %}
 
@@ -155,8 +164,8 @@
             <div class="profile-cover"></div>
 
             <!-- Avatar + name -->
-            <div style="text-align:center;padding:0 20px 20px;">
-                <form method="POST" action="{% url 'profile_photo' %}" enctype="multipart/form-data" id="photoForm">
+            <div style="text-align:center;padding:0 20px 20px;overflow:visible;">
+                <form method="POST" action="{% url 'profile_photo' %}" enctype="multipart/form-data" id="photoForm" style="overflow:visible;">
                     {% csrf_token %}
                     <div class="profile-avatar-wrap">
                         {% if auth_user.photo_url %}

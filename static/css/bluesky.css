@@ -2056,3 +2056,107 @@ html, body { overflow-x: hidden; max-width: 100%; }
     }
 }
 
+/* ============================================================
+   MOBILE PERFECT — Comprehensive phone experience polish
+   Applied on top of all previous rules
+   ============================================================ */
+
+/* ── 1. Content area: more horizontal space on phones ────── */
+@media (max-width: 768px) {
+    .content-area { padding: 14px 12px; }
+}
+@media (max-width: 480px) {
+    .content-area { padding: 12px 8px; }
+}
+
+/* ── 2. Topbar: declutter on phones ──────────────────────── */
+@media (max-width: 768px) {
+    .topbar-date { display: none; }          /* hide live clock */
+}
+@media (max-width: 480px) {
+    .topbar { padding: 0 12px; }
+    .topbar-subtitle { display: none; }      /* hide page subtitle */
+    .topbar-right { gap: 6px; }
+    /* User-menu: show only avatar, hide name/role/arrow */
+    .user-info-name,
+    .user-info-role { display: none; }
+    .user-menu > svg { display: none; }      /* hide dropdown chevron */
+    .user-menu { padding: 4px 6px; gap: 0; }
+}
+@media (max-width: 375px) {
+    .topbar { padding: 0 8px; }
+    .topbar-right { gap: 4px; }
+}
+
+/* ── 3. Charts row: stack vertically on phones ───────────── */
+@media (max-width: 768px) {
+    .charts-row { grid-template-columns: 1fr !important; gap: 14px; }
+}
+
+/* ── 4. Profile page: avatar never cut off ───────────────── */
+.profile-avatar-wrap { overflow: visible !important; }
+
+@media (max-width: 480px) {
+    .profile-cover                            { height: 76px; }
+    .profile-avatar-wrap                      { margin-top: -38px !important; }
+    .profile-avatar-wrap img,
+    .profile-avatar-circle,
+    #currentAvatar                            { width: 76px !important; height: 76px !important; }
+    .profile-avatar-circle                    { font-size: 24px !important; }
+    .profile-photo-btn                        { width: 24px; height: 24px; bottom: 0; right: 0; }
+    .profile-photo-btn svg                    { width: 11px; height: 11px; }
+}
+
+/* ── 5. Stat cards: consistent 2-col on small phones ─────── */
+@media (max-width: 560px) {
+    .stats-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px; }
+    .stat-card  { padding: 12px; gap: 8px; }
+    .stat-icon  { width: 36px; height: 36px; font-size: 17px; border-radius: 9px; }
+}
+@media (max-width: 320px) {
+    .stats-grid { grid-template-columns: 1fr !important; }
+}
+
+/* ── 6. Modals: full-width fit on phones ─────────────────── */
+@media (max-width: 480px) {
+    /* Generic modal overlay boxes */
+    .modal-overlay > div,
+    [id$="Modal"] > div,
+    [class*="modal-box"],
+    [class*="modal-content"] {
+        max-width: calc(100vw - 24px) !important;
+        width: 100% !important;
+        border-radius: 14px !important;
+        padding: 20px 16px !important;
+    }
+    /* Photo preview overlay */
+    .photo-preview-box {
+        max-width: calc(100vw - 24px) !important;
+        padding: 20px 16px 18px !important;
+    }
+}
+
+/* ── 7. Topbar profile photo: never compressed ───────────── */
+.user-menu img { flex-shrink: 0 !important; }
+.user-menu > .user-avatar { flex-shrink: 0 !important; }
+
+/* ── 8. Form controls: proper sizing on all phones ───────── */
+@media (max-width: 480px) {
+    .form-control,
+    .filter-control,
+    select.form-control { font-size: 16px; } /* prevent iOS zoom on focus */
+}
+
+/* ── 9. Card body & header: tighter on smallest phones ───── */
+@media (max-width: 360px) {
+    .card-header { padding: 10px 11px; }
+    .card-body   { padding: 11px; }
+    .content-area { padding: 10px 6px; }
+}
+
+/* ── 10. Print: don't show mob-nav ───────────────────────── */
+@media print {
+    .mob-nav, .topbar, .sidebar { display: none !important; }
+    .main-wrapper { margin-left: 0 !important; padding-bottom: 0 !important; }
+    .content-area { padding: 0 !important; }
+}
