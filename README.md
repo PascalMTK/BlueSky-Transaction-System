@@ -1,354 +1,295 @@
 # BLUESKY Transactions System
 
-A web platform for managing international money transfers. Agents record and track transactions, the admin monitors all activity through a dashboard with charts and statistics.
+> **Plateforme de gestion de transferts d'argent international en Afrique**
+> Money transfer management platform for Africa
 
-Bilingual interface (French / English), mobile-first responsive design, dark/light mode.
-
----
-
-## Tech Stack
-
-| Layer | Technology |
-|-------|-----------|
-| Backend | Python 3.10+, Django 4.2 LTS |
-| Database | MySQL or MariaDB |
-| Auth | Custom session-based (no Django auth), bcrypt passwords |
-| Frontend | Django templates, vanilla JS, CSS variables (dark/light) |
-| Excel export | openpyxl |
-| OTP/cache | Django in-memory cache |
+**Live demo :** [pascal02.pythonanywhere.com](https://pascal02.pythonanywhere.com)
 
 ---
 
-## Features
+## À propos / About
 
-- **Transactions** — create, view, edit, delete; types: Send / Withdrawal; statuses: Completed / Pending / Cancelled
-- **Fee calculation** — configurable fee percentage per country, auto-calculated on form
-- **Admin dashboard** — live stats, monthly charts (Chart.js), top agents, country breakdown donut
-- **Agent dashboard** — personal stats, quick actions, recent transactions
-- **Agent management** — registration → admin approval workflow; activate / deactivate / promote to admin
-- **Country management** — add/edit countries, per-country default fee and currency
-- **Direct messaging** — agent ↔ agent and agent ↔ admin real-time-style inbox
-- **Support tickets** — agents submit reports to admin; admin can reply
-- **Export** — Excel (.xlsx) export for admin (all transactions) and agent (own transactions)
-- **Printable receipts** — one-click print view per transaction
-- **Profile** — name, phone, photo upload, password change
-- **Bilingual** — French / English; language switch persisted in session
-- **Dark / light mode** — saved in localStorage; system-preference aware
-- **Mobile-friendly** — bottom navigation bar, fluid typography (`clamp()`), 44px touch targets
-- **Password reset** — OTP via email, 10-minute expiry
+**BLUESKY Transactions** est une plateforme web complète pour la gestion des transferts d'argent entre pays africains. Elle permet aux agents de saisir et suivre les transactions, et aux administrateurs de superviser l'ensemble des opérations via un tableau de bord avec statistiques et graphiques en temps réel.
+
+**BLUESKY Transactions** is a complete web platform for managing international money transfers across African countries. Agents record and track transactions while admins monitor all activity through a real-time dashboard with charts and statistics.
 
 ---
 
-## Requirements
+## Auteur / Author
 
-- Python 3.10+
-- MySQL 8 or MariaDB 10.6+
-- pip
+Créé par **Pascal Mutaka**
+Created by **Pascal Mutaka**
+
+- GitHub : [github.com/PascalMTK](https://github.com/PascalMTK)
+- Email : vandervloger@gmail.com
+- Deployed : [pascal02.pythonanywhere.com](https://pascal02.pythonanywhere.com)
 
 ---
 
-## Installation
+## Fonctionnalités / Features
 
-### 1. Clone the repository
+| Fonctionnalité | Description |
+|----------------|-------------|
+| **Transactions** | Créer, modifier, supprimer, imprimer des reçus — types : Envoi / Retrait |
+| **Calcul des frais** | Pourcentage configurable par pays, calcul automatique à la saisie |
+| **Dashboard Admin** | Statistiques live, graphiques mensuels, top agents, répartition par pays |
+| **Dashboard Agent** | Statistiques personnelles, actions rapides, transactions récentes |
+| **Gestion des agents** | Inscription → validation admin ; activer / désactiver / promouvoir en admin / archiver |
+| **Gestion des pays** | Ajouter/modifier des pays, devise et frais par défaut |
+| **Messagerie** | Messagerie directe agent ↔ agent et agent ↔ admin |
+| **Rapports** | Les agents soumettent des tickets ; l'admin peut répondre |
+| **Export Excel** | Export .xlsx pour l'admin (toutes transactions) et l'agent (ses propres) |
+| **Reçus imprimables** | Vue impression par transaction |
+| **Profil** | Nom, téléphone, photo de profil, changement de mot de passe |
+| **Bilingue FR/EN** | Français / Anglais ; langue persistée en session |
+| **Mode sombre/clair** | Sauvegardé en localStorage ; détection automatique du thème système |
+| **Mobile-first** | Navigation barre basse, typographie fluide (`clamp()`), cibles tactiles 44px |
+
+---
+
+## Stack technique / Tech Stack
+
+| Couche | Technologie |
+|--------|-------------|
+| Backend | Python 3.12, Django 4.2 LTS |
+| Base de données | SQLite (production) ou MySQL / MariaDB |
+| Auth | Session custom (sans Django auth), mots de passe bcrypt |
+| Frontend | Templates Django, Vanilla JS, CSS Variables (dark/light) |
+| Export | openpyxl (.xlsx) |
+| Hébergement | PythonAnywhere |
+
+---
+
+## Installation locale / Local Setup
+
+### 1. Cloner le projet
 
 ```bash
-git clone <repo-url>
-cd BlueSky-Transactions-System/bluesky-django
+git clone https://github.com/PascalMTK/BlueSky-Transaction-System.git
+cd BlueSky-Transaction-System
 ```
 
-### 2. Create a virtual environment and install dependencies
+### 2. Créer l'environnement virtuel
 
 ```bash
 python -m venv .venv
+
 # Windows
 .venv\Scripts\activate
+
 # macOS / Linux
 source .venv/bin/activate
 
 pip install -r requirements.txt
 ```
 
-### 3. Create the database
+### 3. Configurer le fichier `.env`
 
-```sql
-CREATE DATABASE bluesky_transactions CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-```
-
-### 4. Configure environment
-
-Copy the example file and fill in your values:
-
-```bash
-cp .env.example .env
-```
-
-Minimum required settings in `.env`:
+Créer un fichier `.env` à la racine avec les variables suivantes :
 
 ```env
-SECRET_KEY=your-secret-key-here
-DB_NAME=bluesky_transactions
-DB_USER=root
-DB_PASSWORD=
-DB_HOST=127.0.0.1
-DB_PORT=3306
+USE_SQLITE=True
+DEBUG=True
+SECRET_KEY=votre-cle-secrete-ici
+ALLOWED_HOSTS=localhost,127.0.0.1
 
 EMAIL_HOST=smtp.gmail.com
 EMAIL_PORT=587
-EMAIL_HOST_USER=your@email.com
-EMAIL_HOST_PASSWORD=your-app-password
-DEFAULT_FROM_EMAIL=BLUESKY <your@email.com>
+EMAIL_USE_TLS=True
+EMAIL_HOST_USER=votre@email.com
+EMAIL_HOST_PASSWORD=votre-mot-de-passe-app
+EMAIL_FROM=BLUESKY Transactions <votre@email.com>
 ```
 
-> The app uses `python-dotenv` — settings are loaded from `.env` at startup.
-
-### 5. Import the database schema
-
-The models use `managed = False`, meaning Django does **not** run migrations to create tables. You must import the schema SQL manually:
+### 4. Créer les tables
 
 ```bash
-mysql -u root -p bluesky_transactions < schema.sql
+python manage.py migrate
 ```
 
-> If a `schema.sql` file is not present, run `python manage.py inspectdb` after pointing at an existing database, or create the tables from `core/models.py`.
+> Les modèles utilisent `managed = True` — Django crée les tables automatiquement.
 
-### 6. Start the development server
+### 5. Lancer le serveur
 
 ```bash
 python manage.py runserver
 ```
 
-Open in your browser: **http://localhost:8000**
-
-The root URL redirects to the login page.
+Ouvrir dans le navigateur : **http://localhost:8000**
 
 ---
 
-## Running the System (day-to-day)
+## Déploiement PythonAnywhere / PythonAnywhere Deployment
 
-### Every time you want to start the app
+Le projet est déployé sur PythonAnywhere (plan payant $10/mois pour le SMTP Gmail).
 
-**Step 1 — Start MySQL** (if not running as a service)
+**Variables `.env` en production :**
 
-```bash
-# Windows (XAMPP)
-# Open XAMPP Control Panel and click Start next to MySQL
-
-# Or via command line
-net start mysql
+```env
+USE_SQLITE=True
+DEBUG=False
+ALLOWED_HOSTS=pascal02.pythonanywhere.com
+CSRF_TRUSTED_ORIGINS=https://pascal02.pythonanywhere.com
+SECRET_KEY=votre-cle-secrete
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USE_TLS=True
+EMAIL_HOST_USER=votre@email.com
+EMAIL_HOST_PASSWORD=votre-app-password-gmail
+EMAIL_FROM=BLUESKY Transactions <votre@email.com>
 ```
 
-**Step 2 — Activate the virtual environment**
+**Mettre à jour le serveur :**
 
 ```bash
-# From the bluesky-django/ folder
-
-# Windows
-.venv\Scripts\activate
-
-# macOS / Linux
-source .venv/bin/activate
+cd ~/BlueSky-Transaction-System
+git pull origin main
 ```
 
-You should see `(.venv)` in your terminal prompt.
-
-**Step 3 — Start Django**
-
-```bash
-python manage.py runserver
-```
-
-App is now live at **http://localhost:8000**
-
-To use a different port (e.g. 8080):
-
-```bash
-python manage.py runserver 8080
-```
-
-### Stop the server
-
-Press `Ctrl + C` in the terminal.
-
-### Verify everything is working
-
-- **http://localhost:8000** → redirects to login page ✅
-- **http://localhost:8000/login/** → login form ✅
-- **http://localhost:8000/register/** → agent registration form ✅
-
-### Common errors on startup
-
-| Error | Cause | Fix |
-|-------|-------|-----|
-| `django.db.utils.OperationalError: Can't connect to MySQL` | MySQL is not running | Start MySQL first |
-| `ModuleNotFoundError: No module named 'django'` | Virtual environment not activated | Run `.venv\Scripts\activate` |
-| `Table 'bluesky_transactions.core_user' doesn't exist` | Schema not imported | Import `schema.sql` into the database |
-| `ImproperlyConfigured: SECRET_KEY` | `.env` file missing | Copy `.env.example` to `.env` and fill in values |
+Puis **Web → Reload** dans le dashboard PythonAnywhere.
 
 ---
 
-## Project Structure
+## Structure du projet / Project Structure
 
 ```
-bluesky-django/
+BlueSky-Transaction-System/
 ├── bluesky/
-│   ├── settings.py          # Django settings (DB, cache, session, email)
-│   ├── urls.py              # Root URL config
+│   ├── settings.py          # Configuration Django (DB, email, session)
+│   ├── urls.py              # Routes racine
 │   └── wsgi.py
 ├── core/
 │   ├── models.py            # User, Country, Transaction, DirectMessage, AgentReport
 │   ├── decorators.py        # @agent_required, @admin_required, get_auth_user()
 │   ├── middleware.py        # AuthMiddleware, LocaleMiddleware
-│   ├── context_processors.py# Injects auth_user, locale, active_countries globally
-│   ├── translations.py      # EN/FR string dictionaries (t.* in templates)
-│   ├── hashers.py           # Laravel-compatible bcrypt hasher
-│   ├── urls.py              # All application routes
+│   ├── context_processors.py# auth_user, locale, active_countries (global)
+│   ├── translations.py      # Dictionnaires FR/EN ({{ t.* }} dans les templates)
+│   ├── hashers.py           # Hasher bcrypt compatible Laravel
+│   ├── urls.py              # Toutes les routes de l'application
 │   ├── views/
-│   │   ├── auth_views.py    # Login, logout, register, OTP password reset
-│   │   ├── agent_views.py   # Agent dashboard, transactions CRUD, messaging, export
-│   │   ├── admin_views.py   # Admin dashboard, agents, countries, reports, export
-│   │   └── profile_views.py # Profile view/update, photo, password
+│   │   ├── auth_views.py    # Login, logout, inscription
+│   │   ├── agent_views.py   # Dashboard agent, transactions, messagerie, export
+│   │   ├── admin_views.py   # Dashboard admin, agents, pays, rapports, export
+│   │   └── profile_views.py # Profil, photo, mot de passe
 │   └── templatetags/
-│       └── bluesky_tags.py  # Custom filters: number_format, limit, initials, etc.
+│       └── bluesky_tags.py  # Filtres custom : number_format, initials, limit…
 ├── templates/
-│   ├── layouts/app.html     # Base layout (sidebar, topbar, mob-nav, dark mode)
-│   ├── auth/                # login.html, register.html, forgot_password.html, …
-│   ├── admin/               # dashboard, agents, transactions, countries, reports, stats
-│   └── agent/               # dashboard, transactions/, messages, reports, profile
+│   ├── layouts/app.html     # Layout de base (sidebar, topbar, mob-nav, dark mode)
+│   ├── auth/                # login, register
+│   ├── admin/               # dashboard, agents, transactions, pays, rapports, stats
+│   └── agent/               # dashboard, transactions/, messages, rapports
 ├── static/
-│   ├── css/bluesky.css      # Full design system (CSS variables, dark mode, responsive)
-│   └── js/bluesky.js        # Theme toggle, live clock, sidebar, counters, animations
+│   ├── css/bluesky.css      # Système de design (CSS variables, dark mode, responsive)
+│   └── js/bluesky.js        # Toggle thème, horloge, sidebar, animations
 ├── media/
-│   └── profiles/            # Uploaded profile photos (auto-created)
+│   └── profiles/            # Photos de profil uploadées
 ├── requirements.txt
 └── manage.py
 ```
 
 ---
 
-## URL Reference
+## Routes principales / Main URLs
 
-### Auth
+### Authentification
 
-| Method | URL | Name | Description |
-|--------|-----|------|-------------|
-| GET/POST | `/login/` | `login` | Login form |
-| GET | `/logout/` | `logout` | Logout |
-| GET/POST | `/register/` | `register` | Agent self-registration |
-| GET/POST | `/forgot-password/` | `forgot_password` | Request OTP |
-| GET/POST | `/verify-otp/` | `verify_otp` | Enter OTP code |
-| GET/POST | `/reset-password/` | `reset_password` | Set new password |
-| GET | `/lang/<locale>/` | `lang_switch` | Switch language (en/fr) |
+| Méthode | URL | Description |
+|---------|-----|-------------|
+| GET/POST | `/login/` | Connexion |
+| GET | `/logout/` | Déconnexion |
+| GET/POST | `/register/` | Inscription agent |
+| GET | `/lang/<locale>/` | Changer la langue (fr/en) |
 
-### Agent
+### Espace Agent
 
-| Method | URL | Name | Description |
-|--------|-----|------|-------------|
-| GET | `/agent/dashboard/` | `agent_dashboard` | Agent home |
-| GET | `/agent/transactions/` | `tx_index` | Own transactions list |
-| GET/POST | `/agent/transactions/create/` | `tx_create` | New transaction |
-| GET | `/agent/transactions/<id>/` | `tx_show` | Transaction detail |
-| GET/POST | `/agent/transactions/<id>/edit/` | `tx_edit` | Edit transaction |
-| GET | `/agent/transactions/<id>/print/` | `tx_print` | Printable receipt |
-| POST | `/agent/transactions/<id>/delete/` | `tx_destroy` | Delete transaction |
-| GET | `/network/` | `tx_network` | All network transactions (read-only) |
-| GET | `/messages/` | `messages_list` | Inbox |
-| GET/POST | `/messages/<user_id>/` | `messages_thread` | Conversation thread |
-| GET | `/agent/export/csv/` | `agent_export_csv` | Download own transactions as Excel |
-| GET/POST | `/agent/reports/` | `agent_report_store` | Submit support ticket |
+| Méthode | URL | Description |
+|---------|-----|-------------|
+| GET | `/agent/dashboard/` | Tableau de bord agent |
+| GET | `/agent/transactions/` | Liste des transactions |
+| GET/POST | `/agent/transactions/create/` | Nouvelle transaction |
+| GET | `/agent/transactions/<id>/` | Détail transaction |
+| GET/POST | `/agent/transactions/<id>/edit/` | Modifier transaction |
+| GET | `/agent/transactions/<id>/print/` | Reçu imprimable |
+| POST | `/agent/transactions/<id>/delete/` | Supprimer transaction |
+| GET | `/network/` | Toutes les transactions réseau |
+| GET | `/messages/` | Messagerie |
+| GET | `/agent/export/csv/` | Export Excel personnel |
 
-### Admin
+### Espace Admin
 
-| Method | URL | Name | Description |
-|--------|-----|------|-------------|
-| GET | `/admin/dashboard/` | `admin_dashboard` | Admin home |
-| GET | `/admin/transactions/` | `admin_transactions` | All transactions |
-| GET | `/admin/agents/` | `admin_agents` | Agent list |
-| POST | `/admin/agents/<id>/status/` | `admin_agent_status` | Activate / deactivate |
-| POST | `/admin/agents/<id>/promote/` | `admin_agent_promote` | Promote to admin |
-| POST | `/admin/agents/<id>/delete/` | `admin_agent_destroy` | Delete agent |
-| GET | `/admin/countries/` | `admin_countries` | Country list |
-| GET/POST | `/admin/countries/create/` | `admin_countries_create` | Add country |
-| GET/POST | `/admin/countries/<id>/edit/` | `admin_countries_edit` | Edit country |
-| POST | `/admin/countries/<id>/toggle/` | `admin_countries_toggle` | Enable/disable country |
-| GET | `/admin/export/csv/` | `admin_export_csv` | Download all transactions as Excel |
-| GET | `/admin/statistics/` | `admin_statistics` | Statistics page |
-| GET | `/admin/reports/` | `admin_reports` | Support tickets |
-
-### API
-
-| Method | URL | Name | Description |
-|--------|-----|------|-------------|
-| GET | `/api/countries/<id>/fee/` | `api_country_fee` | Returns `{fee, currency}` for a country |
+| Méthode | URL | Description |
+|---------|-----|-------------|
+| GET | `/admin/dashboard/` | Tableau de bord admin |
+| GET | `/admin/agents/` | Gestion des agents (cartes) |
+| GET/POST | `/admin/agents/<id>/edit/` | Modifier un agent |
+| POST | `/admin/agents/<id>/status/` | Activer / désactiver |
+| POST | `/admin/agents/<id>/promote/` | Promouvoir en admin |
+| POST | `/admin/agents/<id>/password/` | Changer le mot de passe |
+| POST | `/admin/agents/<id>/delete/` | Archiver (soft delete) |
+| GET | `/admin/transactions/` | Toutes les transactions |
+| GET | `/admin/countries/` | Pays opérationnels |
+| GET | `/admin/statistics/` | Statistiques avancées |
+| GET | `/admin/export/csv/` | Export Excel complet |
 
 ---
 
-## Authentication & Security
+## Sécurité / Security
 
-- **Session-based auth** — `request.session['user_id']` set on login; cleared on logout
-- **Decorators** — `@agent_required` redirects to `/login/` if unauthenticated; `@admin_required` additionally checks `user.role == 'admin'`
-- **Passwords** — bcrypt with cost factor 10; compatible with Laravel bcrypt hashes (for migration)
-- **CSRF** — Django's built-in CSRF middleware on all POST endpoints
-- **OTP** — 6-digit code stored in Django's local-memory cache, expires in 10 minutes
+- **Sessions** — `request.session['user_id']` défini à la connexion ; vidé à la déconnexion
+- **Décorateurs** — `@agent_required` vérifie que l'utilisateur est connecté **et actif** ; `@admin_required` vérifie en plus `role == 'admin'`
+- **Mots de passe** — bcrypt (coût 10), compatible hashes Laravel
+- **CSRF** — Middleware Django sur tous les endpoints POST
+- **Statuts** — Les agents inactifs / en attente / archivés sont automatiquement déconnectés
+- **Soft delete** — Les agents archivés conservent leurs données de transaction ; ils ne peuvent pas se connecter
 
 ---
 
-## Data Model
+## Modèle de données / Data Model
 
 ### User
-| Field | Type | Notes |
+
+| Champ | Type | Notes |
 |-------|------|-------|
 | id | BigInt PK | |
 | name | Varchar | |
 | email | Varchar unique | |
 | phone | Varchar | |
-| password | Varchar | bcrypt hash |
+| password | Varchar | hash bcrypt |
 | role | Enum | `admin` / `agent` |
-| status | Enum | `active` / `pending` / `inactive` |
-| agent_code | Varchar unique | Auto-generated: `BSK-{COUNTRY}-{6HEX}` |
-| country_id | FK → Country | Agent's home country |
-| profile_photo | Varchar | Relative path under `/media/` |
+| status | Enum | `active` / `pending` / `inactive` / `deleted` |
+| agent_code | Varchar unique | Ex. `BSK-CD-A3F9B2` |
+| country_id | FK → Country | Pays d'opération de l'agent |
+| profile_photo | Varchar | Chemin relatif sous `/media/` |
 
 ### Transaction
-| Field | Type | Notes |
+
+| Champ | Type | Notes |
 |-------|------|-------|
-| id | BigInt PK | |
-| transaction_number | Varchar unique | `BSK-YYYYMMDD-XXXXXX` |
+| transaction_number | Varchar unique | Ex. `BSK-20260618-XA91B3` |
 | transaction_type | Enum | `send` / `withdrawal` |
 | status | Enum | `completed` / `pending` / `cancelled` |
 | payment_method | Enum | `cash` / `mobile_money` / `bank` |
-| amount | Decimal | Base amount |
-| fee_percentage | Decimal | Applied fee % |
-| fee_amount | Decimal | Calculated fee |
+| amount | Decimal | Montant de base |
+| fee_percentage | Decimal | % de frais appliqué |
+| fee_amount | Decimal | Montant des frais calculé |
 | total_amount | Decimal | `amount + fee_amount` |
-| currency | Varchar | ISO code from origin country |
 | origin_country_id | FK → Country | |
 | destination_country_id | FK → Country | |
-| agent_id | FK → User | Agent who recorded it |
-| sender_name / phone | Varchar | |
-| receiver_name / phone | Varchar | nullable |
+| agent_id | FK → User | Agent ayant saisi la transaction |
 
 ### Country
-| Field | Notes |
+
+| Champ | Notes |
 |-------|-------|
-| code | ISO 2-letter code (PK-style) |
-| name | Display name |
-| flag_emoji | Stored emoji |
-| currency_code | ISO currency |
-| default_fee_percentage | Default fee for outgoing transfers |
-| is_active | Whether shown to agents |
+| code | Code ISO 2 lettres |
+| name | Nom d'affichage |
+| flag_emoji | Emoji stocké |
+| currency_code | Code devise ISO |
+| default_fee_percentage | Frais par défaut pour les envois sortants |
+| is_active | Visible ou non pour les agents |
 
 ---
 
-## Configuration Notes
+## Licence / License
 
-- `USE_TZ = False` — all datetimes are naive (Africa/Kinshasa timezone)
-- `managed = False` on all models — Django never creates or alters tables
-- Session cookie: `bluesky_session`, 24-hour lifetime
-- OTP cache: in-memory (`LocMemCache`) — **restarts clear pending OTPs**; replace with Redis for production
-- `DEBUG = True` in the repo — set to `False` and configure `ALLOWED_HOSTS` before deploying
-
----
-
-## License
-
-MIT
+MIT — Créé par **Pascal Mutaka**, 2026

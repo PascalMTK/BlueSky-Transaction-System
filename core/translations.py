@@ -836,7 +836,7 @@ EN = {
     # ── Nav / misc labels
     'reports_nav':           'Reports',
     'agents_nav':            'Agents',
-    'pending_lc':            'unread',
+    'pending_lc':            'pending',
     'tx_created':            'Create a transaction',
     'selected_country':      'country',
 

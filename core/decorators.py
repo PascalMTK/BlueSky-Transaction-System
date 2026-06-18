@@ -22,7 +22,12 @@ def admin_required(f):
             user = User.objects.get(pk=uid)
             if not user.is_admin():
                 return redirect('agent_dashboard')
+            # Admins must be active — deleted/inactive admins are locked out
+            if user.status not in ('active',):
+                request.session.flush()
+                return redirect('login')
         except User.DoesNotExist:
+            request.session.flush()
             return redirect('login')
         return f(request, *args, **kwargs)
     return wrapper
@@ -35,8 +40,13 @@ def agent_required(f):
         if not uid:
             return redirect('login')
         try:
-            User.objects.get(pk=uid)
+            user = User.objects.get(pk=uid)
+            # Only active users can access agent pages
+            if user.status != 'active':
+                request.session.flush()
+                return redirect('login')
         except User.DoesNotExist:
+            request.session.flush()
             return redirect('login')
         return f(request, *args, **kwargs)
     return wrapper

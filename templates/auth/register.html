@@ -344,8 +344,8 @@ function removePhoto(event) {
     preview.style.display = 'none';
     placeholder.style.display = 'flex';
     area.classList.remove('has-photo');
-    label.textContent = 'Choisir une photo';
-    sub.textContent   = 'JPEG · PNG · WebP — max 5 Mo';
+    label.textContent = '{{ t.choose_photo }}';
+    sub.textContent   = '{{ t.photo_sub_hint }}';
 }
 function togglePw(inputId, eyeId){
     var inp = document.getElementById(inputId);

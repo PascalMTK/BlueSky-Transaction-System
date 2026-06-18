@@ -127,7 +127,7 @@ Connectez-vous au panneau d'administration pour valider ou rejeter ce compte.
       </div>
     </div>
     <div style="background:#f8fafc;border-top:1px solid #e8edf2;padding:16px;text-align:center;">
-      <p style="margin:0;font-size:11px;color:#94a3b8;">© 2025 BLUESKY Transactions — Tous droits réservés</p>
+      <p style="margin:0;font-size:11px;color:#94a3b8;">© 2026 BLUESKY Transactions — Tous droits réservés</p>
     </div>
   </div>
 </body>
