@@ -311,7 +311,38 @@ def agent_set_password(request, agent_id):
             agent.password = _bcrypt.hashpw(new_pw.encode(), _bcrypt.gensalt(10)).decode()
             agent.save()
             messages.success(request, f'Mot de passe de {agent.name} modifié avec succès.')
-    return redirect('admin_agents')
+    next_url = request.POST.get('next', '')
+    return redirect(next_url if next_url else 'admin_agents')
+
+
+@admin_required
+def agent_edit(request, agent_id):
+    agent = get_object_or_404(User, pk=agent_id, role='agent')
+    countries = Country.objects.filter(is_active=True).order_by('name')
+    if request.method == 'POST':
+        name    = request.POST.get('name', '').strip()
+        email   = request.POST.get('email', '').strip().lower()
+        phone   = request.POST.get('phone', '').strip()
+        country_id = request.POST.get('country_id', '')
+        status  = request.POST.get('status', agent.status)
+        if not name:
+            messages.error(request, 'Le nom est requis.')
+        elif not email or '@' not in email:
+            messages.error(request, 'Email invalide.')
+        elif User.objects.filter(email=email).exclude(pk=agent_id).exists():
+            messages.error(request, 'Cet email est déjà utilisé.')
+        else:
+            agent.name   = name
+            agent.email  = email
+            agent.phone  = phone or None
+            agent.status = status if status in ('active','inactive','pending') else agent.status
+            agent.country_id = country_id if country_id else None
+            agent.save()
+            messages.success(request, f'Agent {agent.name} mis à jour.')
+            return redirect('admin_agents')
+    return render(request, 'admin/agent_edit.html', {
+        'agent': agent, 'countries': countries, 'auth_user': get_auth_user(request),
+    })
 
 
 @admin_required

@@ -225,7 +225,8 @@
         /* Tiny phones (375px) */
         @media(max-width:375px){
             .logo{width:110px;}
-            .lang-sw{display:none;}
+            .lang-sw{padding-right:6px;}
+            .lang-flag{display:none;}
             .chips .chip:nth-child(n+3){display:none;}
             .hero{padding:36px 12px 24px;}
             .cta-a,.cta-b{max-width:260px;}
@@ -246,9 +247,9 @@
     <a href="{% url 'welcome' %}" class="nav-logo">BLUE<span>SKY</span></a>
     <div class="nav-links">
         <div class="lang-sw">
-            <a href="{% url 'lang_switch' 'fr' %}" class="{% if locale == 'fr' or not locale %}on{% endif %}">🇫🇷 FR</a>
+            <a href="{% url 'lang_switch' 'fr' %}" class="{% if locale == 'fr' or not locale %}on{% endif %}"><span class="lang-flag">🇫🇷</span> FR</a>
             <s>|</s>
-            <a href="{% url 'lang_switch' 'en' %}" class="{% if locale == 'en' %}on{% endif %}">🇬🇧 EN</a>
+            <a href="{% url 'lang_switch' 'en' %}" class="{% if locale == 'en' %}on{% endif %}"><span class="lang-flag">🇬🇧</span> EN</a>
         </div>
         <button class="theme-btn" id="wThemeBtn" onclick="wToggleTheme()" aria-label="{{ t.theme_toggle_label }}">🌙</button>
         <a href="{% url 'login' %}" class="btn-o">{{ t.login_btn }}</a>

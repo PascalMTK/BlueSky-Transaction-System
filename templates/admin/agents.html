@@ -361,6 +361,11 @@
                                     title="Changer mot de passe">
                                 🔑 <span class="ag-btn-text">Mot de passe</span>
                             </button>
+                            <!-- Edit -->
+                            <a href="{% url 'admin_agent_edit' agent.id %}" class="ag-btn" title="Modifier"
+                               style="background:linear-gradient(135deg,#0284c7,#0ea5e9);color:#fff;text-decoration:none;display:inline-flex;align-items:center;gap:4px;">
+                               ✏️ <span class="ag-btn-text">Modifier</span>
+                            </a>
                             <!-- Delete -->
                             <form method="POST" action="{% url 'admin_agent_destroy' agent.id %}" style="display:contents;"
                                   onsubmit="return confirm('Supprimer cet agent ?');">
