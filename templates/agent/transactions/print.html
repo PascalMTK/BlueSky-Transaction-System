@@ -381,15 +381,15 @@
             <table class="fin-table">
                 <tr>
                     <td class="f-lbl">{{ t.amount_sent }}</td>
-                    <td class="f-val">{{ transaction.amount|number_format:0 }} {{ transaction.origin_country.currency_code }}</td>
+                    <td class="f-val">{{ transaction.amount|number_format:0 }} {{ transaction.currency|default:transaction.origin_country.currency_code }}</td>
                 </tr>
                 <tr>
                     <td class="f-lbl">{{ t.fee }} &nbsp;<span style="color:#94a3b8;font-size:11px;">({{ transaction.fee_percentage }}%)</span></td>
-                    <td class="f-val">{{ transaction.fee_amount|number_format:0 }} {{ transaction.origin_country.currency_code }}</td>
+                    <td class="f-val">{{ transaction.fee_amount|number_format:0 }} {{ transaction.currency|default:transaction.origin_country.currency_code }}</td>
                 </tr>
                 <tr class="fin-total">
                     <td class="f-lbl">{{ t.total_paid }}</td>
-                    <td class="f-val">{{ transaction.total_amount|number_format:0 }} {{ transaction.origin_country.currency_code }}</td>
+                    <td class="f-val">{{ transaction.total_amount|number_format:0 }} {{ transaction.currency|default:transaction.origin_country.currency_code }}</td>
                 </tr>
             </table>
         </div>

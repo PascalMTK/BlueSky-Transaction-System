@@ -122,9 +122,9 @@
                         <div style="font-size:13px;">{{ tx.receiver_name|default:"—" }}</div>
                         {% if tx.receiver_phone %}<div style="font-size:11px;color:var(--text-muted);">{{ tx.receiver_phone }}</div>{% endif %}
                     </td>
-                    <td><strong>{{ tx.amount|number_format:0 }}</strong></td>
-                    <td style="color:var(--text-muted);">{{ tx.fee_amount|number_format:0 }}</td>
-                    <td><strong style="color:var(--sky-primary);">{{ tx.total_amount|number_format:0 }}</strong></td>
+                    <td><strong>{{ tx.amount|number_format:0 }} {{ tx.currency|default:tx.origin_country.currency_code }}</strong></td>
+                    <td style="color:var(--text-muted);">{{ tx.fee_amount|number_format:0 }} {{ tx.currency|default:tx.origin_country.currency_code }}</td>
+                    <td><strong style="color:var(--sky-primary);">{{ tx.total_amount|number_format:0 }} {{ tx.currency|default:tx.origin_country.currency_code }}</strong></td>
                     <td><span class="route-pill">{{ tx.origin_country.flag_emoji }} → {{ tx.destination_country.flag_emoji }}</span></td>
                     <td style="font-size:12px;">{{ tx.agent.name|limit:18 }}</td>
                     <td>

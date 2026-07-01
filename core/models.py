@@ -122,6 +122,14 @@ class Transaction(models.Model):
     def __str__(self):
         return self.transaction_number
 
+    @staticmethod
+    def calculate_totals(amount, fee_percentage):
+        amount = float(amount or 0)
+        fee_percentage = float(fee_percentage or 0)
+        fee_amount = round(amount * fee_percentage / 100, 2)
+        total_amount = round(amount - fee_amount, 2)
+        return amount, fee_amount, total_amount
+
 
 class DirectMessage(models.Model):
     sender     = models.ForeignKey(User, related_name='sent_dms',     on_delete=models.CASCADE, db_column='sender_id')

@@ -170,10 +170,11 @@ def tx_create(request):
         try:
             origin  = Country.objects.get(pk=origin_id)
             dest    = Country.objects.get(pk=dest_id)
-            amount  = float(request.POST.get('amount', 0))
+            amount, fee_amt, total = Transaction.calculate_totals(
+                request.POST.get('amount', 0),
+                request.POST.get('fee_percentage') or origin.default_fee_percentage,
+            )
             fee_pct = float(request.POST.get('fee_percentage') or origin.default_fee_percentage)
-            fee_amt = round(amount * fee_pct / 100, 2)
-            total   = round(amount + fee_amt, 2)
             tx_num  = 'BSK-' + datetime.now().strftime('%Y%m%d') + '-' + str(uuid.uuid4())[:6].upper()
             currency = (request.POST.get('currency') or origin.currency_code or '').upper()
 
@@ -243,10 +244,11 @@ def tx_edit(request, tx_id):
     currencies = _build_currencies()
     if request.method == 'POST':
         tx_type  = request.POST.get('transaction_type', tx.transaction_type)
-        amount   = float(request.POST.get('amount', tx.amount))
+        amount, fee_amt, total = Transaction.calculate_totals(
+            request.POST.get('amount', tx.amount),
+            request.POST.get('fee_percentage', tx.fee_percentage),
+        )
         fee_pct  = float(request.POST.get('fee_percentage', tx.fee_percentage))
-        fee_amt  = round(amount * fee_pct / 100, 2)
-        total    = round(amount + fee_amt, 2)
         currency = (request.POST.get('currency') or tx.currency or '').upper()
 
         tx.transaction_type  = tx_type

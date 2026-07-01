@@ -566,11 +566,8 @@ function calcTotal() {
     const isReceive = (txType === 'receive' || txType === 'withdrawal');
 
     const fee          = Math.round(amt * pct / 100 * 100) / 100;
-    // SEND:    sender pays amt, fee deducted → recipient gets (amt - fee)
-    // RECEIVE: recipient should get amt, fee added → sender pays (amt + fee)
-    const displayAmt   = isReceive
-        ? Math.round((amt + fee) * 100) / 100
-        : Math.round((amt - fee) * 100) / 100;
+    // The fee is deducted from the entered amount.
+    const displayAmt   = Math.round((amt - fee) * 100) / 100;
     const panelLabel   = isReceive ? LABEL_SENDER : LABEL_RECEIVER;
     const sepSign      = isReceive ? '+' : '−';
 

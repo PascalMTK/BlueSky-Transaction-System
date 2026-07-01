@@ -238,7 +238,7 @@ function calcTotal(){
     const amt  =parseFloat(document.getElementById('amountInput').value)||0;
     const pct  =parseFloat(document.getElementById('feeInput').value)||0;
     const fee  =Math.round(amt*pct/100*100)/100;
-    const total=Math.round((amt+fee)*100)/100;
+    const total=Math.round((amt-fee)*100)/100;
     const cur  =(document.getElementById('currencyInput').value||'').toUpperCase();
     document.getElementById('totalDisplay').textContent =total>0?total.toLocaleString('fr-FR'):'—';
     document.getElementById('totalCurLabel').textContent=cur;

@@ -349,7 +349,7 @@
                     <td>{{ tx.receiver_name|default:"—" }}</td>
                     <td>
                         <strong>{{ tx.amount|number_format:0 }}</strong>
-                        <small style="color:var(--text-muted);">{{ tx.origin_country.currency_code }}</small>
+                        <small style="color:var(--text-muted);">{{ tx.currency|default:tx.origin_country.currency_code }}</small>
                     </td>
                     <td>
                         <span style="font-size:18px;">{{ tx.origin_country.flag_emoji }}</span>
