@@ -192,21 +192,21 @@
 <!-- Search / Filters -->
 <form method="GET" action="{% url 'admin_agents' %}">
 <div class="ag-search-bar">
-    <input type="text" name="q" placeholder="🔍 Rechercher un agent..." value="{{ q }}">
+    <input type="text" name="q" placeholder="🔍 {{ t.search_agent }}" value="{{ q }}">
     <select name="status">
-        <option value="">Tous les statuts</option>
-        <option value="active"   {% if status_filter == 'active' %}selected{% endif %}>✅ Actif</option>
-        <option value="pending"  {% if status_filter == 'pending' %}selected{% endif %}>⏳ En attente</option>
-        <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>❌ Inactif</option>
+        <option value="">{{ t.all_status }}</option>
+        <option value="active"   {% if status_filter == 'active' %}selected{% endif %}>✅ {{ t.active_status }}</option>
+        <option value="pending"  {% if status_filter == 'pending' %}selected{% endif %}>⏳ {{ t.pending_status }}</option>
+        <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>❌ {{ t.inactive_status }}</option>
     </select>
     <select name="country_id">
-        <option value="">Tous les pays</option>
+        <option value="">{{ t.all_countries_filter }}</option>
         {% for c in countries %}
         <option value="{{ c.id }}" {% if country_filter == c.id|stringformat:"s" %}selected{% endif %}>{{ c.flag_emoji }} {{ c.name }}</option>
         {% endfor %}
     </select>
-    <button type="submit" style="padding:8px 18px;background:linear-gradient(135deg,#0284c7,#0ea5e9);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;">Filtrer</button>
-    <a href="{% url 'admin_agents' %}" style="padding:8px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;font-weight:700;color:var(--text-muted);text-decoration:none;">↺</a>
+    <button type="submit" style="padding:8px 18px;background:linear-gradient(135deg,#0284c7,#0ea5e9);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;">{{ t.filter_btn }}</button>
+    <a href="{% url 'admin_agents' %}" style="padding:8px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;font-weight:700;color:var(--text-muted);text-decoration:none;">↺ {{ t.reset_filter }}</a>
 </div>
 </form>
 
@@ -218,15 +218,15 @@
     </div>
     <div class="ag-stat active">
         <div class="ag-stat-num" id="sActive">—</div>
-        <div class="ag-stat-lbl">Actifs</div>
+        <div class="ag-stat-lbl">{{ t.active_status }}</div>
     </div>
     <div class="ag-stat pending">
         <div class="ag-stat-num" id="sPending">—</div>
-        <div class="ag-stat-lbl">En attente</div>
+        <div class="ag-stat-lbl">{{ t.pending_status }}</div>
     </div>
     <div class="ag-stat inactive">
         <div class="ag-stat-num" id="sInactive">—</div>
-        <div class="ag-stat-lbl">Inactifs</div>
+        <div class="ag-stat-lbl">{{ t.inactive_status }}</div>
     </div>
 </div>
 
@@ -246,9 +246,9 @@
             {% if agent.agent_code %}<span class="ag-card-code">{{ agent.agent_code }}</span>{% endif %}
         </div>
         <span class="ag-card-badge {{ agent.status }}">
-            {% if agent.status == 'active' %}✅ Actif
-            {% elif agent.status == 'pending' %}⏳ En attente
-            {% else %}❌ Inactif{% endif %}
+            {% if agent.status == 'active' %}✅ {{ t.active_status }}
+            {% elif agent.status == 'pending' %}⏳ {{ t.pending_status }}
+            {% else %}❌ {{ t.inactive_status }}{% endif %}
         </span>
     </div>
 
@@ -265,7 +265,7 @@
 
         <!-- Edit -->
         <a href="{% url 'admin_agent_edit' agent.id %}" class="ac-btn ac-btn-edit">
-            ✏️ Modifier
+            ✏️ {{ t.edit_agent }}
         </a>
 
         <!-- Change password -->
@@ -280,26 +280,26 @@
             {% csrf_token %}
             {% if agent.status == 'active' %}
                 <input type="hidden" name="status" value="inactive">
-                <button type="submit" class="ac-btn ac-btn-deactivate" style="width:100%;">⏸ Désactiver</button>
+                <button type="submit" class="ac-btn ac-btn-deactivate" style="width:100%;">⏸ {{ t.deactivate }}</button>
             {% elif agent.status == 'pending' %}
                 <input type="hidden" name="status" value="active">
-                <button type="submit" class="ac-btn ac-btn-activate" style="width:100%;">✅ Activer</button>
+                <button type="submit" class="ac-btn ac-btn-activate" style="width:100%;">✅ {{ t.activate }}</button>
             {% else %}
                 <input type="hidden" name="status" value="active">
-                <button type="submit" class="ac-btn ac-btn-activate" style="width:100%;">▶ Réactiver</button>
+                <button type="submit" class="ac-btn ac-btn-activate" style="width:100%;">▶ {{ t.reactivate }}</button>
             {% endif %}
         </form>
 
         <!-- Promote to admin -->
         <form method="POST" action="{% url 'admin_agent_promote' agent.id %}">
             {% csrf_token %}
-            <button type="submit" class="ac-btn ac-btn-promote" style="width:100%;">⬆ Promouvoir Admin</button>
+            <button type="submit" class="ac-btn ac-btn-promote" style="width:100%;">⬆ {{ t.promote_admin }}</button>
         </form>
 
         <!-- Archive (soft delete) -->
         <form method="POST" action="{% url 'admin_agent_destroy' agent.id %}" class="form-full">
             {% csrf_token %}
-            <button type="submit" class="ac-btn ac-btn-archive">🗂 Archiver (données conservées)</button>
+            <button type="submit" class="ac-btn ac-btn-archive">🗂 {{ t.archive_agent }}</button>
         </form>
 
     </div>
@@ -310,7 +310,7 @@
 {% else %}
 <div class="ag-empty">
     <div class="ag-empty-icon">👥</div>
-    <div style="font-size:15px;font-weight:600;">Aucun agent trouvé</div>
+    <div style="font-size:15px;font-weight:600;">{{ t.no_agents_found }}</div>
 </div>
 {% endif %}
 
@@ -319,7 +319,7 @@
 <div class="ag-archive-section">
     <div class="ag-archive-header" onclick="toggleArchive()">
         <span>🗂</span>
-        <span>Agents archivés — données conservées ({{ deleted_agents|length }})</span>
+        <span>{{ t.archived_agents }} — {{ t.archived_agents_hint }} ({{ deleted_agents|length }})</span>
         <span id="archiveChevron" style="margin-left:auto;">▼</span>
     </div>
     <div class="ag-archive-body" id="archiveBody">
@@ -334,7 +334,7 @@
                     <div class="ag-card-name">{{ agent.name }}</div>
                     {% if agent.agent_code %}<span class="ag-card-code">{{ agent.agent_code }}</span>{% endif %}
                 </div>
-                <span class="ag-card-badge deleted">🗂 Archivé</span>
+                <span class="ag-card-badge deleted">🗂 {{ t.archived_badge }}</span>
             </div>
             <div class="ag-card-info">
                 <div class="ag-card-row"><span>✉️</span><span>{{ agent.email }}</span></div>
@@ -346,19 +346,19 @@
                 <form method="POST" action="{% url 'admin_agent_status' agent.id %}" class="form-full">
                     {% csrf_token %}
                     <input type="hidden" name="status" value="inactive">
-                    <button type="submit" class="ac-btn ac-btn-restore">↩ Restaurer cet agent</button>
+                    <button type="submit" class="ac-btn ac-btn-restore">↩ {{ t.restore_agent }}</button>
                 </form>
                 <!-- Edit -->
-                <a href="{% url 'admin_agent_edit' agent.id %}" class="ac-btn ac-btn-edit">✏️ Modifier</a>
+                <a href="{% url 'admin_agent_edit' agent.id %}" class="ac-btn ac-btn-edit">✏️ {{ t.edit_agent }}</a>
                 <!-- Password -->
                 <button type="button" class="ac-btn ac-btn-pw"
                         data-agent-id="{{ agent.id }}" data-agent-name="{{ agent.name }}"
                         onclick="openPwModal(this.dataset.agentId, this.dataset.agentName)">
-                    🔑 Mot de passe
+                    🔑 {{ t.change_password }}
                 </button>
                 <form method="POST" action="{% url 'admin_agent_permanent_delete' agent.id %}" class="form-full" onsubmit="return confirm('Supprimer définitivement cet agent archivés ?');">
                     {% csrf_token %}
-                    <button type="submit" class="ac-btn ac-btn-archive" style="background:rgba(239,68,68,.16);border:1px solid rgba(239,68,68,.25);">🗑 Supprimer définitivement</button>
+                    <button type="submit" class="ac-btn ac-btn-archive" style="background:rgba(239,68,68,.16);border:1px solid rgba(239,68,68,.25);">🗑 {{ t.delete_forever }}</button>
                 </form>
             </div>
         </div>
@@ -371,17 +371,17 @@
 <!-- Password Modal -->
 <div id="pwModal">
     <div class="pw-box">
-        <div class="pw-title">🔑 Changer le mot de passe</div>
+        <div class="pw-title">🔑 {{ t.change_password_title }}</div>
         <div class="pw-sub" id="pwAgentName"></div>
         <form id="pwForm" method="POST">
             {% csrf_token %}
             <div class="pw-field">
-                <label class="pw-label">Nouveau mot de passe</label>
+                <label class="pw-label">{{ t.new_password }}</label>
                 <input type="password" name="new_password" class="pw-input" placeholder="Minimum 8 caractères" required minlength="8" autocomplete="new-password">
             </div>
             <div class="pw-field">
-                <label class="pw-label">Confirmer le mot de passe</label>
-                <input type="password" name="confirm_password" class="pw-input" placeholder="Répéter le mot de passe" required minlength="8" autocomplete="new-password">
+                <label class="pw-label">{{ t.confirm_password }}</label>
+                <input type="password" name="confirm_password" class="pw-input" placeholder="{{ t.repeat_password }}" required minlength="8" autocomplete="new-password">
             </div>
             <div class="pw-actions">
                 <button type="button" class="pw-cancel" onclick="closePwModal()">Annuler</button>

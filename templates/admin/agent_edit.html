@@ -1,8 +1,8 @@
 {% extends 'layouts/app.html' %}
 {% load static bluesky_tags %}
 
-{% block title %}Modifier l'agent — {{ agent.name }}{% endblock %}
-{% block page_title %}Modifier l'agent{% endblock %}
+{% block title %}{{ t.edit_agent }} {{ agent.name }}{% endblock %}
+{% block page_title %}{{ t.edit_agent }}{% endblock %}
 {% block page_subtitle %}{{ agent.name }} — {{ agent.agent_code }}{% endblock %}
 {% block nav_admin_agents %}active{% endblock %}
 {% block mob_adm_agents %}active{% endblock %}
@@ -113,36 +113,36 @@
 
 {% block content %}
 <div class="edit-card">
-    <h2>✏️ Modifier l'agent</h2>
+    <h2>✏️ {{ t.edit_agent }}</h2>
 
     <form method="POST" action="{% url 'admin_agent_edit' agent.id %}">
         {% csrf_token %}
         <div class="form-grid">
             <div class="form-group">
-                <label>Nom complet</label>
+                <label>{{ t.full_name }}</label>
                 <input type="text" name="name" value="{{ agent.name }}" required>
             </div>
             <div class="form-group">
-                <label>Email</label>
+                <label>{{ t.email }}</label>
                 <input type="email" name="email" value="{{ agent.email }}" required>
             </div>
         </div>
         <div class="form-grid">
             <div class="form-group">
-                <label>Téléphone</label>
+                <label>{{ t.phone }}</label>
                 <input type="text" name="phone" value="{{ agent.phone|default:'' }}" placeholder="+243...">
             </div>
             <div class="form-group">
-                <label>Statut</label>
+                <label>{{ t.status }}</label>
                 <select name="status">
-                    <option value="active"   {% if agent.status == 'active'   %}selected{% endif %}>Actif</option>
-                    <option value="inactive" {% if agent.status == 'inactive' %}selected{% endif %}>Inactif</option>
-                    <option value="pending"  {% if agent.status == 'pending'  %}selected{% endif %}>En attente</option>
+                    <option value="active"   {% if agent.status == 'active'   %}selected{% endif %}>{{ t.active_status }}</option>
+                    <option value="inactive" {% if agent.status == 'inactive' %}selected{% endif %}>{{ t.inactive_status }}</option>
+                    <option value="pending"  {% if agent.status == 'pending'  %}selected{% endif %}>{{ t.pending_status }}</option>
                 </select>
             </div>
         </div>
         <div class="form-group">
-            <label>Pays</label>
+            <label>{{ t.country_label }}</label>
             <select name="country_id">
                 <option value="">— Aucun pays —</option>
                 {% for c in countries %}
@@ -152,28 +152,28 @@
         </div>
 
         <div class="edit-actions">
-            <button type="submit" class="btn-save">💾 Enregistrer</button>
-            <a href="{% url 'admin_agents' %}" class="btn-cancel">Annuler</a>
+            <button type="submit" class="btn-save">💾 {{ t.save_info }}</button>
+            <a href="{% url 'admin_agents' %}" class="btn-cancel">{{ t.cancel }}</a>
         </div>
     </form>
 
     <!-- Changement de mot de passe -->
     <div class="pw-section">
-        <h3>🔑 Changer le mot de passe</h3>
+        <h3>🔑 {{ t.change_password_title }}</h3>
         <form method="POST" action="{% url 'admin_agent_set_password' agent.id %}">
             {% csrf_token %}
             <input type="hidden" name="next" value="{% url 'admin_agent_edit' agent.id %}">
             <div class="form-grid">
                 <div class="form-group">
-                    <label>Nouveau mot de passe</label>
+                    <label>{{ t.new_password }}</label>
                     <input type="password" name="new_password" placeholder="Min. 8 caractères">
                 </div>
                 <div class="form-group">
-                    <label>Confirmer</label>
+                    <label>{{ t.confirm_password }}</label>
                     <input type="password" name="confirm_password" placeholder="Répéter">
                 </div>
             </div>
-            <button type="submit" class="btn-save" style="background:linear-gradient(135deg,#7c3aed,#6d28d9);">🔑 Changer le mot de passe</button>
+            <button type="submit" class="btn-save" style="background:linear-gradient(135deg,#7c3aed,#6d28d9);">🔑 {{ t.change_password_title }}</button>
         </form>
     </div>
 </div>
