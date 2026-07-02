@@ -363,6 +363,22 @@ def agent_destroy(request, agent_id):
 
 
 @admin_required
+def agent_permanent_delete(request, agent_id):
+    if request.method == 'POST':
+        user = get_auth_user(request)
+        agent = get_object_or_404(User, pk=agent_id, role='agent')
+        if agent.id == user.id:
+            messages.error(request, 'Vous ne pouvez pas supprimer votre propre compte.')
+            return redirect('admin_agents')
+        if agent.status != 'deleted':
+            messages.error(request, 'Cet agent n’est pas archivé, il ne peut pas être supprimé définitivement.')
+            return redirect('admin_agents')
+        agent.delete()
+        messages.success(request, f'{agent.name} supprimé définitivement.')
+    return redirect('admin_agents')
+
+
+@admin_required
 def transactions(request):
     user = get_auth_user(request)
     qs   = Transaction.objects.select_related('agent', 'origin_country', 'destination_country').order_by('-created_at')

@@ -356,6 +356,10 @@
                         onclick="openPwModal(this.dataset.agentId, this.dataset.agentName)">
                     🔑 Mot de passe
                 </button>
+                <form method="POST" action="{% url 'admin_agent_permanent_delete' agent.id %}" class="form-full" onsubmit="return confirm('Supprimer définitivement cet agent archivés ?');">
+                    {% csrf_token %}
+                    <button type="submit" class="ac-btn ac-btn-archive" style="background:rgba(239,68,68,.16);border:1px solid rgba(239,68,68,.25);">🗑 Supprimer définitivement</button>
+                </form>
             </div>
         </div>
         {% endfor %}
