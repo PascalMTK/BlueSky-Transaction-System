@@ -7,6 +7,7 @@ from datetime import datetime, date
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.http import HttpResponse, JsonResponse
+from decimal import Decimal, InvalidOperation
 from django.db.models import Sum, Count, Q
 from django.conf import settings
 from core.models import User, Country, Transaction, AgentReport, DirectMessage
@@ -90,6 +91,19 @@ def _send_transaction_sms(tx, locale='fr'):
         return False
 
 
+def _parse_decimal(value, default=0):
+    if value is None:
+        return float(default or 0)
+    if isinstance(value, str):
+        value = value.strip()
+        if not value:
+            return float(default or 0)
+    try:
+        return float(Decimal(str(value)))
+    except (InvalidOperation, TypeError, ValueError):
+        return float(default or 0)
+
+
 def _build_currencies():
     """Build currency dict from DB countries."""
     currencies = {}
@@ -164,19 +178,33 @@ def tx_create(request):
     countries = Country.objects.filter(is_active=True)
     currencies = _build_currencies()
     if request.method == 'POST':
-        tx_type   = request.POST.get('transaction_type', 'send')
+        tx_type   = request.POST.get('transaction_type') or request.GET.get('type', 'send')
         origin_id = request.POST.get('origin_country_id')
         dest_id   = request.POST.get('destination_country_id')
         try:
             origin  = Country.objects.get(pk=origin_id)
             dest    = Country.objects.get(pk=dest_id)
-            amount, fee_amt, total = Transaction.calculate_totals(
-                request.POST.get('amount', 0),
-                request.POST.get('fee_percentage') or origin.default_fee_percentage,
-            )
-            fee_pct = float(request.POST.get('fee_percentage') or origin.default_fee_percentage)
+            amount = _parse_decimal(request.POST.get('amount', 0), 0)
+            fee_value = request.POST.get('fee_amount', '')
+            fee_amt = _parse_decimal(fee_value, 0)
+            if fee_value is None or str(fee_value).strip() == '':
+                default_pct = float(origin.default_fee_percentage or 0)
+                fee_amt = round(amount * default_pct / 100, 2)
+            if fee_amt > amount:
+                messages.error(request, "Le montant des frais ne peut pas dépasser le montant total.")
+                raise ValueError('fee_amount_too_high')
+            amount, fee_amt, fee_pct, total = Transaction.calculate_totals(amount, fee_amt, fee_is_percentage=False)
             tx_num  = 'BSK-' + datetime.now().strftime('%Y%m%d') + '-' + str(uuid.uuid4())[:6].upper()
             currency = (request.POST.get('currency') or origin.currency_code or '').upper()
+            sent_at_str = request.POST.get('sent_at', '')
+            sent_at = None
+            if sent_at_str:
+                try:
+                    sent_at = datetime.fromisoformat(sent_at_str)
+                except ValueError:
+                    sent_at = None
+            if not sent_at:
+                sent_at = datetime.now()
 
             # Validate required fields by type
             sender_name  = request.POST.get('sender_name', '').strip()
@@ -184,12 +212,17 @@ def tx_create(request):
             recv_name    = request.POST.get('receiver_name', '').strip()
             recv_phone   = request.POST.get('receiver_phone', '').strip()
 
+            if tx_type not in ('send', 'receive', 'exchange', 'withdrawal'):
+                tx_type = 'send'
             if tx_type == 'send' and not sender_name:
                 messages.error(request, "Le nom de l'expéditeur est obligatoire pour un envoi.")
                 raise ValueError('sender_name required')
-            if tx_type == 'withdrawal' and not recv_name:
-                messages.error(request, "Le nom du bénéficiaire est obligatoire pour un retrait.")
+            if tx_type in ('send', 'exchange', 'withdrawal') and not recv_name:
+                messages.error(request, "Le nom du bénéficiaire est obligatoire pour ce type de transaction.")
                 raise ValueError('receiver_name required')
+            if tx_type == 'exchange' and not sender_name:
+                messages.error(request, "Le nom de l'expéditeur est obligatoire pour un échange.")
+                raise ValueError('sender_name required')
 
             tx = Transaction(
                 transaction_number   = tx_num,
@@ -209,7 +242,7 @@ def tx_create(request):
                 status               = request.POST.get('status', 'completed'),
                 notes                = request.POST.get('notes', ''),
                 payment_method       = request.POST.get('payment_method', 'cash'),
-                sent_at              = datetime.now(),
+                sent_at              = sent_at,
             )
             tx.save()
             locale = request.session.get('locale', 'fr')
@@ -220,8 +253,20 @@ def tx_create(request):
             pass
         except Exception as e:
             messages.error(request, f'Erreur : {e}')
+    if request.method == 'POST':
+        default_tx_type = request.POST.get('transaction_type', 'send')
+        type_preselected = True
+    else:
+        default_tx_type = request.GET.get('type', '')
+        type_preselected = bool(default_tx_type)
+        if not default_tx_type:
+            default_tx_type = 'send'
+    sent_at_value = datetime.now().strftime('%Y-%m-%dT%H:%M')
     return render(request, 'agent/transactions/create.html', {
         'countries': countries, 'currencies': currencies, 'auth_user': user,
+        'default_tx_type': default_tx_type,
+        'type_preselected': type_preselected,
+        'sent_at_value': sent_at_value,
     })
 
 
@@ -244,12 +289,23 @@ def tx_edit(request, tx_id):
     currencies = _build_currencies()
     if request.method == 'POST':
         tx_type  = request.POST.get('transaction_type', tx.transaction_type)
-        amount, fee_amt, total = Transaction.calculate_totals(
-            request.POST.get('amount', tx.amount),
-            request.POST.get('fee_percentage', tx.fee_percentage),
-        )
-        fee_pct  = float(request.POST.get('fee_percentage', tx.fee_percentage))
+        amount = _parse_decimal(request.POST.get('amount', tx.amount), tx.amount)
+        fee_amt = _parse_decimal(request.POST.get('fee_amount', ''), tx.fee_amount)
+        if fee_amt is None or str(request.POST.get('fee_amount', '')).strip() == '':
+            fee_amt = tx.fee_amount
+        if fee_amt > amount:
+            messages.error(request, "Le montant des frais ne peut pas dépasser le montant total.")
+            return render(request, 'agent/transactions/edit.html', {
+                'transaction': tx, 'countries': countries, 'currencies': currencies, 'auth_user': user,
+            })
+        amount, fee_amt, fee_pct, total = Transaction.calculate_totals(amount, fee_amt, fee_is_percentage=False)
         currency = (request.POST.get('currency') or tx.currency or '').upper()
+        sent_at_str = request.POST.get('sent_at', '')
+        if sent_at_str:
+            try:
+                tx.sent_at = datetime.fromisoformat(sent_at_str)
+            except ValueError:
+                pass
 
         tx.transaction_type  = tx_type
         tx.sender_name       = request.POST.get('sender_name', tx.sender_name)
@@ -432,7 +488,7 @@ def export_csv(request):
     ws.freeze_panes = 'A2'
     ws.row_dimensions[1].height = 28
 
-    TYPE_MAP = {'send': 'Envoi', 'withdrawal': 'Retrait'}
+    TYPE_MAP = {'send': 'Envoi', 'receive': 'Réception', 'exchange': 'Échange', 'withdrawal': 'Retrait'}
     STA_MAP  = {'completed': 'Complété', 'pending': 'En attente', 'cancelled': 'Annulé'}
 
     # Status cell colors

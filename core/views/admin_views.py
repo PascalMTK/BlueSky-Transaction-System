@@ -85,6 +85,8 @@ def dashboard(request):
         'amount_today':        float(Transaction.objects.filter(created_at__date=today, status='completed').aggregate(s=Sum('amount'))['s'] or 0),
         'amount_month':        float(Transaction.objects.filter(created_at__month=today.month, created_at__year=today.year, status='completed').aggregate(s=Sum('amount'))['s'] or 0),
         'total_fees':          float(Transaction.objects.filter(status='completed').aggregate(s=Sum('fee_amount'))['s'] or 0),
+        'fees_today':          float(Transaction.objects.filter(created_at__date=today, status='completed').aggregate(s=Sum('fee_amount'))['s'] or 0),
+        'fees_month':          float(Transaction.objects.filter(created_at__month=today.month, created_at__year=today.year, status='completed').aggregate(s=Sum('fee_amount'))['s'] or 0),
         'total_agents':        User.objects.filter(role='agent').count(),
         'active_agents':       User.objects.filter(role='agent', status='active').count(),
         'pending_agents':      User.objects.filter(role='agent', status='pending').count(),
@@ -98,7 +100,7 @@ def dashboard(request):
     recent_tx      = Transaction.objects.select_related('agent', 'origin_country', 'destination_country').order_by('-created_at')[:10]
 
     top_agents = (
-        User.objects.filter(role='agent')
+        User.objects.filter(role='agent', status__in=['active', 'pending', 'inactive'])
         .annotate(tx_count=Count('transaction'), tx_amount=Sum('transaction__amount'))
         .order_by('-tx_amount')[:5]
     )
@@ -566,11 +568,18 @@ def statistics(request):
         if amt > max_amount:
             max_amount = amt
 
+    daily_gains_today = float(Transaction.objects.filter(created_at__date=today, status='completed').aggregate(s=Sum('fee_amount'))['s'] or 0)
+    daily_gains_month = float(Transaction.objects.filter(created_at__month=today.month, created_at__year=today.year, status='completed').aggregate(s=Sum('fee_amount'))['s'] or 0)
+    daily_gains_total = float(Transaction.objects.filter(status='completed').aggregate(s=Sum('fee_amount'))['s'] or 0)
+
     return render(request, 'admin/statistics.html', {
         'yearly_data':          yearly_data,
         'current_year_monthly': current_year_monthly,
         'max_amount':           max_amount,
         'current_year':         today.year,
+        'daily_gains_today':    daily_gains_today,
+        'daily_gains_month':    daily_gains_month,
+        'daily_gains_total':    daily_gains_total,
         'auth_user':            user,
     })
 
@@ -676,7 +685,7 @@ def export_csv(request):
 
     even_fill, odd_fill, money_fill, border, center, left = _style_xlsx(ws, headers, col_widths)
 
-    TYPE_MAP = {'send': 'Envoi', 'withdrawal': 'Retrait'}
+    TYPE_MAP = {'send': 'Envoi', 'receive': 'Réception', 'exchange': 'Échange', 'withdrawal': 'Retrait'}
     PAY_MAP  = {'cash': 'Espèces', 'bank_transfer': 'Virement', 'mobile_money': 'Mobile Money', 'card': 'Carte'}
     STA_MAP  = {'completed': 'Complété', 'pending': 'En attente', 'cancelled': 'Annulé'}
 

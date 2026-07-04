@@ -76,6 +76,9 @@ FR = {
     'last_10':               'Les 10 dernières opérations',
     'see_all_tx':            'Voir toutes →',
     'top_agents':            'Top agents',
+    'daily_gains':           'Gains du jour',
+    'monthly_gains':         'Gains du mois',
+    'daily_gains_sub':       'Frais collectés par jour et total',
 
     # ── Dashboard - Agent
     'agent_overview':        'Bienvenue dans votre espace',
@@ -153,6 +156,10 @@ FR = {
     'dest_country':          'Pays de destination',
     'amount_to_send':        'Montant',
     'fee_pct':               'Frais (%)',
+    'fee_amount_label':       'Frais (montant)',
+    'amount_remitted':        'Montant remis au client',
+    'transaction_date':       'Date de transaction',
+    'select_tx_type_error':   'Veuillez sélectionner le type de transaction.',
     'currency':              'Devise',
     'payment_method':        'Mode de paiement',
     'cash':                  'Espèces',
@@ -574,6 +581,9 @@ EN = {
     'last_10':               'The last 10 operations',
     'see_all_tx':            'View all →',
     'top_agents':            'Top agents',
+    'daily_gains':           'Daily gains',
+    'monthly_gains':         'Monthly gains',
+    'daily_gains_sub':       'Fees collected by day and total',
 
     # ── Dashboard - Agent
     'agent_overview':        'Welcome to your space',

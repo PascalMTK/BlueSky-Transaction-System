@@ -142,6 +142,12 @@
         <div class="kpi-label">{{ t.total_volume }}</div>
         <div class="kpi-trend">🏷️ <strong>{{ stats.total_fees|number_format:0 }}</strong> {{ t.total_commissions }}</div>
     </div>
+    <div class="kpi-card kpi-bg-orange">
+        <span class="kpi-icon">📆</span>
+        <div class="kpi-value" style="font-size:20px;">{{ stats.fees_today|number_format:0 }}</div>
+        <div class="kpi-label">{{ t.daily_gains }}</div>
+        <div class="kpi-trend">📈 <strong>{{ stats.fees_month|number_format:0 }}</strong> {{ t.monthly_gains }}</div>
+    </div>
     <div class="kpi-card kpi-bg-purple">
         <span class="kpi-icon">✅</span>
         <div class="kpi-value" data-counter="{{ stats.active_agents }}">{{ stats.active_agents }}</div>

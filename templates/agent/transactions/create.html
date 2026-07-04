@@ -300,6 +300,20 @@
         <form method="POST" action="{% url 'tx_create' %}" id="txForm">
             {% csrf_token %}
 
+            <!-- Step 1 : Transaction type — obligatoire, en premier -->
+            <div class="ip-group" style="margin-bottom:20px;">
+                <div class="ip-label">1️⃣ {{ t.tx_type_label }} *</div>
+                <div class="ip-row">
+                    <button type="button" class="ip-btn{% if type_preselected and default_tx_type == 'send' %} ip-active{% endif %}" data-tx-type="send" onclick="pickTxType('send', this)"><span class="ip-icon">📤</span><span class="ip-text">{{ t.type_send }}</span></button>
+                    <button type="button" class="ip-btn{% if type_preselected and default_tx_type == 'receive' %} ip-active{% endif %}" data-tx-type="receive" onclick="pickTxType('receive', this)"><span class="ip-icon">📥</span><span class="ip-text">{{ t.receive_verb }}</span></button>
+                    <button type="button" class="ip-btn{% if type_preselected and default_tx_type == 'exchange' %} ip-active{% endif %}" data-tx-type="exchange" onclick="pickTxType('exchange', this)"><span class="ip-icon">🔄</span><span class="ip-text">{{ t.exchange_verb }}</span></button>
+                </div>
+                <input type="hidden" name="transaction_type" id="txType" value="{{ default_tx_type }}">
+            </div>
+
+            <!-- Step 2 : Détails — masqués tant que le type n'est pas choisi -->
+            <div id="txDetailsWrap" style="display:{% if type_preselected %}block{% else %}none{% endif %};">
+
             <!-- Countries -->
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;" class="form-grid">
                 <div class="form-group" style="margin:0;">
@@ -307,7 +321,7 @@
                     <select name="origin_country_id" class="form-control" id="originCountry" required onchange="loadFee()">
                         <option value="">-- {{ t.select_country }} --</option>
                         {% for c in countries %}
-                            <option value="{{ c.id }}" data-fee="{{ c.default_fee_percentage }}" data-currency="{{ c.currency_code }}">{{ c.flag_emoji }} {{ c.name }} ({{ c.currency_code }})</option>
+                            <option value="{{ c.id }}" data-currency="{{ c.currency_code }}">{{ c.flag_emoji }} {{ c.name }} ({{ c.currency_code }})</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -379,20 +393,20 @@
                         </div>
                     </div>
 
-                    <!-- Rangée 2 : Frais % → Total -->
+                    <!-- Rangée 2 : Frais montant → Total -->
                     <div class="tx-row-result">
                         <div class="tx-fee-grp">
-                            <label class="form-label">{{ t.fee_pct }}</label>
+                            <label class="form-label">{{ t.fee_amount_label }}</label>
                             <div class="tx-field-icon-wrap">
-                                <span class="tx-icon" style="font-size:11px;font-weight:700;">%</span>
-                                <input type="number" name="fee_percentage" id="feeInput" class="form-control"
-                                       placeholder="3" step="0.01" min="0" max="100" value="3" oninput="calcTotal()">
+                                <span class="tx-icon" style="font-size:13px;font-weight:700;">$</span>
+                                <input type="number" name="fee_amount" id="feeInput" class="form-control"
+                                       placeholder="2500" step="0.01" min="0" value="0" oninput="calcTotal()">
                             </div>
                         </div>
                         <div class="tx-result-arrow">→</div>
                         <div class="tx-total-panel" id="totalPanel">
                             <div>
-                                <div class="tx-total-panel-label" id="totalLabel">{{ t.tx_receiver_gets }}</div>
+                                <div class="tx-total-panel-label" id="totalLabel">{{ t.amount_remitted }}</div>
                             </div>
                             <div class="tx-total-panel-right" id="totalPanelRight">
                                 <div class="tx-total-panel-empty" id="totalEmpty">—</div>
@@ -404,6 +418,11 @@
                         </div>
                     </div>
 
+                    <div class="form-group" style="margin-top:10px;">
+                        <label class="form-label">{{ t.transaction_date }}</label>
+                        <input type="datetime-local" name="sent_at" id="sentAtInput" class="form-control" value="{{ sent_at_value }}">
+                    </div>
+
                     <!-- Récap formule -->
                     <div class="tx-calc-bar" id="calcBar" style="display:none;">
                         <span class="tx-calc-val" id="calcAmt"></span>
@@ -411,7 +430,6 @@
                         <span class="tx-calc-sep" id="calcSep">−</span>
                         <span class="tx-calc-val" id="calcFee"></span>
                         <span class="tx-calc-cur" id="calcCur2"></span>
-                        <span style="font-size:10px;color:var(--text-muted);" id="calcPct"></span>
                         <span class="tx-calc-sep">=</span>
                         <span class="tx-calc-total" id="calcTotal2"></span>
                         <span class="tx-calc-cur" id="calcCur3"></span>
@@ -442,44 +460,14 @@
                     </div>
                     <input type="hidden" name="payment_method" id="pm" value="">
                 </div>
-
-                <!-- Transaction type — optionnel, accordéon -->
-                <div class="ip-group-opt" id="grpTxType">
-                    <div class="ip-toggle-header" onclick="toggleIpGroup('grpTxType')">
-                        <span class="ip-toggle-icon">🔄</span>
-                        <span class="ip-toggle-title">{{ t.tx_type_label }}</span>
-                        <span class="ip-opt-badge">OPTIONNEL</span>
-                        <span class="ip-toggle-chosen" id="txTypeChosen">—</span>
-                        <span class="ip-toggle-arrow">▼</span>
-                    </div>
-                    <div class="ip-collapsible">
-                        <div class="ip-row">
-                            <button type="button" class="ip-btn" onclick="pickIpToggle('txType','send',this,'txTypeChosen','📤 {{ t.type_send }}')"><span class="ip-icon">📤</span><span class="ip-text">{{ t.type_send }}</span></button>
-                            <button type="button" class="ip-btn" onclick="pickIpToggle('txType','receive',this,'txTypeChosen','📥 {{ t.receive_verb }}')"><span class="ip-icon">📥</span><span class="ip-text">{{ t.receive_verb }}</span></button>
-                            <button type="button" class="ip-btn" onclick="pickIpToggle('txType','exchange',this,'txTypeChosen','🔄 {{ t.exchange_verb }}')"><span class="ip-icon">🔄</span><span class="ip-text">{{ t.exchange_verb }}</span></button>
-                        </div>
-                    </div>
-                    <input type="hidden" name="transaction_type" id="txType" value="">
-                </div>
-
-                <!-- Status — requis, toujours sélectionné -->
-                <div class="ip-group">
-                    <div class="ip-label">📋 {{ t.status_label }}</div>
-                    <div class="ip-row">
-                        <button type="button" class="ip-btn ip-status-completed ip-active" onclick="pickIp('st','completed',this)"><span class="ip-icon">✅</span><span class="ip-text">{{ t.completed }}</span></button>
-                        <button type="button" class="ip-btn ip-status-pending" onclick="pickIp('st','pending',this)"><span class="ip-icon">⏳</span><span class="ip-text">{{ t.pending }}</span></button>
-                        <button type="button" class="ip-btn ip-status-cancelled" onclick="pickIp('st','cancelled',this)"><span class="ip-icon">❌</span><span class="ip-text">{{ t.cancelled }}</span></button>
-                    </div>
-                    <input type="hidden" name="status" id="st" value="completed">
-                </div>
-
             </div>
-
             <!-- Notes -->
             <div class="form-group" style="margin-top:16px;">
                 <label class="form-label">📝 {{ t.notes }}</label>
                 <textarea name="notes" class="form-control" rows="2" placeholder="{{ t.notes_ph }}"></textarea>
             </div>
+
+            </div><!-- /#txDetailsWrap -->
 
             <!-- Actions -->
             <div class="tx-actions">
@@ -493,13 +481,20 @@
 
 {% block scripts %}
 <script>
-// ── Icon picker — requis (statut) ──────────────────────────────────────
-function pickIp(hiddenId, val, btn){
+// ── Étape 1 : type de transaction — requis, révèle le reste du formulaire ──
+function pickTxType(val, btn){
     var row = btn.closest('.ip-row');
     row.querySelectorAll('.ip-btn').forEach(function(b){ b.classList.remove('ip-active'); });
     btn.classList.add('ip-active');
-    document.getElementById(hiddenId).value = val;
-    if(hiddenId === 'txType') { calcTotal(); }
+    document.getElementById('txType').value = val;
+    document.getElementById('txDetailsWrap').style.display = 'block';
+
+    var senderInput   = document.getElementById('senderNameInput');
+    var receiverInput = document.getElementById('receiverNameInput');
+    if(senderInput)   senderInput.required   = (val === 'send' || val === 'exchange');
+    if(receiverInput) receiverInput.required = (val === 'send' || val === 'exchange' || val === 'withdrawal');
+
+    calcTotal();
 }
 
 // ── Accordéon toggle ─────────────────────────────────────────────────────
@@ -537,10 +532,6 @@ function updateFlag(selId, flagId) {
 function loadFee() {
     const sel = document.getElementById('originCountry');
     const opt = sel.options[sel.selectedIndex];
-    if (opt.dataset.fee) {
-        document.getElementById('feeInput').value = opt.dataset.fee;
-        calcTotal();
-    }
     if (opt.dataset.currency) {
         const cur = document.getElementById('currencyInput');
         if (!cur.dataset.userEdited) cur.value = opt.dataset.currency;
@@ -553,42 +544,31 @@ function loadFee() {
         cur.addEventListener('input', function(){ this.dataset.userEdited = '1'; calcTotal(); });
         cur.addEventListener('change', function(){ this.value = this.value.toUpperCase(); calcTotal(); });
     }
+    /* Si un type est déjà présélectionné (lien ?type=... ou re-render après erreur),
+       synchronise les champs obligatoires sans attendre un clic. */
+    var activeBtn = document.querySelector('[data-tx-type].ip-active');
+    if(activeBtn) pickTxType(activeBtn.dataset.txType, activeBtn);
 })();
-
-var LABEL_RECEIVER = '{{ t.tx_receiver_gets }}';
-var LABEL_SENDER   = '{{ t.tx_sender_pays }}';
 
 function calcTotal() {
     const amt    = parseFloat(document.getElementById('amountInput').value) || 0;
-    const pct    = parseFloat(document.getElementById('feeInput').value) || 0;
+    const fee    = parseFloat(document.getElementById('feeInput').value) || 0;
     const cur    = (document.getElementById('currencyInput').value || '').toUpperCase();
-    const txType = document.getElementById('txType').value;
-    const isReceive = (txType === 'receive' || txType === 'withdrawal');
-
-    const fee          = Math.round(amt * pct / 100 * 100) / 100;
-    // The fee is deducted from the entered amount.
-    const displayAmt   = Math.round((amt - fee) * 100) / 100;
-    const panelLabel   = isReceive ? LABEL_SENDER : LABEL_RECEIVER;
-    const sepSign      = isReceive ? '+' : '−';
+    const total  = Math.round((amt - fee) * 100) / 100;
 
     const empty  = document.getElementById('totalEmpty');
     const filled = document.getElementById('totalFilled');
-    const lbl    = document.getElementById('totalLabel');
 
     if (amt > 0) {
         empty.style.display  = 'none';
         filled.style.display = 'block';
-        if (lbl) lbl.textContent = panelLabel;
-        document.getElementById('totalDisplay').textContent  = displayAmt.toLocaleString('fr-FR');
+        document.getElementById('totalDisplay').textContent  = total.toLocaleString('fr-FR');
         document.getElementById('totalCurLabel').textContent = cur;
         /* calc bar */
         document.getElementById('calcBar').style.display = 'flex';
         document.getElementById('calcAmt').textContent    = amt.toLocaleString('fr-FR');
         document.getElementById('calcFee').textContent    = fee.toLocaleString('fr-FR');
-        document.getElementById('calcTotal2').textContent = displayAmt.toLocaleString('fr-FR');
-        document.getElementById('calcPct').textContent    = pct > 0 ? '(' + pct + '%)' : '';
-        var sep = document.getElementById('calcSep');
-        if (sep) sep.textContent = sepSign;
+        document.getElementById('calcTotal2').textContent = total.toLocaleString('fr-FR');
         ['calcCur1','calcCur2','calcCur3'].forEach(function(id){ document.getElementById(id).textContent = cur; });
     } else {
         empty.style.display  = 'block';

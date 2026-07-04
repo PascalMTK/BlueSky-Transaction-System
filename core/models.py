@@ -83,8 +83,15 @@ class User(models.Model):
 
 class Transaction(models.Model):
     TYPE_SEND       = 'send'
+    TYPE_RECEIVE    = 'receive'
+    TYPE_EXCHANGE   = 'exchange'
     TYPE_WITHDRAWAL = 'withdrawal'
-    TYPE_CHOICES    = [('send', 'Send'), ('withdrawal', 'Withdrawal')]
+    TYPE_CHOICES    = [
+        ('send', 'Send'),
+        ('receive', 'Receive'),
+        ('exchange', 'Exchange'),
+        ('withdrawal', 'Withdrawal'),
+    ]
 
     STATUS_COMPLETED = 'completed'
     STATUS_PENDING   = 'pending'
@@ -123,12 +130,17 @@ class Transaction(models.Model):
         return self.transaction_number
 
     @staticmethod
-    def calculate_totals(amount, fee_percentage):
+    def calculate_totals(amount, fee_value, fee_is_percentage=True):
         amount = float(amount or 0)
-        fee_percentage = float(fee_percentage or 0)
-        fee_amount = round(amount * fee_percentage / 100, 2)
+        fee_value = float(fee_value or 0)
+        if fee_is_percentage:
+            fee_amount = round(amount * fee_value / 100, 2)
+            fee_percentage = round(fee_value, 2)
+        else:
+            fee_amount = round(fee_value, 2)
+            fee_percentage = round((fee_amount / amount * 100), 2) if amount else 0
         total_amount = round(amount - fee_amount, 2)
-        return amount, fee_amount, total_amount
+        return amount, fee_amount, fee_percentage, total_amount
 
 
 class DirectMessage(models.Model):
@@ -137,6 +149,7 @@ class DirectMessage(models.Model):
     message    = models.TextField()
     is_read    = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+
 
     class Meta:
         managed  = True

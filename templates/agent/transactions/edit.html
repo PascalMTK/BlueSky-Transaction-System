@@ -164,17 +164,17 @@
                     <!-- Rangée 2 : Frais % → Total -->
                     <div class="tx-row-result">
                         <div class="tx-fee-grp">
-                            <label class="form-label">{{ t.fee_pct }}</label>
+                            <label class="form-label">{{ t.fee_amount_label }}</label>
                             <div class="tx-field-icon-wrap">
-                                <span class="tx-icon" style="font-size:11px;font-weight:700;">%</span>
-                                <input type="number" name="fee_percentage" id="feeInput" class="form-control"
-                                       value="{{ transaction.fee_percentage }}" step="0.01" min="0" max="100" oninput="calcTotal()">
+                                <span class="tx-icon" style="font-size:13px;font-weight:700;">$</span>
+                                <input type="number" name="fee_amount" id="feeInput" class="form-control"
+                                       value="{{ transaction.fee_amount }}" step="0.01" min="0" oninput="calcTotal()">
                             </div>
                         </div>
                         <div class="tx-result-arrow">→</div>
                         <div class="tx-total-panel">
                             <div>
-                                <div class="tx-total-panel-label">{{ t.total_client }}</div>
+                                <div class="tx-total-panel-label">{{ t.amount_remitted }}</div>
                             </div>
                             <div class="tx-total-panel-right">
                                 <div class="tx-total-panel-val" id="totalDisplay">{{ transaction.total_amount|floatformat:"0" }}</div>
@@ -183,14 +183,19 @@
                         </div>
                     </div>
 
+                    <div class="form-group" style="margin-top:10px;">
+                        <label class="form-label">{{ t.transaction_date }}</label>
+                        <input type="datetime-local" name="sent_at" id="sentAtInput" class="form-control"
+                               value="{% if transaction.sent_at %}{{ transaction.sent_at|date:'Y-m-d\TH:i' }}{% else %}{{ transaction.created_at|date:'Y-m-d\TH:i' }}{% endif %}">
+                    </div>
+
                     <!-- Récap formule -->
                     <div class="tx-calc-bar" id="calcBar">
                         <span class="tx-calc-val" id="calcAmt">{{ transaction.amount|floatformat:"0" }}</span>
                         <span class="tx-calc-cur" id="calcCur1">{{ transaction.currency }}</span>
-                        <span class="tx-calc-sep">+</span>
+                        <span class="tx-calc-sep">−</span>
                         <span class="tx-calc-val" id="calcFee">{{ transaction.fee_amount|floatformat:"0" }}</span>
                         <span class="tx-calc-cur" id="calcCur2">{{ transaction.currency }}</span>
-                        <span style="font-size:10px;color:var(--text-muted);" id="calcPct">({{ transaction.fee_percentage }}%)</span>
                         <span class="tx-calc-sep">=</span>
                         <span class="tx-calc-total" id="calcTotal2">{{ transaction.total_amount|floatformat:"0" }}</span>
                         <span class="tx-calc-cur" id="calcCur3">{{ transaction.currency }}</span>
@@ -201,7 +206,16 @@
 
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:4px;" class="form-grid">
                 <div class="form-group">
-                    <label class="form-label">💳 {{ t.payment_method }}</label>
+                    <label class="form-label">� {{ t.tx_type_label }}</label>
+                    <select name="transaction_type" class="form-control">
+                        <option value="send" {% if transaction.transaction_type == 'send' %}selected{% endif %}>📤 {{ t.type_send }}</option>
+                        <option value="receive" {% if transaction.transaction_type == 'receive' %}selected{% endif %}>📥 {{ t.receive_verb }}</option>
+                        <option value="exchange" {% if transaction.transaction_type == 'exchange' %}selected{% endif %}>🔄 {{ t.exchange_verb }}</option>
+                        <option value="withdrawal" {% if transaction.transaction_type == 'withdrawal' %}selected{% endif %}>💸 {{ t.type_withdrawal }}</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">�💳 {{ t.payment_method }}</label>
                     <select name="payment_method" class="form-control">
                         <option value="cash" {% if transaction.payment_method == 'cash' %}selected{% endif %}>💵 {{ t.cash }}</option>
                         <option value="bank_transfer" {% if transaction.payment_method == 'bank_transfer' %}selected{% endif %}>🏦 {{ t.bank }}</option>
@@ -223,10 +237,16 @@
                 </div>
             </div>
 
-            <div style="display:flex;gap:12px;margin-top:8px;">
+            <div style="display:flex;gap:12px;margin-top:8px;flex-wrap:wrap;">
                 <button type="submit" class="btn btn-primary">💾 {{ t.save_changes }}</button>
-                <a href="{% url 'tx_show' transaction.id %}" class="btn btn-secondary">← {{ t.cancel }}</a>
+                <a href="{% url 'tx_index' %}" class="btn btn-secondary">← {{ t.cancel }}</a>
             </div>
+        </form>
+
+        <div style="height:1px;background:var(--border);margin:20px 0 16px;"></div>
+        <form method="POST" action="{% url 'tx_destroy' transaction.id %}" onsubmit="return confirm('{{ t.delete_tx_confirm }}');">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">🗑 {{ t.delete }}</button>
         </form>
     </div>
 </div>
@@ -235,18 +255,16 @@
 {% block scripts %}
 <script>
 function calcTotal(){
-    const amt  =parseFloat(document.getElementById('amountInput').value)||0;
-    const pct  =parseFloat(document.getElementById('feeInput').value)||0;
-    const fee  =Math.round(amt*pct/100*100)/100;
-    const total=Math.round((amt-fee)*100)/100;
-    const cur  =(document.getElementById('currencyInput').value||'').toUpperCase();
-    document.getElementById('totalDisplay').textContent =total>0?total.toLocaleString('fr-FR'):'—';
-    document.getElementById('totalCurLabel').textContent=cur;
+    const amt  = parseFloat(document.getElementById('amountInput').value)||0;
+    const fee  = parseFloat(document.getElementById('feeInput').value)||0;
+    const total= Math.round((amt-fee)*100)/100;
+    const cur  = (document.getElementById('currencyInput').value||'').toUpperCase();
+    document.getElementById('totalDisplay').textContent = total>0 ? total.toLocaleString('fr-FR') : '—';
+    document.getElementById('totalCurLabel').textContent = cur;
     if(amt>0){
-        document.getElementById('calcAmt').textContent   =amt.toLocaleString('fr-FR');
-        document.getElementById('calcFee').textContent   =fee.toLocaleString('fr-FR');
-        document.getElementById('calcTotal2').textContent=total.toLocaleString('fr-FR');
-        document.getElementById('calcPct').textContent   =pct>0?'('+pct+'%)':'';
+        document.getElementById('calcAmt').textContent   = amt.toLocaleString('fr-FR');
+        document.getElementById('calcFee').textContent   = fee.toLocaleString('fr-FR');
+        document.getElementById('calcTotal2').textContent= total.toLocaleString('fr-FR');
         ['calcCur1','calcCur2','calcCur3'].forEach(function(id){document.getElementById(id).textContent=cur;});
     }
 }

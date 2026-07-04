@@ -53,6 +53,32 @@
     </div>
 </div>
 
+<!-- Daily gains summary -->
+<div class="card" style="margin-bottom:22px;">
+    <div class="card-header">
+        <div>
+            <div class="card-title">📆 {{ t.daily_gains }}</div>
+            <div class="card-subtitle">{{ t.daily_gains_sub }}</div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;">
+            <div style="background:linear-gradient(135deg,rgba(2,132,199,.08),rgba(14,165,233,.04));border:1px solid var(--border);border-radius:14px;padding:16px;">
+                <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;">{{ t.today }}</div>
+                <div style="font-size:24px;font-weight:900;color:var(--sky-primary);margin-top:6px;">{{ daily_gains_today|default:0|number_format:0 }}</div>
+            </div>
+            <div style="background:linear-gradient(135deg,rgba(34,197,94,.08),rgba(22,163,74,.04));border:1px solid var(--border);border-radius:14px;padding:16px;">
+                <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;">{{ t.this_month }}</div>
+                <div style="font-size:24px;font-weight:900;color:#22c55e;margin-top:6px;">{{ daily_gains_month|default:0|number_format:0 }}</div>
+            </div>
+            <div style="background:linear-gradient(135deg,rgba(245,158,11,.08),rgba(217,119,6,.04));border:1px solid var(--border);border-radius:14px;padding:16px;">
+                <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;">{{ t.total }}</div>
+                <div style="font-size:24px;font-weight:900;color:#f59e0b;margin-top:6px;">{{ daily_gains_total|default:0|number_format:0 }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Monthly bars for current year -->
 <div class="card">
     <div class="card-header">

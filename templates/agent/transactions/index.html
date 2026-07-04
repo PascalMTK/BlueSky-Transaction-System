@@ -95,6 +95,7 @@
                     <th>{{ t.route }}</th>
                     <th>{{ t.status }}</th>
                     <th class="hide-mobile">{{ t.date }}</th>
+                    <th>{{ t.actions }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -104,7 +105,7 @@
                     data-url-edit="{% url 'tx_edit' tx.id %}"
                     data-url-print="{% url 'tx_print' tx.id %}">
                     <td class="sel-td"><input type="checkbox" class="sel-cb"></td>
-                    <td><a href="{% url 'tx_show' tx.id %}" class="tx-number">{{ tx.transaction_number }}</a></td>
+                    <td><a href="{% url 'tx_edit' tx.id %}" class="tx-number">{{ tx.transaction_number }}</a></td>
                     <td>
                         <div style="font-weight:600;font-size:13px;">{{ tx.sender_name }}</div>
                         {% if tx.sender_phone %}<div style="font-size:11px;color:var(--text-muted);">{{ tx.sender_phone }}</div>{% endif %}
@@ -123,6 +124,13 @@
                         </span>
                     </td>
                     <td style="font-size:12px;color:var(--text-muted);white-space:nowrap;">{{ tx.created_at|date:"d/m/Y H:i" }}</td>
+                    <td>
+                        <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-start;">
+                            <a href="{% url 'tx_show' tx.id %}" class="btn btn-secondary btn-sm" style="padding:6px 8px;min-width:34px;">👁</a>
+                            <a href="{% url 'tx_edit' tx.id %}" class="btn btn-primary btn-sm" style="padding:6px 8px;min-width:34px;">✏️</a>
+                            <a href="{% url 'tx_print' tx.id %}" class="btn btn-secondary btn-sm" target="_blank" style="padding:6px 8px;min-width:34px;">🖨</a>
+                        </div>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
