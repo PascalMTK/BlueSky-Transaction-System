@@ -4,9 +4,28 @@ from django.contrib import messages
 from django.conf import settings
 from core.decorators import login_required, get_auth_user
 import bcrypt
+from PIL import Image, ImageOps
 
 ALLOWED_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.webp', '.gif'}
 MAX_PHOTO_SIZE     = 5 * 1024 * 1024  # 5 MB
+MAX_PHOTO_DIMENSION = 640  # px, longest side — plenty for any avatar display size
+
+
+def _normalize_photo(absolute_path, ext):
+    """Fix phone-camera EXIF rotation and downscale oversized uploads so
+    avatars are sharp and consistently sized everywhere. Animated GIFs are
+    left untouched since resaving would flatten them to a single frame."""
+    if ext == '.gif':
+        return
+    with Image.open(absolute_path) as img:
+        img = ImageOps.exif_transpose(img)
+        img.thumbnail((MAX_PHOTO_DIMENSION, MAX_PHOTO_DIMENSION), Image.LANCZOS)
+        if ext in ('.jpg', '.jpeg') and img.mode != 'RGB':
+            img = img.convert('RGB')
+        save_kwargs = {'optimize': True}
+        if ext in ('.jpg', '.jpeg'):
+            save_kwargs['quality'] = 85
+        img.save(absolute_path, **save_kwargs)
 
 
 @login_required
@@ -70,6 +89,7 @@ def profile_photo(request):
         with open(absolute_path, 'wb+') as dest:
             for chunk in photo.chunks():
                 dest.write(chunk)
+        _normalize_photo(absolute_path, ext)
     except OSError as e:
         messages.error(request, f'Erreur lors de la sauvegarde : {e}')
         return redirect('profile_show')
