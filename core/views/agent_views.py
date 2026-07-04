@@ -104,18 +104,17 @@ def _parse_decimal(value, default=0):
         return float(default or 0)
 
 
-def _resolve_fee_amount(amount, post, fallback_fee):
-    """Fee can come from either the 'fee_amount' field or the 'total_amount'
-    (montant remis au client) field — whichever the agent last edited. Total
-    takes priority since it's the figure actually handed to the client."""
-    total_value = post.get('total_amount', '')
-    if total_value is not None and str(total_value).strip() != '':
-        total_amt = _parse_decimal(total_value, amount)
-        return round(amount - total_amt, 2)
+def _parse_fee_and_total(post, fallback_fee, fallback_total):
+    """Fee and remitted amount are independent fields the agent fills in
+    separately — neither is derived from the other. The caller validates
+    that they add up to the amount sent."""
     fee_value = post.get('fee_amount', '')
-    if fee_value is None or str(fee_value).strip() == '':
-        return fallback_fee
-    return _parse_decimal(fee_value, fallback_fee)
+    fee_amt = _parse_decimal(fee_value, fallback_fee)
+
+    total_value = post.get('total_amount', '')
+    total_amt = _parse_decimal(total_value, fallback_total)
+
+    return round(fee_amt, 2), round(total_amt, 2)
 
 
 def _build_currencies():
@@ -201,11 +200,14 @@ def tx_create(request):
             amount = _parse_decimal(request.POST.get('amount', 0), 0)
             default_pct = float(origin.default_fee_percentage or 0)
             default_fee = round(amount * default_pct / 100, 2)
-            fee_amt = _resolve_fee_amount(amount, request.POST, default_fee)
-            if fee_amt > amount or fee_amt < 0:
-                messages.error(request, "Le montant des frais et le montant remis ne peuvent pas dépasser le montant envoyé.")
-                raise ValueError('fee_amount_too_high')
-            amount, fee_amt, fee_pct, total = Transaction.calculate_totals(amount, fee_amt, fee_is_percentage=False)
+            fee_amt, total = _parse_fee_and_total(request.POST, default_fee, round(amount - default_fee, 2))
+            if fee_amt < 0 or total < 0:
+                messages.error(request, "Les frais et le montant remis ne peuvent pas être négatifs.")
+                raise ValueError('fee_amount_invalid')
+            if round(fee_amt + total, 2) != round(amount, 2):
+                messages.error(request, "Les frais + le montant remis doivent être égaux au montant envoyé.")
+                raise ValueError('fee_total_mismatch')
+            fee_pct = round((fee_amt / amount * 100), 2) if amount else 0
             tx_num  = 'BSK-' + datetime.now().strftime('%Y%m%d') + '-' + str(uuid.uuid4())[:6].upper()
             currency = (request.POST.get('currency') or origin.currency_code or '').upper()
             sent_at_str = request.POST.get('sent_at', '')
@@ -302,13 +304,18 @@ def tx_edit(request, tx_id):
     if request.method == 'POST':
         tx_type  = request.POST.get('transaction_type', tx.transaction_type)
         amount = _parse_decimal(request.POST.get('amount', tx.amount), tx.amount)
-        fee_amt = _resolve_fee_amount(amount, request.POST, tx.fee_amount)
-        if fee_amt > amount or fee_amt < 0:
-            messages.error(request, "Le montant des frais et le montant remis ne peuvent pas dépasser le montant envoyé.")
+        fee_amt, total = _parse_fee_and_total(request.POST, tx.fee_amount, tx.total_amount)
+        if fee_amt < 0 or total < 0:
+            messages.error(request, "Les frais et le montant remis ne peuvent pas être négatifs.")
             return render(request, 'agent/transactions/edit.html', {
                 'transaction': tx, 'countries': countries, 'currencies': currencies, 'auth_user': user,
             })
-        amount, fee_amt, fee_pct, total = Transaction.calculate_totals(amount, fee_amt, fee_is_percentage=False)
+        if round(fee_amt + total, 2) != round(amount, 2):
+            messages.error(request, "Les frais + le montant remis doivent être égaux au montant envoyé.")
+            return render(request, 'agent/transactions/edit.html', {
+                'transaction': tx, 'countries': countries, 'currencies': currencies, 'auth_user': user,
+            })
+        fee_pct = round((fee_amt / amount * 100), 2) if amount else 0
         currency = (request.POST.get('currency') or tx.currency or '').upper()
         sent_at_str = request.POST.get('sent_at', '')
         if sent_at_str:

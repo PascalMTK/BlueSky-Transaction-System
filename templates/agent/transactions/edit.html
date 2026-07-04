@@ -88,7 +88,7 @@
             </div>
         {% endfor %}
 
-        <form method="POST" action="{% url 'tx_edit' transaction.id %}">
+        <form method="POST" action="{% url 'tx_edit' transaction.id %}" id="txEditForm">
             {% csrf_token %}
 
             <!-- Countries (readonly) -->
@@ -165,14 +165,14 @@
                         </div>
                     </div>
 
-                    <!-- Rangée 2 : Frais → Total (les deux modifiables, synchronisés) -->
+                    <!-- Rangée 2 : Frais et Montant remis — champs indépendants, validés l'un contre l'autre -->
                     <div class="tx-row-result">
                         <div class="tx-fee-grp">
                             <label class="form-label">{{ t.fee_amount_label }}</label>
                             <div class="tx-field-icon-wrap">
                                 <span class="tx-icon" style="font-size:13px;font-weight:700;">$</span>
                                 <input type="number" name="fee_amount" id="feeInput" class="form-control"
-                                       value="{{ transaction.fee_amount }}" step="0.01" min="0" oninput="onFeeInput()">
+                                       value="{{ transaction.fee_amount }}" step="0.01" min="0" required oninput="calcTotal()">
                             </div>
                         </div>
                         <div class="tx-result-arrow">→</div>
@@ -180,7 +180,7 @@
                             <div class="tx-total-panel-label">{{ t.amount_remitted }}</div>
                             <div class="tx-total-panel-right">
                                 <input type="number" name="total_amount" id="totalInput" class="tx-total-input"
-                                       value="{{ transaction.total_amount }}" step="0.01" min="0" oninput="onTotalInput()">
+                                       value="{{ transaction.total_amount }}" step="0.01" min="0" required oninput="calcTotal()">
                                 <div class="tx-total-panel-cur" id="totalCurLabel">{{ transaction.currency }}</div>
                             </div>
                         </div>
@@ -258,30 +258,22 @@
 
 {% block scripts %}
 <script>
-var totalIsSource = false;
-function onFeeInput()   { totalIsSource = false; calcTotal(); }
-function onTotalInput() { totalIsSource = true;  calcTotal(); }
+/* Frais et Montant remis sont deux champs indépendants — aucun n'est
+   recalculé à partir de l'autre. On valide juste que Frais + Montant
+   remis = Montant envoyé. */
+function amountsMismatch(amt, fee, total) {
+    return amt > 0 && Math.abs(fee + total - amt) > 0.01;
+}
 
 function calcTotal(){
     const amt        = parseFloat(document.getElementById('amountInput').value)||0;
-    const feeInput    = document.getElementById('feeInput');
-    const totalInput  = document.getElementById('totalInput');
+    const fee         = parseFloat(document.getElementById('feeInput').value) || 0;
+    const total       = parseFloat(document.getElementById('totalInput').value) || 0;
     const cur         = (document.getElementById('currencyInput').value||'').toUpperCase();
     const panel       = document.getElementById('totalPanel');
     const errorBox    = document.getElementById('totalError');
 
-    let fee, total;
-    if(totalIsSource){
-        total = parseFloat(totalInput.value) || 0;
-        fee   = Math.round((amt-total)*100)/100;
-        feeInput.value = fee;
-    } else {
-        fee   = parseFloat(feeInput.value) || 0;
-        total = Math.round((amt-fee)*100)/100;
-        totalInput.value = total;
-    }
-
-    const invalid = amt > 0 && (fee < 0 || total < 0);
+    const invalid = amountsMismatch(amt, fee, total);
     panel.classList.toggle('tx-total-invalid', invalid);
     errorBox.style.display = invalid ? 'block' : 'none';
     if(invalid) errorBox.textContent = '{{ t.fee_total_exceeds_amount }}';
@@ -301,5 +293,16 @@ function calcTotal(){
         cur.addEventListener('input',function(){ calcTotal(); });
     }
 })();
+
+document.getElementById('txEditForm').addEventListener('submit', function(e){
+    const amt   = parseFloat(document.getElementById('amountInput').value) || 0;
+    const fee   = parseFloat(document.getElementById('feeInput').value) || 0;
+    const total = parseFloat(document.getElementById('totalInput').value) || 0;
+    if (amountsMismatch(amt, fee, total)) {
+        e.preventDefault();
+        calcTotal();
+        document.getElementById('totalInput').focus();
+    }
+});
 </script>
 {% endblock %}

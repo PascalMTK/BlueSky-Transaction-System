@@ -87,7 +87,9 @@ class TransactionEditTests(TestCase):
             transaction_type='send',
         )
 
-    def test_edit_transaction_with_blank_fee_does_not_error(self):
+    def test_edit_transaction_with_blank_fee_falls_back_to_existing_values(self):
+        # Amount unchanged, fee/total left blank — should fall back to the
+        # transaction's existing fee_amount/total_amount (still consistent: 3 + 97 = 100).
         session = self.client.session
         session['user_id'] = self.agent.id
         session.save()
@@ -99,8 +101,9 @@ class TransactionEditTests(TestCase):
                 'sender_phone': '1234',
                 'receiver_name': 'Bob Updated',
                 'receiver_phone': '5678',
-                'amount': '120',
-                'fee_percentage': '',
+                'amount': '100',
+                'fee_amount': '',
+                'total_amount': '',
                 'currency': 'TZS',
                 'payment_method': 'cash',
                 'status': 'completed',
@@ -111,7 +114,56 @@ class TransactionEditTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.transaction.refresh_from_db()
         self.assertEqual(self.transaction.sender_name, 'Alice Updated')
-        # Fee is entered in dollars, not percentage — fee_percentage is now a derived
-        # display value, so it changes when amount changes but fee_amount doesn't (3 / 120 = 2.5%).
         self.assertEqual(self.transaction.fee_amount, Decimal('3.00'))
-        self.assertEqual(self.transaction.fee_percentage, Decimal('2.50'))
+        self.assertEqual(self.transaction.total_amount, Decimal('97.00'))
+
+    def test_edit_transaction_rejects_fee_total_mismatch(self):
+        # Fee and remitted amount are independent fields now — if they don't
+        # add up to the amount sent, the edit must be rejected, not silently fixed.
+        session = self.client.session
+        session['user_id'] = self.agent.id
+        session.save()
+
+        response = self.client.post(
+            reverse('tx_edit', kwargs={'tx_id': self.transaction.id}),
+            {
+                'sender_name': 'Alice Updated',
+                'amount': '120',
+                'fee_amount': '10',
+                'total_amount': '50',
+                'currency': 'TZS',
+                'payment_method': 'cash',
+                'status': 'completed',
+                'notes': '',
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.transaction.refresh_from_db()
+        self.assertEqual(self.transaction.sender_name, 'Alice')
+        self.assertEqual(self.transaction.amount, Decimal('100.00'))
+
+    def test_edit_transaction_with_consistent_fee_and_total(self):
+        session = self.client.session
+        session['user_id'] = self.agent.id
+        session.save()
+
+        response = self.client.post(
+            reverse('tx_edit', kwargs={'tx_id': self.transaction.id}),
+            {
+                'sender_name': 'Alice Updated',
+                'amount': '120',
+                'fee_amount': '10',
+                'total_amount': '110',
+                'currency': 'TZS',
+                'payment_method': 'cash',
+                'status': 'completed',
+                'notes': '',
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.transaction.refresh_from_db()
+        self.assertEqual(self.transaction.sender_name, 'Alice Updated')
+        self.assertEqual(self.transaction.fee_amount, Decimal('10.00'))
+        self.assertEqual(self.transaction.total_amount, Decimal('110.00'))
