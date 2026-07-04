@@ -403,7 +403,7 @@
                         <div class="tx-fee-grp">
                             <label class="form-label">{{ t.fee_amount_label }}</label>
                             <div class="tx-field-icon-wrap">
-                                <span class="tx-icon" style="font-size:13px;font-weight:700;">$</span>
+                                <span class="tx-icon" id="feeCurIcon" style="font-size:11px;font-weight:700;">$</span>
                                 <input type="number" name="fee_amount" id="feeInput" class="form-control"
                                        placeholder="2500" step="0.01" min="0" required oninput="calcTotal()">
                             </div>
@@ -538,6 +538,7 @@ function loadFee() {
         const cur = document.getElementById('currencyInput');
         if (!cur.dataset.userEdited) cur.value = opt.dataset.currency;
     }
+    calcTotal();
 }
 /* Mark currency as manually edited so country change won't overwrite it */
 (function(){
@@ -577,6 +578,7 @@ function calcTotal() {
     }
 
     document.getElementById('totalCurLabel').textContent = cur;
+    document.getElementById('feeCurIcon').textContent    = cur || '$';
     if (amt > 0) {
         document.getElementById('calcBar').style.display = 'flex';
         document.getElementById('calcAmt').textContent    = amt.toLocaleString('fr-FR');
