@@ -221,10 +221,15 @@
     font-size: 12px; font-weight: 700; color: var(--sky-secondary);
     margin-top: 2px;
 }
-.tx-total-panel-right { text-align: right; }
-.tx-total-panel-empty {
-    font-size: 13px; font-weight: 600; color: var(--text-muted); opacity: .5;
+.tx-total-panel-right { text-align: right; display: flex; align-items: baseline; gap: 6px; justify-content: flex-end; }
+.tx-total-input {
+    width: 110px; background: transparent; border: none; border-bottom: 2px solid rgba(2,132,199,.35);
+    font-size: 22px; font-weight: 900; color: var(--sky-primary); text-align: right;
+    outline: none; font-family: inherit; padding: 0 0 2px;
 }
+.tx-total-input:focus { border-bottom-color: var(--sky-primary); }
+.tx-total-panel.tx-total-invalid .tx-total-input { color: #dc2626; border-bottom-color: #dc2626; }
+.form-error { font-size: 12px; font-weight: 600; color: #dc2626; }
 
 /* préfixe icône générique */
 .tx-field-icon-wrap { position: relative; }
@@ -393,30 +398,27 @@
                         </div>
                     </div>
 
-                    <!-- Rangée 2 : Frais montant → Total -->
+                    <!-- Rangée 2 : Frais montant → Total (les deux modifiables, synchronisés) -->
                     <div class="tx-row-result">
                         <div class="tx-fee-grp">
                             <label class="form-label">{{ t.fee_amount_label }}</label>
                             <div class="tx-field-icon-wrap">
                                 <span class="tx-icon" style="font-size:13px;font-weight:700;">$</span>
                                 <input type="number" name="fee_amount" id="feeInput" class="form-control"
-                                       placeholder="2500" step="0.01" min="0" value="0" oninput="calcTotal()">
+                                       placeholder="2500" step="0.01" min="0" value="0" oninput="onFeeInput()">
                             </div>
                         </div>
                         <div class="tx-result-arrow">→</div>
                         <div class="tx-total-panel" id="totalPanel">
-                            <div>
-                                <div class="tx-total-panel-label" id="totalLabel">{{ t.amount_remitted }}</div>
-                            </div>
-                            <div class="tx-total-panel-right" id="totalPanelRight">
-                                <div class="tx-total-panel-empty" id="totalEmpty">—</div>
-                                <div id="totalFilled" style="display:none;">
-                                    <div class="tx-total-panel-val" id="totalDisplay">—</div>
-                                    <div class="tx-total-panel-cur" id="totalCurLabel"></div>
-                                </div>
+                            <div class="tx-total-panel-label" id="totalLabel">{{ t.amount_remitted }}</div>
+                            <div class="tx-total-panel-right">
+                                <input type="number" name="total_amount" id="totalInput" class="tx-total-input"
+                                       placeholder="97 500" step="0.01" min="0" oninput="onTotalInput()">
+                                <div class="tx-total-panel-cur" id="totalCurLabel"></div>
                             </div>
                         </div>
                     </div>
+                    <div id="totalError" class="form-error" style="display:none;margin-top:6px;"></div>
 
                     <div class="form-group" style="margin-top:10px;">
                         <label class="form-label">{{ t.transaction_date }}</label>
@@ -550,29 +552,48 @@ function loadFee() {
     if(activeBtn) pickTxType(activeBtn.dataset.txType, activeBtn);
 })();
 
+/* Le frais et le montant remis sont tous les deux modifiables : celui édité
+   en dernier pilote le calcul, l'autre est recalculé automatiquement. */
+var totalIsSource = false;
+function onFeeInput()   { totalIsSource = false; calcTotal(); }
+function onTotalInput() { totalIsSource = true;  calcTotal(); }
+
 function calcTotal() {
-    const amt    = parseFloat(document.getElementById('amountInput').value) || 0;
-    const fee    = parseFloat(document.getElementById('feeInput').value) || 0;
-    const cur    = (document.getElementById('currencyInput').value || '').toUpperCase();
-    const total  = Math.round((amt - fee) * 100) / 100;
+    const amt        = parseFloat(document.getElementById('amountInput').value) || 0;
+    const feeInput   = document.getElementById('feeInput');
+    const totalInput = document.getElementById('totalInput');
+    const cur        = (document.getElementById('currencyInput').value || '').toUpperCase();
+    const panel      = document.getElementById('totalPanel');
+    const errorBox   = document.getElementById('totalError');
 
-    const empty  = document.getElementById('totalEmpty');
-    const filled = document.getElementById('totalFilled');
+    let fee, total;
+    if (totalIsSource) {
+        total = parseFloat(totalInput.value) || 0;
+        fee   = Math.round((amt - total) * 100) / 100;
+        feeInput.value = fee;
+    } else {
+        fee   = parseFloat(feeInput.value) || 0;
+        total = Math.round((amt - fee) * 100) / 100;
+        totalInput.value = amt > 0 ? total : '';
+    }
 
+    const invalid = amt > 0 && (fee < 0 || total < 0);
+    panel.classList.toggle('tx-total-invalid', invalid);
+    if (invalid) {
+        errorBox.style.display = 'block';
+        errorBox.textContent = '{{ t.fee_total_exceeds_amount }}';
+    } else {
+        errorBox.style.display = 'none';
+    }
+
+    document.getElementById('totalCurLabel').textContent = cur;
     if (amt > 0) {
-        empty.style.display  = 'none';
-        filled.style.display = 'block';
-        document.getElementById('totalDisplay').textContent  = total.toLocaleString('fr-FR');
-        document.getElementById('totalCurLabel').textContent = cur;
-        /* calc bar */
         document.getElementById('calcBar').style.display = 'flex';
         document.getElementById('calcAmt').textContent    = amt.toLocaleString('fr-FR');
         document.getElementById('calcFee').textContent    = fee.toLocaleString('fr-FR');
         document.getElementById('calcTotal2').textContent = total.toLocaleString('fr-FR');
         ['calcCur1','calcCur2','calcCur3'].forEach(function(id){ document.getElementById(id).textContent = cur; });
     } else {
-        empty.style.display  = 'block';
-        filled.style.display = 'none';
         document.getElementById('calcBar').style.display = 'none';
     }
 }

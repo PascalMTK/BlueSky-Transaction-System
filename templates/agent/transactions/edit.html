@@ -30,7 +30,11 @@
 .tx-total-panel-label{font-size:10.5px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;}
 .tx-total-panel-val{font-size:22px;font-weight:900;color:var(--sky-primary);line-height:1;}
 .tx-total-panel-cur{font-size:12px;font-weight:700;color:var(--sky-secondary);margin-top:2px;}
-.tx-total-panel-right{text-align:right;}
+.tx-total-panel-right{text-align:right;display:flex;align-items:baseline;gap:6px;justify-content:flex-end;}
+.tx-total-input{width:110px;background:transparent;border:none;border-bottom:2px solid rgba(2,132,199,.35);font-size:22px;font-weight:900;color:var(--sky-primary);text-align:right;outline:none;font-family:inherit;padding:0 0 2px;}
+.tx-total-input:focus{border-bottom-color:var(--sky-primary);}
+.tx-total-panel.tx-total-invalid .tx-total-input{color:#dc2626;border-bottom-color:#dc2626;}
+.form-error{font-size:12px;font-weight:600;color:#dc2626;}
 .tx-field-icon-wrap{position:relative;}
 .tx-field-icon-wrap .tx-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;pointer-events:none;z-index:1;color:var(--text-muted);}
 /* Calc bar */
@@ -161,27 +165,27 @@
                         </div>
                     </div>
 
-                    <!-- Rangée 2 : Frais % → Total -->
+                    <!-- Rangée 2 : Frais → Total (les deux modifiables, synchronisés) -->
                     <div class="tx-row-result">
                         <div class="tx-fee-grp">
                             <label class="form-label">{{ t.fee_amount_label }}</label>
                             <div class="tx-field-icon-wrap">
                                 <span class="tx-icon" style="font-size:13px;font-weight:700;">$</span>
                                 <input type="number" name="fee_amount" id="feeInput" class="form-control"
-                                       value="{{ transaction.fee_amount }}" step="0.01" min="0" oninput="calcTotal()">
+                                       value="{{ transaction.fee_amount }}" step="0.01" min="0" oninput="onFeeInput()">
                             </div>
                         </div>
                         <div class="tx-result-arrow">→</div>
-                        <div class="tx-total-panel">
-                            <div>
-                                <div class="tx-total-panel-label">{{ t.amount_remitted }}</div>
-                            </div>
+                        <div class="tx-total-panel" id="totalPanel">
+                            <div class="tx-total-panel-label">{{ t.amount_remitted }}</div>
                             <div class="tx-total-panel-right">
-                                <div class="tx-total-panel-val" id="totalDisplay">{{ transaction.total_amount|floatformat:"0" }}</div>
+                                <input type="number" name="total_amount" id="totalInput" class="tx-total-input"
+                                       value="{{ transaction.total_amount }}" step="0.01" min="0" oninput="onTotalInput()">
                                 <div class="tx-total-panel-cur" id="totalCurLabel">{{ transaction.currency }}</div>
                             </div>
                         </div>
                     </div>
+                    <div id="totalError" class="form-error" style="display:none;margin-top:6px;"></div>
 
                     <div class="form-group" style="margin-top:10px;">
                         <label class="form-label">{{ t.transaction_date }}</label>
@@ -254,12 +258,34 @@
 
 {% block scripts %}
 <script>
+var totalIsSource = false;
+function onFeeInput()   { totalIsSource = false; calcTotal(); }
+function onTotalInput() { totalIsSource = true;  calcTotal(); }
+
 function calcTotal(){
-    const amt  = parseFloat(document.getElementById('amountInput').value)||0;
-    const fee  = parseFloat(document.getElementById('feeInput').value)||0;
-    const total= Math.round((amt-fee)*100)/100;
-    const cur  = (document.getElementById('currencyInput').value||'').toUpperCase();
-    document.getElementById('totalDisplay').textContent = total>0 ? total.toLocaleString('fr-FR') : '—';
+    const amt        = parseFloat(document.getElementById('amountInput').value)||0;
+    const feeInput    = document.getElementById('feeInput');
+    const totalInput  = document.getElementById('totalInput');
+    const cur         = (document.getElementById('currencyInput').value||'').toUpperCase();
+    const panel       = document.getElementById('totalPanel');
+    const errorBox    = document.getElementById('totalError');
+
+    let fee, total;
+    if(totalIsSource){
+        total = parseFloat(totalInput.value) || 0;
+        fee   = Math.round((amt-total)*100)/100;
+        feeInput.value = fee;
+    } else {
+        fee   = parseFloat(feeInput.value) || 0;
+        total = Math.round((amt-fee)*100)/100;
+        totalInput.value = total;
+    }
+
+    const invalid = amt > 0 && (fee < 0 || total < 0);
+    panel.classList.toggle('tx-total-invalid', invalid);
+    errorBox.style.display = invalid ? 'block' : 'none';
+    if(invalid) errorBox.textContent = '{{ t.fee_total_exceeds_amount }}';
+
     document.getElementById('totalCurLabel').textContent = cur;
     if(amt>0){
         document.getElementById('calcAmt').textContent   = amt.toLocaleString('fr-FR');

@@ -104,6 +104,20 @@ def _parse_decimal(value, default=0):
         return float(default or 0)
 
 
+def _resolve_fee_amount(amount, post, fallback_fee):
+    """Fee can come from either the 'fee_amount' field or the 'total_amount'
+    (montant remis au client) field — whichever the agent last edited. Total
+    takes priority since it's the figure actually handed to the client."""
+    total_value = post.get('total_amount', '')
+    if total_value is not None and str(total_value).strip() != '':
+        total_amt = _parse_decimal(total_value, amount)
+        return round(amount - total_amt, 2)
+    fee_value = post.get('fee_amount', '')
+    if fee_value is None or str(fee_value).strip() == '':
+        return fallback_fee
+    return _parse_decimal(fee_value, fallback_fee)
+
+
 def _build_currencies():
     """Build currency dict from DB countries."""
     currencies = {}
@@ -185,13 +199,11 @@ def tx_create(request):
             origin  = Country.objects.get(pk=origin_id)
             dest    = Country.objects.get(pk=dest_id)
             amount = _parse_decimal(request.POST.get('amount', 0), 0)
-            fee_value = request.POST.get('fee_amount', '')
-            fee_amt = _parse_decimal(fee_value, 0)
-            if fee_value is None or str(fee_value).strip() == '':
-                default_pct = float(origin.default_fee_percentage or 0)
-                fee_amt = round(amount * default_pct / 100, 2)
-            if fee_amt > amount:
-                messages.error(request, "Le montant des frais ne peut pas dépasser le montant total.")
+            default_pct = float(origin.default_fee_percentage or 0)
+            default_fee = round(amount * default_pct / 100, 2)
+            fee_amt = _resolve_fee_amount(amount, request.POST, default_fee)
+            if fee_amt > amount or fee_amt < 0:
+                messages.error(request, "Le montant des frais et le montant remis ne peuvent pas dépasser le montant envoyé.")
                 raise ValueError('fee_amount_too_high')
             amount, fee_amt, fee_pct, total = Transaction.calculate_totals(amount, fee_amt, fee_is_percentage=False)
             tx_num  = 'BSK-' + datetime.now().strftime('%Y%m%d') + '-' + str(uuid.uuid4())[:6].upper()
@@ -290,11 +302,9 @@ def tx_edit(request, tx_id):
     if request.method == 'POST':
         tx_type  = request.POST.get('transaction_type', tx.transaction_type)
         amount = _parse_decimal(request.POST.get('amount', tx.amount), tx.amount)
-        fee_amt = _parse_decimal(request.POST.get('fee_amount', ''), tx.fee_amount)
-        if fee_amt is None or str(request.POST.get('fee_amount', '')).strip() == '':
-            fee_amt = tx.fee_amount
-        if fee_amt > amount:
-            messages.error(request, "Le montant des frais ne peut pas dépasser le montant total.")
+        fee_amt = _resolve_fee_amount(amount, request.POST, tx.fee_amount)
+        if fee_amt > amount or fee_amt < 0:
+            messages.error(request, "Le montant des frais et le montant remis ne peuvent pas dépasser le montant envoyé.")
             return render(request, 'agent/transactions/edit.html', {
                 'transaction': tx, 'countries': countries, 'currencies': currencies, 'auth_user': user,
             })
