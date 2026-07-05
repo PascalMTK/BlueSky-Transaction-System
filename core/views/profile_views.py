@@ -47,30 +47,20 @@ def profile_update(request):
     return redirect('profile_show')
 
 
-@login_required
-def profile_photo(request):
-    if request.method != 'POST':
-        return redirect('profile_show')
-
-    photo = request.FILES.get('photo')
+def save_profile_photo(user, photo):
+    """Validate, save, and normalize an uploaded profile photo for the given
+    user. Returns an error message string on failure, or None on success —
+    shared by the agent's own profile page and the admin's agent-edit page."""
     if not photo:
-        messages.error(request, 'Aucun fichier sélectionné.')
-        return redirect('profile_show')
+        return 'Aucun fichier sélectionné.'
 
-    # Validate extension
     ext = os.path.splitext(photo.name)[1].lower()
     if ext not in ALLOWED_EXTENSIONS:
-        messages.error(request, f'Format non supporté ({ext}). Utilisez JPEG, PNG ou WebP.')
-        return redirect('profile_show')
+        return f'Format non supporté ({ext}). Utilisez JPEG, PNG ou WebP.'
 
-    # Validate size
     if photo.size > MAX_PHOTO_SIZE:
-        messages.error(request, f'Photo trop volumineuse ({photo.size // 1024} Ko). Maximum 5 Mo.')
-        return redirect('profile_show')
+        return f'Photo trop volumineuse ({photo.size // 1024} Ko). Maximum 5 Mo.'
 
-    user = get_auth_user(request)
-
-    # Build absolute save path using MEDIA_ROOT
     relative_path = f"profiles/{user.id}{ext}"
     absolute_path = os.path.join(settings.MEDIA_ROOT, relative_path)
     os.makedirs(os.path.dirname(absolute_path), exist_ok=True)
@@ -84,19 +74,30 @@ def profile_photo(request):
             except OSError:
                 pass
 
-    # Save new photo
     try:
         with open(absolute_path, 'wb+') as dest:
             for chunk in photo.chunks():
                 dest.write(chunk)
         _normalize_photo(absolute_path, ext)
     except OSError as e:
-        messages.error(request, f'Erreur lors de la sauvegarde : {e}')
-        return redirect('profile_show')
+        return f'Erreur lors de la sauvegarde : {e}'
 
     user.profile_photo = relative_path
     user.save()
-    messages.success(request, 'Photo de profil mise à jour.')
+    return None
+
+
+@login_required
+def profile_photo(request):
+    if request.method != 'POST':
+        return redirect('profile_show')
+
+    user  = get_auth_user(request)
+    error = save_profile_photo(user, request.FILES.get('photo'))
+    if error:
+        messages.error(request, error)
+    else:
+        messages.success(request, 'Photo de profil mise à jour.')
     return redirect('profile_show')
 
 

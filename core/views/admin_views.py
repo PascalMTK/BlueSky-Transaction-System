@@ -11,6 +11,7 @@ from django.conf import settings
 from django.core.mail import send_mail
 from core.models import User, Country, Transaction, AgentReport
 from core.decorators import admin_required, get_auth_user
+from core.views.profile_views import save_profile_photo
 
 
 def _notify_agent_activated(agent):
@@ -347,6 +348,18 @@ def agent_edit(request, agent_id):
     return render(request, 'admin/agent_edit.html', {
         'agent': agent, 'countries': countries, 'auth_user': get_auth_user(request),
     })
+
+
+@admin_required
+def agent_photo(request, agent_id):
+    agent = get_object_or_404(User, pk=agent_id, role='agent')
+    if request.method == 'POST':
+        error = save_profile_photo(agent, request.FILES.get('photo'))
+        if error:
+            messages.error(request, error)
+        else:
+            messages.success(request, f'Photo de {agent.name} mise à jour.')
+    return redirect('admin_agent_edit', agent_id=agent.id)
 
 
 @admin_required
