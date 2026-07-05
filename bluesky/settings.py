@@ -155,6 +155,12 @@ CACHES = {
     }
 }
 
+# ── Site URL ────────────────────────────────────────────────────────────────
+# Used to build absolute links to static assets in emails (e.g. the logo) —
+# CID-embedded inline images render unreliably across mail clients/relays,
+# a plain hosted URL is far more broadly compatible.
+SITE_BASE_URL = os.environ.get('SITE_BASE_URL', 'https://pascal02.pythonanywhere.com')
+
 # ── Email ─────────────────────────────────────────────────────────────────────
 # Priority: SendGrid > Mailjet > explicit EMAIL_BACKEND > SMTP
 if os.environ.get('SENDGRID_API_KEY'):

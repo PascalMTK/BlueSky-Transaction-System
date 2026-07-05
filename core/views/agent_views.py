@@ -1,6 +1,4 @@
 import uuid
-import os
-import base64
 import openpyxl
 from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
@@ -15,17 +13,10 @@ from core.models import User, Country, Transaction, AgentReport
 from core.decorators import agent_required, get_auth_user
 
 
-# ── Logo base64 (cached at startup for email embedding) ────────────────────
-def _get_logo_b64() -> str:
-    try:
-        logo_path = os.path.join(settings.BASE_DIR, 'static', 'images',
-                                 'WhatsApp_Image_2026-01-27_at_11.11.59_PM__1_-removebg-preview.png')
-        with open(logo_path, 'rb') as f:
-            return base64.b64encode(f.read()).decode()
-    except Exception:
-        return ''
-
-_LOGO_B64 = _get_logo_b64()
+# Hosted logo URL for emails — CID-embedded inline images render
+# unreliably across mail clients/relays (Gmail in particular has shown
+# broken-image icons for it), a plain hosted URL is far more reliable.
+_LOGO_URL = settings.SITE_BASE_URL.rstrip('/') + '/static/images/WhatsApp_Image_2026-01-27_at_11.11.59_PM__1_-removebg-preview.png'
 
 
 def _send_transaction_email(tx, client_email: str, locale: str = 'fr'):
@@ -35,7 +26,6 @@ def _send_transaction_email(tx, client_email: str, locale: str = 'fr'):
         return False, 'Adresse email invalide.'
 
     from django.core.mail import EmailMultiAlternatives
-    from email.mime.image import MIMEImage
 
     is_en   = locale == 'en'
     is_send = tx.transaction_type == 'send'
@@ -90,7 +80,7 @@ def _send_transaction_email(tx, client_email: str, locale: str = 'fr'):
 
 <tr><td style="background:linear-gradient(145deg,#002d6e,#0055b3,#0096d6);border-radius:16px 16px 0 0;padding:32px 32px 24px;text-align:center;">
   <div style="width:86px;height:86px;border-radius:50%;background:#fff;display:inline-block;line-height:86px;margin-bottom:16px;box-shadow:0 0 0 5px rgba(255,255,255,.20),0 8px 28px rgba(0,0,0,.30);">
-    <img src="cid:bluesky_logo" alt="BLUESKY" width="64" height="64" style="width:64px;height:64px;object-fit:contain;vertical-align:middle;display:inline-block;">
+    <img src="{_LOGO_URL}" alt="BLUESKY" width="64" height="64" style="width:64px;height:64px;object-fit:contain;vertical-align:middle;display:inline-block;">
   </div>
   <div style="color:#fff;font-size:24px;font-weight:900;letter-spacing:2px;">BLUESKY</div>
   <div style="color:rgba(255,255,255,.55);font-size:10px;letter-spacing:4px;text-transform:uppercase;margin-top:3px;">Transactions</div>
@@ -166,13 +156,6 @@ def _send_transaction_email(tx, client_email: str, locale: str = 'fr'):
             to=[client_email],
         )
         msg.attach_alternative(html, 'text/html')
-        msg.mixed_subtype = 'related'
-        if _LOGO_B64:
-            logo_bytes = base64.b64decode(_LOGO_B64)
-            logo_mime  = MIMEImage(logo_bytes, _subtype='png')
-            logo_mime.add_header('Content-ID', '<bluesky_logo>')
-            logo_mime.add_header('Content-Disposition', 'inline', filename='logo.png')
-            msg.attach(logo_mime)
         msg.send(fail_silently=False)
         print(f'[BLUESKY EMAIL] sent to {client_email}')
         return True, None
