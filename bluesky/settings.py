@@ -184,6 +184,13 @@ AT_API_KEY     = os.environ.get('AT_API_KEY', '')
 AT_SENDER_ID   = os.environ.get('AT_SENDER_ID', 'BLUESKY')
 AT_SMS_ENABLED = os.environ.get('AT_SMS_ENABLED', 'False') == 'True'
 
+# ── WhatsApp receipt (Twilio) ──────────────────────────────────────────────────
+TWILIO_ACCOUNT_SID   = os.environ.get('TWILIO_ACCOUNT_SID', '')
+TWILIO_AUTH_TOKEN    = os.environ.get('TWILIO_AUTH_TOKEN', '')
+TWILIO_WHATSAPP_FROM = os.environ.get('TWILIO_WHATSAPP_FROM', '')  # e.g. whatsapp:+14155238886
+WHATSAPP_ENABLED     = os.environ.get('WHATSAPP_ENABLED', 'False') == 'True'
+SITE_BASE_URL        = os.environ.get('SITE_BASE_URL', '')  # e.g. https://pascal02.pythonanywhere.com — needed so Twilio can fetch the PDF
+
 # ── Production security (active when DEBUG=False) ─────────────────────────────
 if not DEBUG:
     SECURE_PROXY_SSL_HEADER    = ('HTTP_X_FORWARDED_PROTO', 'https')
