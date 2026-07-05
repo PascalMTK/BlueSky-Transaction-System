@@ -12,7 +12,6 @@ from django.db.models import Sum, Count, Q
 from django.conf import settings
 from core.models import User, Country, Transaction, AgentReport
 from core.decorators import agent_required, get_auth_user
-from core.whatsapp import send_whatsapp_receipt
 
 
 # ── SMS helper ─────────────────────────────────────────────────────────────
@@ -57,19 +56,6 @@ def _build_sms_message(tx, locale='fr'):
                 f"Merci de faire confiance à BLUESKY Transactions !"
             )
 
-def _client_phone(tx):
-    """Pick whichever phone number represents the client for this
-    transaction type — the one who should receive SMS/WhatsApp notices."""
-    phone = None
-    if tx.transaction_type == 'send' and tx.sender_phone:
-        phone = tx.sender_phone.strip()
-    elif tx.transaction_type in ('withdrawal', 'receive') and tx.receiver_phone:
-        phone = tx.receiver_phone.strip()
-    if phone and not phone.startswith('+'):
-        phone = '+' + phone.lstrip('0')
-    return phone
-
-
 def _send_transaction_sms(tx, locale='fr'):
     """Send SMS to the client. Silent on failure — never blocks the transaction."""
     if not settings.AT_SMS_ENABLED:
@@ -77,9 +63,19 @@ def _send_transaction_sms(tx, locale='fr'):
     if not settings.AT_API_KEY:
         return False
 
-    phone = _client_phone(tx)
+    # Pick the right phone number
+    phone = None
+    if tx.transaction_type == 'send' and tx.sender_phone:
+        phone = tx.sender_phone.strip()
+    elif tx.transaction_type in ('withdrawal', 'receive') and tx.receiver_phone:
+        phone = tx.receiver_phone.strip()
+
     if not phone:
         return False
+
+    # Normalize phone: ensure it starts with +
+    if not phone.startswith('+'):
+        phone = '+' + phone.lstrip('0')
 
     try:
         import africastalking
@@ -265,7 +261,6 @@ def tx_create(request):
             tx.save()
             locale = request.session.get('locale', 'fr')
             _send_transaction_sms(tx, locale)
-            send_whatsapp_receipt(tx, _client_phone(tx), locale)
             messages.success(request, f'Transaction {tx_num} créée avec succès.')
             return redirect('tx_show', tx_id=tx.id)
         except ValueError:
@@ -345,7 +340,6 @@ def tx_edit(request, tx_id):
         tx.save()
         locale = request.session.get('locale', 'fr')
         _send_transaction_sms(tx, locale)
-        send_whatsapp_receipt(tx, _client_phone(tx), locale)
         messages.success(request, 'Transaction mise à jour.')
         return redirect('tx_show', tx_id=tx.id)
     return render(request, 'agent/transactions/edit.html', {
