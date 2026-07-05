@@ -8,6 +8,11 @@ urlpatterns = [
     path('logout/',                       auth_views.logout_view,   name='logout'),
     path('register/',                     auth_views.register_view, name='register'),
     path('lang/<str:locale>/',            auth_views.lang_switch,   name='lang_switch'),
+    path('forgot-password/',              auth_views.forgot_password, name='forgot_password'),
+    path('verify-otp/',                   auth_views.verify_otp,      name='verify_otp'),
+    path('resend-otp/',                   auth_views.resend_otp,      name='resend_otp'),
+    path('reset-password/',               auth_views.reset_password,  name='reset_password'),
+
     # ── Profile ───────────────────────────────────────────────────────────
     path('profile/',                      profile_views.profile_show,     name='profile_show'),
     path('profile/update/',               profile_views.profile_update,   name='profile_update'),
