@@ -164,7 +164,7 @@
             <div class="dropdown">
                 <div class="user-menu" onclick="toggleDropdown(this)">
                     {% if auth_user and auth_user.photo_url %}
-                        <img src="{{ auth_user.photo_url }}" style="width:32px;height:32px;border-radius:8px;object-fit:cover;flex-shrink:0;" alt="photo">
+                        <img src="{{ auth_user.photo_url }}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0;" alt="photo">
                     {% else %}
                         <div class="user-avatar">{% if auth_user %}{{ auth_user.name|initials }}{% else %}?{% endif %}</div>
                     {% endif %}
