@@ -1906,7 +1906,12 @@ html, body { overflow-x: hidden; max-width: 100%; }
     -webkit-overflow-scrolling: touch; scrollbar-width: none;
 }
 .sel-bar::-webkit-scrollbar { display: none; }
-.sel-bar.active { display: flex; animation: fadeInUp .18s ease both; }
+.sel-bar.active {
+    display: flex; animation: fadeInUp .18s ease both;
+    /* Stays in view under the topbar while scrolling a long table, so the
+       agent never has to scroll back up to reach Voir/Modifier/Imprimer. */
+    position: sticky; top: calc(var(--header-height) + 14px); z-index: 90;
+}
 .sel-bar-count  { font-weight: 900; font-size: 13px; white-space: nowrap; flex-shrink: 0; }
 .sel-bar-count em { font-style: normal; font-size: 18px; margin-right: 3px; }
 .sel-bar-actions { display: flex; gap: 6px; align-items: center; margin-left: auto; flex-shrink: 0; flex-wrap: nowrap; }
