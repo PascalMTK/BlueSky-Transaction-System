@@ -13,12 +13,6 @@ from core.models import User, Country, Transaction, AgentReport
 from core.decorators import agent_required, get_auth_user
 
 
-# Hosted logo URL for emails — CID-embedded inline images render
-# unreliably across mail clients/relays (Gmail in particular has shown
-# broken-image icons for it), a plain hosted URL is far more reliable.
-_LOGO_URL = settings.SITE_BASE_URL.rstrip('/') + '/static/images/WhatsApp_Image_2026-01-27_at_11.11.59_PM__1_-removebg-preview.png'
-
-
 def _send_transaction_email(tx, client_email: str, locale: str = 'fr'):
     """Send a styled HTML confirmation email to the client.
     Returns (True, None) on success or (False, error_message) on failure."""
@@ -79,10 +73,7 @@ def _send_transaction_email(tx, client_email: str, locale: str = 'fr'):
 <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">
 
 <tr><td style="background:linear-gradient(145deg,#002d6e,#0055b3,#0096d6);border-radius:16px 16px 0 0;padding:32px 32px 24px;text-align:center;">
-  <div style="width:86px;height:86px;border-radius:50%;background:#fff;display:inline-block;line-height:86px;margin-bottom:16px;box-shadow:0 0 0 5px rgba(255,255,255,.20),0 8px 28px rgba(0,0,0,.30);">
-    <img src="{_LOGO_URL}" alt="BLUESKY" width="64" height="64" style="width:64px;height:64px;object-fit:contain;vertical-align:middle;display:inline-block;">
-  </div>
-  <div style="color:#fff;font-size:24px;font-weight:900;letter-spacing:2px;">BLUESKY</div>
+  <div style="color:#fff;font-size:26px;font-weight:900;letter-spacing:2px;">BLUESKY</div>
   <div style="color:rgba(255,255,255,.55);font-size:10px;letter-spacing:4px;text-transform:uppercase;margin-top:3px;">Transactions</div>
   <div style="margin-top:18px;"><span style="display:inline-block;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);border-radius:50px;padding:7px 20px;color:#fff;font-size:13px;font-weight:700;">&#10003; {subject.split(' — ')[0].replace('✅ ','')}</span></div>
 </td></tr>
