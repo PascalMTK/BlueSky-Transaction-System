@@ -117,9 +117,9 @@ class TransactionEditTests(TestCase):
         self.assertEqual(self.transaction.fee_amount, Decimal('3.00'))
         self.assertEqual(self.transaction.total_amount, Decimal('97.00'))
 
-    def test_edit_transaction_rejects_fee_total_mismatch(self):
-        # Fee and remitted amount are independent fields now — if they don't
-        # add up to the amount sent, the edit must be rejected, not silently fixed.
+    def test_edit_transaction_rejects_fee_exceeding_amount(self):
+        # The fee can never exceed what the client handed over — the edit
+        # must be rejected, not silently clamped.
         session = self.client.session
         session['user_id'] = self.agent.id
         session.save()
@@ -129,8 +129,7 @@ class TransactionEditTests(TestCase):
             {
                 'sender_name': 'Alice Updated',
                 'amount': '120',
-                'fee_amount': '10',
-                'total_amount': '50',
+                'fee_amount': '150',
                 'currency': 'TZS',
                 'payment_method': 'cash',
                 'status': 'completed',
@@ -143,7 +142,8 @@ class TransactionEditTests(TestCase):
         self.assertEqual(self.transaction.sender_name, 'Alice')
         self.assertEqual(self.transaction.amount, Decimal('100.00'))
 
-    def test_edit_transaction_with_consistent_fee_and_total(self):
+    def test_edit_transaction_recomputes_total_from_amount_and_fee(self):
+        # Montant remis au client is derived, never submitted directly.
         session = self.client.session
         session['user_id'] = self.agent.id
         session.save()
@@ -154,7 +154,6 @@ class TransactionEditTests(TestCase):
                 'sender_name': 'Alice Updated',
                 'amount': '120',
                 'fee_amount': '10',
-                'total_amount': '110',
                 'currency': 'TZS',
                 'payment_method': 'cash',
                 'status': 'completed',

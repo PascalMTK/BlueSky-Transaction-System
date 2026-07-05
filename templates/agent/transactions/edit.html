@@ -118,22 +118,21 @@
                         </div>
                     </div>
 
-                    <!-- Rangée 2 : Frais et Montant remis — champs indépendants, validés l'un contre l'autre -->
+                    <!-- Rangée 2 : Frais (modifiable) → Montant remis (calculé automatiquement) -->
                     <div class="tx-row-result">
                         <div class="tx-fee-grp">
                             <label class="form-label">{{ t.fee_amount_label }}</label>
                             <div class="tx-field-icon-wrap">
                                 <span class="tx-icon" id="feeCurIcon" style="font-size:11px;font-weight:700;">{{ transaction.currency }}</span>
                                 <input type="number" name="fee_amount" id="feeInput" class="form-control"
-                                       value="{{ transaction.fee_amount }}" step="0.01" min="0" required oninput="calcTotal()">
+                                       value="{{ transaction.fee_amount }}" step="0.01" min="0" oninput="calcTotal()">
                             </div>
                         </div>
                         <div class="tx-result-arrow">→</div>
                         <div class="tx-total-panel" id="totalPanel">
                             <div class="tx-total-panel-label">{{ t.amount_remitted }}</div>
                             <div class="tx-total-panel-right">
-                                <input type="number" name="total_amount" id="totalInput" class="tx-total-input"
-                                       value="{{ transaction.total_amount }}" step="0.01" min="0" required oninput="calcTotal()">
+                                <div class="tx-total-panel-val" id="totalDisplay">{{ transaction.total_amount|floatformat:"0" }}</div>
                                 <div class="tx-total-panel-cur" id="totalCurLabel">{{ transaction.currency }}</div>
                             </div>
                         </div>

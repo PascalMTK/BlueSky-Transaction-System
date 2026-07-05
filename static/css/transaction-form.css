@@ -102,14 +102,8 @@
     font-size: 12px; font-weight: 700; color: var(--sky-secondary);
     margin-top: 2px;
 }
-.tx-total-panel-right { text-align: right; display: flex; align-items: baseline; gap: 6px; justify-content: flex-end; }
-.tx-total-input {
-    width: 110px; background: transparent; border: none; border-bottom: 2px solid rgba(2,132,199,.35);
-    font-size: 22px; font-weight: 900; color: var(--sky-primary); text-align: right;
-    outline: none; font-family: inherit; padding: 0 0 2px;
-}
-.tx-total-input:focus { border-bottom-color: var(--sky-primary); }
-.tx-total-panel.tx-total-invalid .tx-total-input { color: #dc2626; border-bottom-color: #dc2626; }
+.tx-total-panel-right { text-align: right; }
+.tx-total-panel.tx-total-invalid .tx-total-panel-val { color: #dc2626; }
 .form-error { font-size: 12px; font-weight: 600; color: #dc2626; }
 
 /* préfixe icône générique */

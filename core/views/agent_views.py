@@ -104,17 +104,14 @@ def _parse_decimal(value, default=0):
         return float(default or 0)
 
 
-def _parse_fee_and_total(post, fallback_fee, fallback_total):
-    """Fee and remitted amount are independent fields the agent fills in
-    separately — neither is derived from the other. The caller validates
-    that they add up to the amount sent."""
+def _resolve_fee_amount(post, fallback_fee):
+    """Fee falls back to a default (e.g. the country's default percentage
+    on create, or the existing fee on edit) when left blank — the amount
+    remitted to the client is always derived from it, never typed."""
     fee_value = post.get('fee_amount', '')
-    fee_amt = _parse_decimal(fee_value, fallback_fee)
-
-    total_value = post.get('total_amount', '')
-    total_amt = _parse_decimal(total_value, fallback_total)
-
-    return round(fee_amt, 2), round(total_amt, 2)
+    if fee_value is None or str(fee_value).strip() == '':
+        return round(float(fallback_fee), 2)
+    return round(_parse_decimal(fee_value, fallback_fee), 2)
 
 
 def _build_currencies():
@@ -200,13 +197,11 @@ def tx_create(request):
             amount = _parse_decimal(request.POST.get('amount', 0), 0)
             default_pct = float(origin.default_fee_percentage or 0)
             default_fee = round(amount * default_pct / 100, 2)
-            fee_amt, total = _parse_fee_and_total(request.POST, default_fee, round(amount - default_fee, 2))
-            if fee_amt < 0 or total < 0:
-                messages.error(request, "Les frais et le montant remis ne peuvent pas être négatifs.")
+            fee_amt = _resolve_fee_amount(request.POST, default_fee)
+            if fee_amt < 0 or fee_amt > amount:
+                messages.error(request, "Les frais ne peuvent pas dépasser le montant donné par le client.")
                 raise ValueError('fee_amount_invalid')
-            if round(fee_amt + total, 2) != round(amount, 2):
-                messages.error(request, "Les frais + le montant remis doivent être égaux au montant envoyé.")
-                raise ValueError('fee_total_mismatch')
+            total = round(amount - fee_amt, 2)
             fee_pct = round((fee_amt / amount * 100), 2) if amount else 0
             tx_num  = 'BSK-' + datetime.now().strftime('%Y%m%d') + '-' + str(uuid.uuid4())[:6].upper()
             currency = (request.POST.get('currency') or origin.currency_code or '').upper()
@@ -304,17 +299,13 @@ def tx_edit(request, tx_id):
     if request.method == 'POST':
         tx_type  = request.POST.get('transaction_type', tx.transaction_type)
         amount = _parse_decimal(request.POST.get('amount', tx.amount), tx.amount)
-        fee_amt, total = _parse_fee_and_total(request.POST, tx.fee_amount, tx.total_amount)
-        if fee_amt < 0 or total < 0:
-            messages.error(request, "Les frais et le montant remis ne peuvent pas être négatifs.")
+        fee_amt = _resolve_fee_amount(request.POST, tx.fee_amount)
+        if fee_amt < 0 or fee_amt > amount:
+            messages.error(request, "Les frais ne peuvent pas dépasser le montant donné par le client.")
             return render(request, 'agent/transactions/edit.html', {
                 'transaction': tx, 'countries': countries, 'currencies': currencies, 'auth_user': user,
             })
-        if round(fee_amt + total, 2) != round(amount, 2):
-            messages.error(request, "Les frais + le montant remis doivent être égaux au montant envoyé.")
-            return render(request, 'agent/transactions/edit.html', {
-                'transaction': tx, 'countries': countries, 'currencies': currencies, 'auth_user': user,
-            })
+        total = round(amount - fee_amt, 2)
         fee_pct = round((fee_amt / amount * 100), 2) if amount else 0
         currency = (request.POST.get('currency') or tx.currency or '').upper()
         sent_at_str = request.POST.get('sent_at', '')
