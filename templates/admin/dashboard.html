@@ -97,7 +97,7 @@
                 <div style="width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#f59e0b,#d97706);display:flex;align-items:center;justify-content:center;color:white;font-size:14px;font-weight:800;flex-shrink:0;">{{ agent.name|slice:":2"|upper }}</div>
                 <div>
                     <div style="font-size:14px;font-weight:700;color:var(--text-primary);">{{ agent.name }}</div>
-                    <div style="font-size:12px;color:var(--text-muted);">{{ agent.email }}{% if agent.country %} · {{ agent.country.flag_emoji }} {{ agent.country.name }}{% endif %}</div>
+                    <div style="font-size:12px;color:var(--text-muted);">{{ agent.email }}{% if agent.country %} · {{ agent.country.flag_emoji }} {{ agent.country.name|country_name:locale }}{% endif %}</div>
                     <div style="font-size:11px;color:var(--text-muted);">{{ t.registration }} {{ agent.created_at|date:"d/m/Y à H:i" }}</div>
                 </div>
             </div>
@@ -241,7 +241,7 @@
                 <div class="country-dot" style="width:10px;height:10px;border-radius:50%;background:{{ c.color }};flex-shrink:0;box-shadow:0 0 0 3px {{ c.color }}30;transition:background .3s;"></div>
                 <span style="font-size:20px;line-height:1;flex-shrink:0;" class="country-flag-icon">{{ c.flag }}</span>
                 <div style="flex:1;min-width:0;">
-                    <div class="country-name" style="font-size:13px;font-weight:700;color:{{ c.color }};transition:color .3s;">{{ c.name }}</div>
+                    <div class="country-name" style="font-size:13px;font-weight:700;color:{{ c.color }};transition:color .3s;">{{ c.name|country_name:locale }}</div>
                     <div style="margin-top:4px;height:5px;background:var(--bg-secondary);border-radius:3px;overflow:hidden;">
                         <div class="country-bar" data-count="{{ c.count }}" style="height:100%;background:{{ c.color }};border-radius:3px;width:0;transition:width .7s ease,background .3s;"></div>
                     </div>
@@ -307,7 +307,7 @@
                     <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--sky-primary),var(--sky-secondary));display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:12px;flex-shrink:0;">{{ ag.name|initials }}</div>
                     <div style="flex:1;min-width:0;">
                         <div style="font-weight:700;font-size:13px;color:var(--text-primary);">{{ ag.name|limit:20 }}</div>
-                        <div style="font-size:11px;color:var(--text-muted);">{% if ag.country %}{{ ag.country.flag_emoji }} {{ ag.country.name }}{% endif %}</div>
+                        <div style="font-size:11px;color:var(--text-muted);">{% if ag.country %}{{ ag.country.flag_emoji }} {{ ag.country.name|country_name:locale }}{% endif %}</div>
                     </div>
                     <div style="text-align:right;">
                         <div style="font-weight:700;font-size:13px;color:var(--sky-primary);">{{ ag.tx_count|default:0 }} tx</div>
@@ -416,7 +416,7 @@
                     <select id="resetCountrySelect" class="filter-control" style="flex:1;min-width:160px;" onchange="updateResetCountryAction()">
                         <option value="">{{ t.select_country_reset }}</option>
                         {% for c in active_countries %}
-                            <option value="{{ c.id }}" data-name="{{ c.name }}">{{ c.flag_emoji }} {{ c.name }}</option>
+                            <option value="{{ c.id }}" data-name="{{ c.name }}">{{ c.flag_emoji }} {{ c.name|country_name:locale }}</option>
                         {% endfor %}
                     </select>
                     <button type="submit" class="btn btn-danger btn-sm">🗑️ {{ t.reset_country_btn }}</button>

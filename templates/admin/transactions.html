@@ -29,7 +29,7 @@
             <select name="country" class="filter-control">
                 <option value="">{{ t.all_countries }}</option>
                 {% for c in countries %}
-                    <option value="{{ c.code }}" {% if country_filter == c.code %}selected{% endif %}>{{ c.flag_emoji }} {{ c.name }}</option>
+                    <option value="{{ c.code }}" {% if country_filter == c.code %}selected{% endif %}>{{ c.flag_emoji }} {{ c.name|country_name:locale }}</option>
                 {% endfor %}
             </select>
         </div>

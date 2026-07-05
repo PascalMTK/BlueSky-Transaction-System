@@ -40,7 +40,7 @@
             <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,.9);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ auth_user.name|limit:20 }}</div>
             <div style="font-size:10.5px;color:rgba(255,255,255,.4);margin-top:1px;display:flex;align-items:center;gap:5px;">
                 <span>{% if auth_user.is_admin %}🛡️ {{ t.role_admin }}{% else %}🏢 {{ t.role_agent }}{% endif %}</span>
-                {% if auth_user.country %}<span style="font-size:13px;line-height:1;" title="{{ auth_user.country.name }}">{{ auth_user.country.flag_emoji }}</span>{% endif %}
+                {% if auth_user.country %}<span style="font-size:13px;line-height:1;" title="{{ auth_user.country.name|country_name:locale }}">{{ auth_user.country.flag_emoji }}</span>{% endif %}
             </div>
         </div>
         <span style="font-size:12px;color:rgba(255,255,255,.3);">✏️</span>
@@ -138,7 +138,7 @@
         <div class="countries-title">{{ t.active_countries }}</div>
         <div class="countries-grid">
             {% for c in active_countries %}
-                <span class="country-flag" title="{{ c.name }}">{{ c.flag_emoji }}</span>
+                <span class="country-flag" title="{{ c.name|country_name:locale }}">{{ c.flag_emoji }}</span>
             {% endfor %}
         </div>
     </div>
@@ -183,7 +183,7 @@
                         <div class="user-info-name">{{ auth_user.name|limit:16 }}</div>
                         <div class="user-info-role" style="display:flex;align-items:center;gap:4px;">
                             <span>{% if auth_user.is_admin %}🛡️ {{ t.role_admin }}{% else %}🏢 {{ t.role_agent }}{% endif %}</span>
-                            {% if auth_user.country %}<span style="font-size:13px;line-height:1;" title="{{ auth_user.country.name }}">{{ auth_user.country.flag_emoji }}</span>{% endif %}
+                            {% if auth_user.country %}<span style="font-size:13px;line-height:1;" title="{{ auth_user.country.name|country_name:locale }}">{{ auth_user.country.flag_emoji }}</span>{% endif %}
                         </div>
                     </div>
                     {% endif %}

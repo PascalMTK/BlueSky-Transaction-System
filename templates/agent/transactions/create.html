@@ -177,7 +177,7 @@
                     <select name="origin_country_id" class="form-control" id="originCountry" required onchange="loadFee()">
                         <option value="">-- {{ t.select_country }} --</option>
                         {% for c in countries %}
-                            <option value="{{ c.id }}" data-currency="{{ c.currency_code }}" data-fee-pct="{{ c.default_fee_percentage }}">{{ c.flag_emoji }} {{ c.name }} ({{ c.currency_code }})</option>
+                            <option value="{{ c.id }}" data-currency="{{ c.currency_code }}" data-fee-pct="{{ c.default_fee_percentage }}">{{ c.flag_emoji }} {{ c.name|country_name:locale }} ({{ c.currency_code }})</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -186,7 +186,7 @@
                     <select name="destination_country_id" class="form-control" id="destCountry" required>
                         <option value="">-- {{ t.select_country }} --</option>
                         {% for c in countries %}
-                            <option value="{{ c.id }}">{{ c.flag_emoji }} {{ c.name }}</option>
+                            <option value="{{ c.id }}">{{ c.flag_emoji }} {{ c.name|country_name:locale }}</option>
                         {% endfor %}
                     </select>
                 </div>

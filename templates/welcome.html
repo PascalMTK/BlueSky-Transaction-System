@@ -1,4 +1,4 @@
-{% load static %}
+{% load static bluesky_tags %}
 <!DOCTYPE html>
 <html lang="{{ locale|default:'fr' }}" data-theme="light">
 <head>
@@ -293,8 +293,8 @@
 {% if active_countries %}
 <div class="ticker">
     <div class="tt">
-        {% for c in active_countries %}<div class="tc"><span>{{ c.flag_emoji }}</span><span>{{ c.name }}</span></div>{% endfor %}
-        {% for c in active_countries %}<div class="tc"><span>{{ c.flag_emoji }}</span><span>{{ c.name }}</span></div>{% endfor %}
+        {% for c in active_countries %}<div class="tc"><span>{{ c.flag_emoji }}</span><span>{{ c.name|country_name:locale }}</span></div>{% endfor %}
+        {% for c in active_countries %}<div class="tc"><span>{{ c.flag_emoji }}</span><span>{{ c.name|country_name:locale }}</span></div>{% endfor %}
     </div>
 </div>
 {% endif %}

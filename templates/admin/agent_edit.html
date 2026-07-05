@@ -146,7 +146,7 @@
             <select name="country_id">
                 <option value="">— Aucun pays —</option>
                 {% for c in countries %}
-                <option value="{{ c.id }}" {% if agent.country_id == c.id %}selected{% endif %}>{{ c.flag_emoji }} {{ c.name }}</option>
+                <option value="{{ c.id }}" {% if agent.country_id == c.id %}selected{% endif %}>{{ c.flag_emoji }} {{ c.name|country_name:locale }}</option>
                 {% endfor %}
             </select>
         </div>

@@ -208,7 +208,7 @@
                 {% if auth_user.country %}
                 <div class="profile-info-row">
                     <span class="profile-info-label">{{ t.operating_countries }}</span>
-                    <span class="profile-info-val">{{ auth_user.country.flag_emoji }} {{ auth_user.country.name }}</span>
+                    <span class="profile-info-val">{{ auth_user.country.flag_emoji }} {{ auth_user.country.name|country_name:locale }}</span>
                 </div>
                 {% endif %}
                 {% if auth_user.phone %}

@@ -123,7 +123,7 @@
                 {% endif %}
                 <span class="badge-status status-active" style="font-size:11px;">✅ {{ t.status_active }}</span>
                 {% if auth_user.country %}
-                <span style="font-size:12px;color:var(--text-muted);">{{ auth_user.country.flag_emoji }} {{ auth_user.country.name }}</span>
+                <span style="font-size:12px;color:var(--text-muted);">{{ auth_user.country.flag_emoji }} {{ auth_user.country.name|country_name:locale }}</span>
                 {% endif %}
             </div>
         </div>

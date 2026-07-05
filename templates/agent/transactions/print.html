@@ -361,7 +361,7 @@
                     </div>
                     <div class="party-name">{{ transaction.sender_name }}</div>
                     {% if transaction.sender_phone %}<div class="party-phone">{{ transaction.sender_phone }}</div>{% endif %}
-                    <div class="party-country">{{ transaction.origin_country.flag_emoji }} {{ transaction.origin_country.name }}</div>
+                    <div class="party-country">{{ transaction.origin_country.flag_emoji }} {{ transaction.origin_country.name|country_name:locale }}</div>
                 </div>
                 <div class="party-cell receiver">
                     <div class="party-tag recv-tag">
@@ -370,7 +370,7 @@
                     </div>
                     <div class="party-name">{{ transaction.receiver_name|default:"—" }}</div>
                     {% if transaction.receiver_phone %}<div class="party-phone">{{ transaction.receiver_phone }}</div>{% endif %}
-                    <div class="party-country">{{ transaction.destination_country.flag_emoji }} {{ transaction.destination_country.name }}</div>
+                    <div class="party-country">{{ transaction.destination_country.flag_emoji }} {{ transaction.destination_country.name|country_name:locale }}</div>
                 </div>
             </div>
         </div>

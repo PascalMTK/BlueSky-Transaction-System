@@ -28,7 +28,7 @@
             <select name="country_id" class="filter-control">
                 <option value="">{{ t.all_countries }}</option>
                 {% for c in countries %}
-                    <option value="{{ c.id }}" {% if country_filter == c.id|stringformat:"s" %}selected{% endif %}>{{ c.flag_emoji }} {{ c.name }}</option>
+                    <option value="{{ c.id }}" {% if country_filter == c.id|stringformat:"s" %}selected{% endif %}>{{ c.flag_emoji }} {{ c.name|country_name:locale }}</option>
                 {% endfor %}
             </select>
         </div>
@@ -136,10 +136,10 @@
                     <td><a href="{% url 'tx_show' tx.id %}" class="tx-number">{{ tx.transaction_number }}</a></td>
                     <td>
                         <div style="display:flex;align-items:center;gap:7px;flex-wrap:nowrap;">
-                            <div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--sky-primary),var(--sky-secondary));display:flex;align-items:center;justify-content:center;color:white;font-size:10px;font-weight:800;flex-shrink:0;" title="{{ tx.agent.name|default:'—' }}{% if tx.agent.country %} · {{ tx.agent.country.name }}{% endif %}">{{ tx.agent.name|default:"?"|initials }}</div>
+                            <div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--sky-primary),var(--sky-secondary));display:flex;align-items:center;justify-content:center;color:white;font-size:10px;font-weight:800;flex-shrink:0;" title="{{ tx.agent.name|default:'—' }}{% if tx.agent.country %} · {{ tx.agent.country.name|country_name:locale }}{% endif %}">{{ tx.agent.name|default:"?"|initials }}</div>
                             <div class="hide-mobile" style="min-width:0;">
                                 <div style="font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px;">{{ tx.agent.name|default:"Agent supprimé" }}</div>
-                                {% if tx.agent.country %}<div style="font-size:10px;color:var(--text-muted);">{{ tx.agent.country.flag_emoji }} {{ tx.agent.country.name }}</div>{% endif %}
+                                {% if tx.agent.country %}<div style="font-size:10px;color:var(--text-muted);">{{ tx.agent.country.flag_emoji }} {{ tx.agent.country.name|country_name:locale }}</div>{% endif %}
                             </div>
                         </div>
                     </td>

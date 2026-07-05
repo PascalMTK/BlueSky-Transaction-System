@@ -1,4 +1,4 @@
-{% load static %}
+{% load static bluesky_tags %}
 <!DOCTYPE html>
 <html lang="{{ locale|default:'fr' }}" data-theme="light">
 <head>
@@ -239,7 +239,7 @@
                 <select name="country_id" id="regCountrySelect" class="form-control" style="flex:1;" onchange="updateRegFlag()">
                     <option value="">{{ t.select_country }}</option>
                     {% for c in countries %}
-                        <option value="{{ c.id }}" data-flag="{{ c.flag_emoji }}">{{ c.flag_emoji }} {{ c.name }}</option>
+                        <option value="{{ c.id }}" data-flag="{{ c.flag_emoji }}">{{ c.flag_emoji }} {{ c.name|country_name:locale }}</option>
                     {% endfor %}
                 </select>
             </div>

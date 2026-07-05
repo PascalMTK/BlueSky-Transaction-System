@@ -48,11 +48,11 @@
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:4px;" class="form-grid">
                 <div class="form-group">
                     <label class="form-label">🌍 {{ t.origin_country }}</label>
-                    <input type="text" class="form-control" value="{{ transaction.origin_country.flag_emoji }} {{ transaction.origin_country.name }}" readonly style="opacity:.7;">
+                    <input type="text" class="form-control" value="{{ transaction.origin_country.flag_emoji }} {{ transaction.origin_country.name|country_name:locale }}" readonly style="opacity:.7;">
                 </div>
                 <div class="form-group">
                     <label class="form-label">🌍 {{ t.dest_country }}</label>
-                    <input type="text" class="form-control" value="{{ transaction.destination_country.flag_emoji }} {{ transaction.destination_country.name }}" readonly style="opacity:.7;">
+                    <input type="text" class="form-control" value="{{ transaction.destination_country.flag_emoji }} {{ transaction.destination_country.name|country_name:locale }}" readonly style="opacity:.7;">
                 </div>
             </div>
 

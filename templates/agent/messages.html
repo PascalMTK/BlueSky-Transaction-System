@@ -475,7 +475,7 @@
                     <div class="ms-contact-name">{{ u.name }}</div>
                     <div class="ms-contact-meta">
                         <span class="ms-conv-role {% if u.is_admin %}role-adm{% else %}role-agt{% endif %}">{% if u.is_admin %}🛡️ Admin{% else %}🏢 Agent{% endif %}</span>
-                        {% if u.country %} · {{ u.country.flag_emoji }} {{ u.country.name }}{% endif %}
+                        {% if u.country %} · {{ u.country.flag_emoji }} {{ u.country.name|country_name:locale }}{% endif %}
                     </div>
                 </div>
             </a>
@@ -564,7 +564,7 @@
                 <div class="ms-chat-hdr-name">{{ selected.name }}</div>
                 <div class="ms-chat-hdr-sub">
                     {% if selected.is_admin %}🛡️ Administrateur{% else %}🏢 Agent{% endif %}
-                    {% if selected.country %} · {{ selected.country.flag_emoji }} {{ selected.country.name }}{% endif %}
+                    {% if selected.country %} · {{ selected.country.flag_emoji }} {{ selected.country.name|country_name:locale }}{% endif %}
                 </div>
             </div>
             {% if selected.phone %}

@@ -204,7 +204,7 @@
     <select name="country_id">
         <option value="">{{ t.all_countries_filter }}</option>
         {% for c in countries %}
-        <option value="{{ c.id }}" {% if country_filter == c.id|stringformat:"s" %}selected{% endif %}>{{ c.flag_emoji }} {{ c.name }}</option>
+        <option value="{{ c.id }}" {% if country_filter == c.id|stringformat:"s" %}selected{% endif %}>{{ c.flag_emoji }} {{ c.name|country_name:locale }}</option>
         {% endfor %}
     </select>
     <button type="submit" style="padding:8px 18px;background:linear-gradient(135deg,#0284c7,#0ea5e9);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;">{{ t.filter_btn }}</button>
@@ -258,7 +258,7 @@
     <div class="ag-card-info">
         <div class="ag-card-row"><span>✉️</span><span>{{ agent.email }}</span></div>
         {% if agent.phone %}<div class="ag-card-row"><span>📞</span><span>{{ agent.phone }}</span></div>{% endif %}
-        {% if agent.country %}<div class="ag-card-row"><span>🌍</span><span>{{ agent.country.flag_emoji }} {{ agent.country.name }}</span></div>{% endif %}
+        {% if agent.country %}<div class="ag-card-row"><span>🌍</span><span>{{ agent.country.flag_emoji }} {{ agent.country.name|country_name:locale }}</span></div>{% endif %}
         <div class="ag-card-row"><span>📅</span><span>{{ agent.created_at|date:"d/m/Y" }}</span></div>
     </div>
 
@@ -341,7 +341,7 @@
             <div class="ag-card-info">
                 <div class="ag-card-row"><span>✉️</span><span>{{ agent.email }}</span></div>
                 {% if agent.phone %}<div class="ag-card-row"><span>📞</span><span>{{ agent.phone }}</span></div>{% endif %}
-                {% if agent.country %}<div class="ag-card-row"><span>🌍</span><span>{{ agent.country.flag_emoji }} {{ agent.country.name }}</span></div>{% endif %}
+                {% if agent.country %}<div class="ag-card-row"><span>🌍</span><span>{{ agent.country.flag_emoji }} {{ agent.country.name|country_name:locale }}</span></div>{% endif %}
             </div>
             <div class="ag-card-actions">
                 <!-- Restore -->
