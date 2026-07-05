@@ -105,6 +105,7 @@ class Transaction(models.Model):
     sender_phone        = models.CharField(max_length=25)
     receiver_name       = models.CharField(max_length=255, null=True, blank=True)
     receiver_phone      = models.CharField(max_length=25, null=True, blank=True)
+    client_email        = models.EmailField(null=True, blank=True)
     amount              = models.DecimalField(max_digits=15, decimal_places=2)
     fee_percentage      = models.DecimalField(max_digits=5, decimal_places=2, default=3.00)
     fee_amount          = models.DecimalField(max_digits=15, decimal_places=2)
