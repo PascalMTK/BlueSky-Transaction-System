@@ -444,6 +444,9 @@ body {
 .stat-card:hover::after { transform: translateX(100%); }
 .stat-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
 
+.stat-spark { position: absolute; right: 14px; bottom: 10px; opacity: .9; pointer-events: none; }
+@media (max-width: 480px) { .stat-spark { display: none; } }
+
 .stat-icon {
     width: 54px; height: 54px; border-radius: 13px;
     display: flex; align-items: center; justify-content: center;

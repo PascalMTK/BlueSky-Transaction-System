@@ -70,3 +70,40 @@ def initials(name):
 @register.filter
 def limit(value, num):
     return str(value)[:int(num)]
+
+
+@register.simple_tag
+def sparkline(values, color='#0284C7', width=72, height=26):
+    """Tiny inline SVG trend line for stat/balance cards — no JS chart lib.
+    `values` is a list of numbers (oldest → newest)."""
+    values = [float(v or 0) for v in values]
+    if len(values) < 2:
+        return ''
+    lo, hi = min(values), max(values)
+    span = (hi - lo) or 1
+    step = width / (len(values) - 1)
+    pad = 2
+    usable_h = height - pad * 2
+
+    points = []
+    for i, v in enumerate(values):
+        x = round(i * step, 1)
+        y = round(pad + usable_h - ((v - lo) / span) * usable_h, 1)
+        points.append((x, y))
+
+    line = ' '.join(f'{x},{y}' for x, y in points)
+    area = f'0,{height} ' + line + f' {width},{height}'
+    uid = f'spark{abs(hash(tuple(values))) % 100000}'
+
+    return mark_safe(
+        f'<svg width="{width}" height="{height}" viewBox="0 0 {width} {height}" '
+        f'preserveAspectRatio="none" style="display:block;overflow:visible;">'
+        f'<defs><linearGradient id="{uid}" x1="0" y1="0" x2="0" y2="1">'
+        f'<stop offset="0%" stop-color="{color}" stop-opacity="0.35"/>'
+        f'<stop offset="100%" stop-color="{color}" stop-opacity="0"/>'
+        f'</linearGradient></defs>'
+        f'<polygon points="{area}" fill="url(#{uid})"/>'
+        f'<polyline points="{line}" fill="none" stroke="{color}" stroke-width="1.75" '
+        f'stroke-linecap="round" stroke-linejoin="round"/>'
+        f'</svg>'
+    )

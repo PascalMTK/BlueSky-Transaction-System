@@ -4,7 +4,7 @@ import base64
 import openpyxl
 from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.http import HttpResponse, JsonResponse
@@ -317,7 +317,20 @@ def dashboard(request):
         'amount_month':       float(my_tx.filter(created_at__month=today.month, created_at__year=today.year, status='completed').aggregate(s=Sum('amount'))['s'] or 0),
     }
     recent_tx = my_tx.select_related('origin_country', 'destination_country').order_by('-created_at')[:10]
-    return render(request, 'agent/dashboard.html', {'stats': stats, 'recent_tx': recent_tx, 'auth_user': user})
+
+    # Last 7 days' completed volume — feeds the stat-card sparkline.
+    since = today - timedelta(days=6)
+    daily_qs = (
+        my_tx.filter(status='completed', created_at__date__gte=since)
+        .values('created_at__date')
+        .annotate(total=Sum('amount'))
+    )
+    daily_map = {r['created_at__date']: float(r['total'] or 0) for r in daily_qs}
+    volume_trend = [daily_map.get(since + timedelta(days=i), 0) for i in range(7)]
+
+    return render(request, 'agent/dashboard.html', {
+        'stats': stats, 'recent_tx': recent_tx, 'auth_user': user, 'volume_trend': volume_trend,
+    })
 
 
 @agent_required

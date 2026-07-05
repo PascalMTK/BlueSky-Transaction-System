@@ -62,10 +62,8 @@
 .sp-pending   { background:rgba(245,158,11,.12); color:#f59e0b; border:1px solid rgba(245,158,11,.2); }
 .sp-cancelled { background:rgba(239,68,68,.1);  color:#ef4444;  border:1px solid rgba(239,68,68,.15); }
 
-/* ── Mini sparkline bars ── */
-.spark-row { display:flex; gap:3px; align-items:flex-end; height:36px; margin-top:8px; }
-.spark-bar { flex:1; border-radius:3px 3px 0 0; background:rgba(255,255,255,.3); min-height:4px; transition:background .2s; }
-.spark-bar:hover { background:rgba(255,255,255,.7); }
+/* ── Mini sparkline (trend line) inside a KPI card ── */
+.kpi-spark { margin-top:8px; opacity:.9; }
 
 @media (max-width: 480px) {
     .kpi-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -141,6 +139,7 @@
         <div class="kpi-value" style="font-size:20px;">{{ stats.total_amount|number_format:0 }}</div>
         <div class="kpi-label">{{ t.total_volume }}</div>
         <div class="kpi-trend">🏷️ <strong>{{ stats.total_fees|number_format:0 }}</strong> {{ t.total_commissions }}</div>
+        <div class="kpi-spark">{% sparkline volume_trend "#ffffff" 100 24 %}</div>
     </div>
     <div class="kpi-card kpi-bg-orange">
         <span class="kpi-icon">📆</span>

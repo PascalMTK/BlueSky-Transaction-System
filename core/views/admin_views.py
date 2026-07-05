@@ -236,6 +236,12 @@ def dashboard(request):
 
     pending_agents_list = User.objects.filter(role='agent', status='pending').select_related('country').order_by('created_at')
 
+    # Trailing months only (up to the current one) so the sparkline reads as
+    # a recent trend rather than trailing off to zero for future months.
+    _recent_months = monthly_data[:today.month][-6:]
+    volume_trend = [m['total'] for m in _recent_months]
+    fees_trend   = [m['fees'] for m in _recent_months]
+
     return render(request, 'admin/dashboard.html', {
         'stats':               stats,
         'recent_tx':           recent_tx,
@@ -243,6 +249,8 @@ def dashboard(request):
         'unread_reports_count': unread_reports.count(),
         'unread_reports':      unread_reports[:3],
         'monthly_data':        monthly_data,
+        'volume_trend':        volume_trend,
+        'fees_trend':          fees_trend,
         'monthly_data_json':   json.dumps(monthly_data),
         'country_tx_json':     json.dumps(country_tx_data),
         'country_tx_data':     country_tx_data,
