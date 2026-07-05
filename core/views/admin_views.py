@@ -585,9 +585,25 @@ def statistics(request):
     daily_gains_month = float(Transaction.objects.filter(created_at__month=today.month, created_at__year=today.year, status='completed').aggregate(s=Sum('fee_amount'))['s'] or 0)
     daily_gains_total = float(Transaction.objects.filter(status='completed').aggregate(s=Sum('fee_amount'))['s'] or 0)
 
+    # Status breakdown — surfaces money stuck in pending and the cancellation
+    # rate, which the completed-only stats above hide entirely.
+    total_tx_all = Transaction.objects.count()
+    status_breakdown = []
+    for code in ('completed', 'pending', 'cancelled'):
+        qs  = Transaction.objects.filter(status=code)
+        cnt = qs.count()
+        status_breakdown.append({
+            'code':   code,
+            'count':  cnt,
+            'amount': float(qs.aggregate(s=Sum('amount'))['s'] or 0),
+            'pct':    round((cnt / total_tx_all * 100), 1) if total_tx_all else 0,
+        })
+
     return render(request, 'admin/statistics.html', {
         'yearly_data':          yearly_data,
         'current_year_monthly': current_year_monthly,
+        'status_breakdown':     status_breakdown,
+        'total_tx_all':         total_tx_all,
         'max_amount':           max_amount,
         'current_year':         today.year,
         'daily_gains_today':    daily_gains_today,
