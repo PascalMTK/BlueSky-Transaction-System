@@ -130,23 +130,6 @@ class Transaction(models.Model):
         return self.transaction_number
 
 
-class DirectMessage(models.Model):
-    sender     = models.ForeignKey(User, related_name='sent_dms',     on_delete=models.CASCADE, db_column='sender_id')
-    recipient  = models.ForeignKey(User, related_name='received_dms', on_delete=models.CASCADE, db_column='recipient_id')
-    message    = models.TextField()
-    is_read    = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-
-    class Meta:
-        managed  = True
-        db_table = 'direct_messages'
-        ordering = ['created_at']
-
-    def __str__(self):
-        return f"{self.sender} → {self.recipient}"
-
-
 class AgentReport(models.Model):
     STATUS_CHOICES = [('unread', 'Unread'), ('read', 'Read')]
 

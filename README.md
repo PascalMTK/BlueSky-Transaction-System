@@ -32,7 +32,6 @@ Created by **Pascal Mutaka**
 | **Agent Dashboard** | Personal statistics, quick actions, recent transactions |
 | **Agent management** | Registration → admin validation; activate / deactivate / promote to admin / archive |
 | **Country management** | Add/edit countries, currency and default fees |
-| **Messaging** | Direct messaging agent ↔ agent and agent ↔ admin |
 | **Reports** | Agents submit tickets; admin can reply |
 | **Excel export** | .xlsx export for admin (all transactions) and agent (own transactions) |
 | **Printable receipts** | Print view per transaction |
@@ -142,7 +141,7 @@ BlueSky-Transaction-System/
 │   ├── urls.py              # Root routes
 │   └── wsgi.py
 ├── core/
-│   ├── models.py            # User, Country, Transaction, DirectMessage, AgentReport
+│   ├── models.py            # User, Country, Transaction, AgentReport
 │   ├── decorators.py        # @agent_required, @admin_required, get_auth_user()
 │   ├── middleware.py        # AuthMiddleware, LocaleMiddleware
 │   ├── context_processors.py# auth_user, locale, active_countries (global)
@@ -151,7 +150,7 @@ BlueSky-Transaction-System/
 │   ├── urls.py              # All application routes
 │   ├── views/
 │   │   ├── auth_views.py    # Login, logout, registration
-│   │   ├── agent_views.py   # Agent dashboard, transactions, messaging, export
+│   │   ├── agent_views.py   # Agent dashboard, transactions, reports, export
 │   │   ├── admin_views.py   # Admin dashboard, agents, countries, reports, export
 │   │   └── profile_views.py # Profile, photo, password
 │   └── templatetags/
@@ -160,7 +159,7 @@ BlueSky-Transaction-System/
 │   ├── layouts/app.html     # Base layout (sidebar, topbar, mob-nav, dark mode)
 │   ├── auth/                # login, register
 │   ├── admin/               # dashboard, agents, transactions, countries, reports, stats
-│   └── agent/               # dashboard, transactions/, messages, reports
+│   └── agent/               # dashboard, transactions/, reports
 ├── static/
 │   ├── css/bluesky.css      # Design system (CSS variables, dark mode, responsive)
 │   └── js/bluesky.js        # Theme toggle, clock, sidebar, animations
@@ -195,7 +194,6 @@ BlueSky-Transaction-System/
 | GET | `/agent/transactions/<id>/print/` | Printable receipt |
 | POST | `/agent/transactions/<id>/delete/` | Delete transaction |
 | GET | `/network/` | All network transactions |
-| GET | `/messages/` | Messaging |
 | GET | `/agent/export/csv/` | Personal Excel export |
 
 ### Admin Area

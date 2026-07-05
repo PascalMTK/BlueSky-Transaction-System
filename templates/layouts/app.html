@@ -71,11 +71,6 @@
                 </a>
             </div>
             <div class="nav-item">
-                <a href="{% url 'messages_list' %}" class="nav-link {% block nav_admin_messages %}{% endblock %}">
-                    <span class="nav-icon">💬</span> {{ t.messages_nav }}
-                </a>
-            </div>
-            <div class="nav-item">
                 <a href="{% url 'admin_countries' %}" class="nav-link {% block nav_admin_countries %}{% endblock %}">
                     <span class="nav-icon">🌍</span> {{ t.operating_countries }}
                 </a>
@@ -108,11 +103,6 @@
         <div class="nav-item">
             <a href="{% url 'tx_network' %}" class="nav-link {% block nav_network %}{% endblock %}">
                 <span class="nav-icon">🌐</span> {{ t.network_nav }}
-            </a>
-        </div>
-        <div class="nav-item">
-            <a href="{% url 'messages_list' %}" class="nav-link {% block nav_messages %}{% endblock %}">
-                <span class="nav-icon">💬</span> {{ t.messages_nav }}
             </a>
         </div>
         <div class="nav-item">
@@ -230,9 +220,6 @@
     <a href="{% url 'admin_transactions' %}" class="mob-nav-item {% block mob_adm_tx %}{% endblock %}">
         <span class="mob-icon">💸</span><span class="mob-label">{{ t.all_transactions }}</span>
     </a>
-    <a href="{% url 'messages_list' %}" class="mob-nav-item {% block mob_adm_messages %}{% endblock %}">
-        <span class="mob-icon">💬</span><span class="mob-label">{{ t.messages_nav }}</span>
-    </a>
     <a href="{% url 'admin_reports' %}" class="mob-nav-item {% block mob_adm_reports %}{% endblock %}">
         <span class="mob-icon">📨</span><span class="mob-label">{{ t.reports_nav }}</span>
     </a>
@@ -265,9 +252,6 @@
     </a>
     <a href="{% url 'tx_network' %}" class="mob-nav-item {% block mob_network %}{% endblock %}">
         <span class="mob-icon">🌐</span><span class="mob-label">{{ t.network_nav }}</span>
-    </a>
-    <a href="{% url 'messages_list' %}" class="mob-nav-item {% block mob_msg %}{% endblock %}">
-        <span class="mob-icon">💬</span><span class="mob-label">{{ t.messages_nav }}</span>
     </a>
     <a href="{% url 'agent_reports_portal' %}" class="mob-nav-item {% block mob_agent_reports %}{% endblock %}">
         <span class="mob-icon">📨</span><span class="mob-label">{{ t.reports_nav }}</span>

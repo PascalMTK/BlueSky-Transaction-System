@@ -61,13 +61,6 @@ urlpatterns = [
     # ── Agent — Network transactions (read-only, all countries) ───────────
     path('network/',                      agent_views.tx_network,             name='tx_network'),
 
-    # ── Direct messaging ──────────────────────────────────────────────────
-    path('messages/',                        agent_views.messages_list,     name='messages_list'),
-    path('messages/<int:user_id>/',          agent_views.messages_thread,   name='messages_thread'),
-    path('messages/delete/<int:msg_id>/',    agent_views.message_delete,    name='message_delete'),
-    path('messages/<int:user_id>/delete/',   agent_views.conversation_delete, name='conversation_delete'),
-    path('messages/<int:user_id>/since/<int:since_id>/', agent_views.messages_since, name='messages_since'),
-
     # ── Agent — Reports & Export ──────────────────────────────────────────
     path('agent/reports/',                    agent_views.report_store,         name='agent_report_store'),
     path('agent/reports/portal/',             agent_views.agent_reports_portal, name='agent_reports_portal'),
