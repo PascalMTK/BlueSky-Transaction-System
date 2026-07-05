@@ -28,11 +28,11 @@ def _get_logo_b64() -> str:
 _LOGO_B64 = _get_logo_b64()
 
 
-def _send_transaction_email(tx, client_email: str, locale: str = 'fr') -> bool:
-    """Send a styled HTML confirmation email to the client. Silent on
-    failure — never blocks the transaction."""
+def _send_transaction_email(tx, client_email: str, locale: str = 'fr'):
+    """Send a styled HTML confirmation email to the client.
+    Returns (True, None) on success or (False, error_message) on failure."""
     if not client_email or '@' not in client_email:
-        return False
+        return False, 'Adresse email invalide.'
 
     from django.core.mail import EmailMultiAlternatives
     from email.mime.image import MIMEImage
@@ -175,10 +175,10 @@ def _send_transaction_email(tx, client_email: str, locale: str = 'fr') -> bool:
             msg.attach(logo_mime)
         msg.send(fail_silently=False)
         print(f'[BLUESKY EMAIL] sent to {client_email}')
-        return True
+        return True, None
     except Exception as e:
         print(f'[BLUESKY EMAIL] error: {e}')
-        return False
+        return False, str(e)
 
 
 # ── SMS helper ─────────────────────────────────────────────────────────────
@@ -429,8 +429,6 @@ def tx_create(request):
             tx.save()
             locale = request.session.get('locale', 'fr')
             _send_transaction_sms(tx, locale)
-            if tx.client_email:
-                _send_transaction_email(tx, tx.client_email, locale)
             messages.success(request, f'Transaction {tx_num} créée avec succès.')
             return redirect('tx_show', tx_id=tx.id)
         except ValueError:
@@ -511,13 +509,33 @@ def tx_edit(request, tx_id):
         tx.save()
         locale = request.session.get('locale', 'fr')
         _send_transaction_sms(tx, locale)
-        if tx.client_email:
-            _send_transaction_email(tx, tx.client_email, locale)
         messages.success(request, 'Transaction mise à jour.')
         return redirect('tx_show', tx_id=tx.id)
     return render(request, 'agent/transactions/edit.html', {
         'transaction': tx, 'countries': countries, 'currencies': currencies, 'auth_user': user,
     })
+
+
+@agent_required
+def tx_send_receipt(request, tx_id):
+    """Send (or resend) the confirmation email for a transaction, on demand
+    — the agent decides when, rather than it firing automatically on save."""
+    user = get_auth_user(request)
+    tx   = get_object_or_404(Transaction, pk=tx_id)
+    if not user.is_admin() and tx.agent_id != user.id:
+        return JsonResponse({'ok': False, 'error': "Vous n'avez pas accès à cette transaction."}, status=403)
+    if request.method != 'POST':
+        return JsonResponse({'ok': False, 'error': 'Méthode non autorisée.'}, status=405)
+
+    email = request.POST.get('client_email', '').strip()
+    locale = request.session.get('locale', 'fr')
+    sent, error = _send_transaction_email(tx, email, locale)
+    if sent:
+        if tx.client_email != email:
+            tx.client_email = email
+            tx.save(update_fields=['client_email'])
+        return JsonResponse({'ok': True})
+    return JsonResponse({'ok': False, 'error': error or 'Échec de l\'envoi.'})
 
 
 @agent_required

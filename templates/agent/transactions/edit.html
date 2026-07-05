@@ -190,8 +190,12 @@
                 </div>
                 <div class="form-group" style="grid-column:1/-1;">
                     <label class="form-label">📧 {{ t.client_email_label }}</label>
-                    <input type="email" name="client_email" class="form-control" value="{{ transaction.client_email|default:'' }}" placeholder="client@email.com">
+                    <div style="display:flex;gap:8px;">
+                        <input type="email" name="client_email" id="clientEmailInput" class="form-control" value="{{ transaction.client_email|default:'' }}" placeholder="client@email.com" style="flex:1;">
+                        <button type="button" class="btn btn-secondary" id="sendReceiptBtn" onclick="sendReceiptEmail('{{ transaction.id }}')">📧 {{ t.send_receipt_btn }}</button>
+                    </div>
                     <div style="font-size:11.5px;color:var(--text-muted);margin-top:4px;">💡 {{ t.client_email_hint }}</div>
+                    <div id="sendReceiptStatus" style="font-size:12.5px;margin-top:6px;font-weight:600;"></div>
                 </div>
                 <div class="form-group" style="grid-column:1/-1;">
                     <label class="form-label">📝 {{ t.notes }}</label>
@@ -225,5 +229,48 @@
         cur.addEventListener('input',function(){ calcTotal(); });
     }
 })();
+
+function sendReceiptEmail(txId){
+    var input  = document.getElementById('clientEmailInput');
+    var status = document.getElementById('sendReceiptStatus');
+    var btn    = document.getElementById('sendReceiptBtn');
+    var email  = input.value.trim();
+
+    if(!email || email.indexOf('@') === -1){
+        status.style.color = '#dc2626';
+        status.textContent = '{{ t.invalid_email_error|escapejs }}';
+        return;
+    }
+
+    btn.disabled = true;
+    status.style.color = 'var(--text-muted)';
+    status.textContent = '{{ t.sending_receipt|escapejs }}';
+
+    var csrfToken = document.querySelector('#txForm [name=csrfmiddlewaretoken]').value;
+    fetch('/agent/transactions/' + txId + '/send-receipt/', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrfToken,
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'client_email=' + encodeURIComponent(email),
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+        btn.disabled = false;
+        if(data.ok){
+            status.style.color = '#22c55e';
+            status.textContent = '✅ {{ t.receipt_sent_ok|escapejs }}';
+        } else {
+            status.style.color = '#dc2626';
+            status.textContent = '❌ ' + (data.error || '{{ t.receipt_sent_fail|escapejs }}');
+        }
+    })
+    .catch(function(){
+        btn.disabled = false;
+        status.style.color = '#dc2626';
+        status.textContent = '❌ {{ t.receipt_sent_fail|escapejs }}';
+    });
+}
 </script>
 {% endblock %}

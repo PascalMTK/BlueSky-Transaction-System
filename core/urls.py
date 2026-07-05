@@ -58,6 +58,7 @@ urlpatterns = [
     path('agent/transactions/<int:tx_id>/edit/',   agent_views.tx_edit,    name='tx_edit'),
     path('agent/transactions/<int:tx_id>/print/',  agent_views.tx_print,   name='tx_print'),
     path('agent/transactions/<int:tx_id>/delete/', agent_views.tx_destroy, name='tx_destroy'),
+    path('agent/transactions/<int:tx_id>/send-receipt/', agent_views.tx_send_receipt, name='tx_send_receipt'),
 
     # ── Agent — Network transactions (read-only, all countries) ───────────
     path('network/',                      agent_views.tx_network,             name='tx_network'),
