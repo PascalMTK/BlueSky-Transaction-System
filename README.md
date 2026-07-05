@@ -2,7 +2,7 @@
 
 > **International money transfer management platform for Africa**
 
-**Live demo:** [AfricaBlueSky.com](https://AfricaBlueSky.com) (also reachable at [pascal02.pythonanywhere.com](https://pascal02.pythonanywhere.com))
+**Live demo:** [pascal02.pythonanywhere.com](https://pascal02.pythonanywhere.com)
 
 ---
 
@@ -18,7 +18,7 @@ Created by **Pascal Mutaka**
 
 - GitHub: [github.com/PascalMTK](https://github.com/PascalMTK)
 - Email: vandervloger@gmail.com
-- Deployed: [AfricaBlueSky.com](https://AfricaBlueSky.com)
+- Deployed: [pascal02.pythonanywhere.com](https://pascal02.pythonanywhere.com)
 
 Used [Claude Code](https://claude.com/claude-code) as an assistant for some debugging along the way.
 
