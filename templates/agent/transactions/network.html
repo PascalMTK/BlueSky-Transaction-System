@@ -133,7 +133,14 @@
                     data-can-edit="1"
                     {% endif %}>
                     <td class="sel-td"><input type="checkbox" class="sel-cb"></td>
-                    <td><a href="{% url 'tx_show' tx.id %}" class="tx-number">{{ tx.transaction_number }}</a></td>
+                    <td>
+                        <div class="tx-row-lead">
+                            <div class="tx-type-ico {{ tx.transaction_type }}">
+                                {% if tx.transaction_type == 'send' %}📤{% elif tx.transaction_type == 'receive' %}📥{% elif tx.transaction_type == 'withdrawal' %}💸{% else %}🔄{% endif %}
+                            </div>
+                            <a href="{% url 'tx_show' tx.id %}" class="tx-number">{{ tx.transaction_number }}</a>
+                        </div>
+                    </td>
                     <td>
                         <div style="display:flex;align-items:center;gap:7px;flex-wrap:nowrap;">
                             <div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--sky-primary),var(--sky-secondary));display:flex;align-items:center;justify-content:center;color:white;font-size:10px;font-weight:800;flex-shrink:0;" title="{{ tx.agent.name|default:'—' }}{% if tx.agent.country %} · {{ tx.agent.country.name|country_name:locale }}{% endif %}">{{ tx.agent.name|default:"?"|initials }}</div>

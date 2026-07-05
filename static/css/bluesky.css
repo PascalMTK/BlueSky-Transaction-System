@@ -447,6 +447,17 @@ body {
 .stat-spark { position: absolute; right: 14px; bottom: 10px; opacity: .9; pointer-events: none; }
 @media (max-width: 480px) { .stat-spark { display: none; } }
 
+/* Colored transaction-type icon badge (transaction lists) */
+.tx-row-lead { display: flex; align-items: center; gap: 9px; }
+.tx-type-ico {
+    width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 14px;
+}
+.tx-type-ico.send       { background: rgba(2,132,199,.12); }
+.tx-type-ico.receive    { background: rgba(34,197,94,.12); }
+.tx-type-ico.exchange   { background: rgba(139,92,246,.12); }
+.tx-type-ico.withdrawal { background: rgba(245,158,11,.12); }
+
 .stat-icon {
     width: 54px; height: 54px; border-radius: 13px;
     display: flex; align-items: center; justify-content: center;
