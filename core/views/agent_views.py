@@ -104,10 +104,15 @@ def _parse_decimal(value, default=0):
         return float(default or 0)
 
 
-def _resolve_fee_amount(post, fallback_fee):
-    """Fee falls back to a default (e.g. the country's default percentage
-    on create, or the existing fee on edit) when left blank — the amount
-    remitted to the client is always derived from it, never typed."""
+def _resolve_fee_amount(post, amount, fallback_fee):
+    """The fee is normally derived from a default (country % on create, the
+    existing fee on edit), but the agent can edit either the fee or the
+    "montant remis" field directly in the UI — whichever was typed in
+    'total_amount' takes priority since the client keeps it in sync."""
+    total_value = post.get('total_amount', '')
+    if total_value is not None and str(total_value).strip() != '':
+        total_amt = _parse_decimal(total_value, amount - float(fallback_fee))
+        return round(amount - total_amt, 2)
     fee_value = post.get('fee_amount', '')
     if fee_value is None or str(fee_value).strip() == '':
         return round(float(fallback_fee), 2)
@@ -197,7 +202,7 @@ def tx_create(request):
             amount = _parse_decimal(request.POST.get('amount', 0), 0)
             default_pct = float(origin.default_fee_percentage or 0)
             default_fee = round(amount * default_pct / 100, 2)
-            fee_amt = _resolve_fee_amount(request.POST, default_fee)
+            fee_amt = _resolve_fee_amount(request.POST, amount, default_fee)
             if fee_amt < 0 or fee_amt > amount:
                 messages.error(request, "Les frais ne peuvent pas dépasser le montant donné par le client.")
                 raise ValueError('fee_amount_invalid')
@@ -299,7 +304,7 @@ def tx_edit(request, tx_id):
     if request.method == 'POST':
         tx_type  = request.POST.get('transaction_type', tx.transaction_type)
         amount = _parse_decimal(request.POST.get('amount', tx.amount), tx.amount)
-        fee_amt = _resolve_fee_amount(request.POST, tx.fee_amount)
+        fee_amt = _resolve_fee_amount(request.POST, amount, tx.fee_amount)
         if fee_amt < 0 or fee_amt > amount:
             messages.error(request, "Les frais ne peuvent pas dépasser le montant donné par le client.")
             return render(request, 'agent/transactions/edit.html', {

@@ -118,21 +118,22 @@
                         </div>
                     </div>
 
-                    <!-- Rangée 2 : Frais (modifiable) → Montant remis (calculé automatiquement) -->
+                    <!-- Rangée 2 : Frais ↔ Montant remis — les deux modifiables, synchronisés -->
                     <div class="tx-row-result">
                         <div class="tx-fee-grp">
                             <label class="form-label">{{ t.fee_amount_label }}</label>
                             <div class="tx-field-icon-wrap">
                                 <span class="tx-icon" id="feeCurIcon" style="font-size:11px;font-weight:700;">{{ transaction.currency }}</span>
                                 <input type="number" name="fee_amount" id="feeInput" class="form-control"
-                                       value="{{ transaction.fee_amount }}" step="0.01" min="0" oninput="calcTotal()">
+                                       value="{{ transaction.fee_amount }}" step="0.01" min="0" oninput="onFeeInput()">
                             </div>
                         </div>
                         <div class="tx-result-arrow">→</div>
                         <div class="tx-total-panel" id="totalPanel">
                             <div class="tx-total-panel-label">{{ t.amount_remitted }}</div>
                             <div class="tx-total-panel-right">
-                                <div class="tx-total-panel-val" id="totalDisplay">{{ transaction.total_amount|floatformat:"0" }}</div>
+                                <input type="number" name="total_amount" id="totalInput" class="tx-total-input"
+                                       value="{{ transaction.total_amount }}" step="0.01" min="0" oninput="onTotalInput()">
                                 <div class="tx-total-panel-cur" id="totalCurLabel">{{ transaction.currency }}</div>
                             </div>
                         </div>
