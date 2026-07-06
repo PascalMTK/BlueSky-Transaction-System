@@ -50,6 +50,7 @@ urlpatterns = [
 
     # ── Agent — Dashboard ─────────────────────────────────────────────────
     path('agent/dashboard/',              agent_views.dashboard,          name='agent_dashboard'),
+    path('agent/team/',                   agent_views.team_index,         name='agent_team'),
 
     # ── Agent — Transactions ──────────────────────────────────────────────
     path('agent/transactions/',           agent_views.tx_index,           name='tx_index'),

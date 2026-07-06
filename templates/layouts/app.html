@@ -106,6 +106,11 @@
             </a>
         </div>
         <div class="nav-item">
+            <a href="{% url 'agent_team' %}" class="nav-link {% block nav_team %}{% endblock %}">
+                <span class="nav-icon">🏆</span> {{ t.team_nav }}
+            </a>
+        </div>
+        <div class="nav-item">
             <a href="{% url 'agent_reports_portal' %}" class="nav-link {% block nav_agent_reports %}{% endblock %}">
                 <span class="nav-icon">📨</span> {{ t.reports_nav_agent }}
             </a>
@@ -252,6 +257,9 @@
     </a>
     <a href="{% url 'tx_network' %}" class="mob-nav-item {% block mob_network %}{% endblock %}">
         <span class="mob-icon">🌐</span><span class="mob-label">{{ t.network_nav }}</span>
+    </a>
+    <a href="{% url 'agent_team' %}" class="mob-nav-item {% block mob_team %}{% endblock %}">
+        <span class="mob-icon">🏆</span><span class="mob-label">{{ t.team_nav }}</span>
     </a>
     <a href="{% url 'agent_reports_portal' %}" class="mob-nav-item {% block mob_agent_reports %}{% endblock %}">
         <span class="mob-icon">📨</span><span class="mob-label">{{ t.reports_nav }}</span>

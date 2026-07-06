@@ -1,0 +1,179 @@
+{% extends 'layouts/app.html' %}
+{% load static bluesky_tags %}
+
+{% block title %}{{ t.team_title }}{% endblock %}
+{% block page_title %}{{ t.team_title }}{% endblock %}
+{% block page_subtitle %}{{ t.team_sub }}{% endblock %}
+{% block nav_team %}active{% endblock %}
+{% block mob_team %}active{% endblock %}
+
+{% block styles %}
+<style>
+/* ── Podium (top 3) ── */
+.team-podium {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 24px;
+}
+.podium-card {
+    background: var(--bg-card);
+    border: 1.5px solid var(--border);
+    border-radius: 16px;
+    padding: 22px 16px 18px;
+    text-align: center;
+    position: relative;
+    transition: transform .2s;
+}
+.podium-card:hover { transform: translateY(-3px); }
+.podium-card.rank-1 {
+    border-color: #f59e0b;
+    background: linear-gradient(180deg, rgba(245,158,11,.10), var(--bg-card) 55%);
+    order: 2;
+}
+.podium-card.rank-2 { order: 1; margin-top: 18px; }
+.podium-card.rank-3 { order: 3; margin-top: 18px; }
+.podium-medal { font-size: 26px; line-height: 1; margin-bottom: 6px; }
+.podium-avatar {
+    width: 64px; height: 64px; border-radius: 50%;
+    object-fit: cover; margin: 0 auto 10px;
+    display: block; border: 3px solid var(--bg-card);
+    box-shadow: 0 0 0 2px var(--border);
+}
+.podium-card.rank-1 .podium-avatar {
+    width: 80px; height: 80px;
+    box-shadow: 0 0 0 3px #f59e0b;
+}
+.podium-avatar-circle {
+    width: 64px; height: 64px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 10px; color: #fff; font-weight: 900; font-size: 20px;
+    background: linear-gradient(135deg, var(--sky-primary), var(--sky-secondary));
+}
+.podium-card.rank-1 .podium-avatar-circle { width: 80px; height: 80px; font-size: 24px; }
+.podium-name {
+    font-size: 13.5px; font-weight: 800; color: var(--text-primary);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.podium-country { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.podium-stat {
+    margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border);
+    font-size: 18px; font-weight: 900; color: var(--sky-primary);
+}
+.podium-stat span { display: block; font-size: 10.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .5px; margin-top: 2px; }
+.podium-you-badge {
+    position: absolute; top: 8px; right: 8px;
+    background: var(--sky-primary); color: #fff;
+    font-size: 9.5px; font-weight: 800; padding: 3px 7px; border-radius: 20px;
+    text-transform: uppercase; letter-spacing: .4px;
+}
+
+/* ── Full ranked list ── */
+.team-list { display: flex; flex-direction: column; gap: 8px; }
+.team-row {
+    display: flex; align-items: center; gap: 14px;
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 12px 16px;
+}
+.team-row.is-you { border-color: var(--sky-primary); background: rgba(2,132,199,.05); }
+.team-rank {
+    width: 26px; text-align: center; font-weight: 800; font-size: 13px;
+    color: var(--text-muted); flex-shrink: 0;
+}
+.team-row-avatar {
+    width: 42px; height: 42px; border-radius: 50%; object-fit: cover; flex-shrink: 0;
+}
+.team-row-avatar-circle {
+    width: 42px; height: 42px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 800; font-size: 14px;
+    background: linear-gradient(135deg, var(--sky-primary), var(--sky-secondary));
+}
+.team-row-info { flex: 1; min-width: 0; }
+.team-row-name {
+    font-size: 13.5px; font-weight: 700; color: var(--text-primary);
+    display: flex; align-items: center; gap: 6px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.team-row-sub { font-size: 11.5px; color: var(--text-muted); margin-top: 1px; }
+.team-row-stats { text-align: right; flex-shrink: 0; }
+.team-row-count { font-size: 15px; font-weight: 800; color: var(--sky-primary); }
+.team-row-vol { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+.you-pill {
+    background: var(--sky-primary); color: #fff; font-size: 9px; font-weight: 800;
+    padding: 2px 6px; border-radius: 20px; text-transform: uppercase;
+}
+
+@media (max-width: 640px) {
+    .team-podium { grid-template-columns: 1fr; }
+    .podium-card.rank-1, .podium-card.rank-2, .podium-card.rank-3 { order: initial; margin-top: 0; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+{% if board %}
+    {% with top3=board|slice:":3" %}
+    <div class="team-podium">
+        {% for row in top3 %}
+        <div class="podium-card rank-{{ row.rank }}">
+            {% if row.is_you %}<div class="podium-you-badge">{{ t.you_badge }}</div>{% endif %}
+            <div class="podium-medal">
+                {% if row.rank == 1 %}🥇{% elif row.rank == 2 %}🥈{% else %}🥉{% endif %}
+            </div>
+            {% if row.agent.photo_url %}
+                <img src="{{ row.agent.photo_url }}" alt="{{ row.agent.name }}" class="podium-avatar">
+            {% else %}
+                <div class="podium-avatar-circle">{{ row.agent.name|initials }}</div>
+            {% endif %}
+            <div class="podium-name">{{ row.agent.name }}</div>
+            <div class="podium-country">
+                {% if row.agent.country %}{{ row.agent.country.flag_emoji }} {{ row.agent.country.name|country_name:locale }}{% else %}—{% endif %}
+            </div>
+            <div class="podium-stat">{{ row.count }}<span>{{ t.tx_this_month }}</span></div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endwith %}
+{% endif %}
+
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">📋 {{ t.rank_label }}</div>
+    </div>
+    <div class="card-body">
+        {% if board %}
+        <div class="team-list">
+            {% for row in board %}
+            <div class="team-row {% if row.is_you %}is-you{% endif %}">
+                <div class="team-rank">#{{ row.rank }}</div>
+                {% if row.agent.photo_url %}
+                    <img src="{{ row.agent.photo_url }}" alt="{{ row.agent.name }}" class="team-row-avatar">
+                {% else %}
+                    <div class="team-row-avatar-circle">{{ row.agent.name|initials }}</div>
+                {% endif %}
+                <div class="team-row-info">
+                    <div class="team-row-name">
+                        {{ row.agent.name }}
+                        {% if row.is_you %}<span class="you-pill">{{ t.you_badge }}</span>{% endif %}
+                        {% if row.rank == 1 %}🏆{% endif %}
+                    </div>
+                    <div class="team-row-sub">
+                        {% if row.agent.country %}{{ row.agent.country.flag_emoji }} {{ row.agent.country.name|country_name:locale }} · {% endif %}{{ row.agent.agent_code|default:"—" }}
+                    </div>
+                </div>
+                <div class="team-row-stats">
+                    <div class="team-row-count">{{ row.count }}</div>
+                    <div class="team-row-vol">{{ row.volume|currency }} {{ row.agent.country.currency_code|default:"" }}</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p style="color:var(--text-muted);font-size:13.5px;text-align:center;padding:24px 0;">{{ t.no_other_agents }}</p>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

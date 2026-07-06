@@ -308,6 +308,39 @@ def dashboard(request):
 
 
 @agent_required
+def team_index(request):
+    user  = get_auth_user(request)
+    today = date.today()
+
+    agents = list(User.objects.filter(role='agent', status='active').select_related('country'))
+
+    # Ranked by transaction count this month — amounts aren't comparable
+    # across agents since each country trades in its own currency.
+    monthly_qs = (
+        Transaction.objects
+        .filter(status='completed', created_at__year=today.year, created_at__month=today.month, agent__in=agents)
+        .values('agent_id')
+        .annotate(c=Count('id'), v=Sum('amount'))
+    )
+    monthly_counts = {row['agent_id']: row['c'] for row in monthly_qs}
+    monthly_volume = {row['agent_id']: row['v'] for row in monthly_qs}
+
+    board = []
+    for a in agents:
+        board.append({
+            'agent':  a,
+            'count':  monthly_counts.get(a.id, 0),
+            'volume': float(monthly_volume.get(a.id) or 0),
+            'is_you': a.id == user.id,
+        })
+    board.sort(key=lambda row: row['count'], reverse=True)
+    for i, row in enumerate(board, start=1):
+        row['rank'] = i
+
+    return render(request, 'agent/team.html', {'board': board, 'auth_user': user})
+
+
+@agent_required
 def tx_index(request):
     user = get_auth_user(request)
     qs   = Transaction.objects.filter(agent=user).select_related('origin_country', 'destination_country').order_by('-created_at')
