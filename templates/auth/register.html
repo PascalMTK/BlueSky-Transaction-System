@@ -289,6 +289,7 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/twemoji@14.0.2/dist/twemoji.min.js" crossorigin="anonymous"></script>
+<script src="{% static 'js/photo-crop.js' %}"></script>
 <script>
 twemoji.parse(document.body,{folder:'svg',ext:'.svg'});
 
@@ -303,10 +304,7 @@ function updateRegFlag() {
     setTimeout(function(){ el.style.transform = 'scale(1)'; }, 200);
 }
 
-function previewPhoto(event) {
-    var file = event.target.files[0];
-    if (!file) return;
-
+function renderPhotoPreview(file) {
     var area        = document.getElementById('photoArea');
     var placeholder = document.getElementById('photoPlaceholder');
     var preview     = document.getElementById('photoPreview');
@@ -328,6 +326,25 @@ function previewPhoto(event) {
         sub.textContent   = size;
     };
     reader.readAsDataURL(file);
+}
+
+function previewPhoto(event) {
+    var input = event.target;
+    var file  = input.files[0];
+    if (!file) return;
+
+    BlueskyCrop.open(file, function(croppedFile) {
+        var dt = new DataTransfer();
+        dt.items.add(croppedFile);
+        input.files = dt.files;
+        renderPhotoPreview(croppedFile);
+    }, function() {
+        if (file.type === 'image/gif') {
+            renderPhotoPreview(file);
+        } else {
+            removePhoto(event);
+        }
+    });
 }
 
 function removePhoto(event) {

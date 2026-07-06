@@ -337,6 +337,7 @@
         </div>
     </div>
 </div>
+<script src="{% static 'js/photo-crop.js' %}"></script>
 <script>
 function togglePw(inputId, eyeId){
     var inp = document.getElementById(inputId);
@@ -346,9 +347,7 @@ function togglePw(inputId, eyeId){
 }
 
 /* ── Photo preview ─────────────────────────────────── */
-function previewPhoto(input) {
-    if (!input.files || !input.files[0]) return;
-    var file = input.files[0];
+function showPhotoPreview(file) {
     var reader = new FileReader();
     reader.onload = function(e) {
         document.getElementById('photoPreviewImg').src = e.target.result;
@@ -356,6 +355,23 @@ function previewPhoto(input) {
         document.getElementById('photoOverlay').classList.add('open');
     };
     reader.readAsDataURL(file);
+}
+
+function previewPhoto(input) {
+    if (!input.files || !input.files[0]) return;
+    var file = input.files[0];
+    BlueskyCrop.open(file, function(croppedFile) {
+        var dt = new DataTransfer();
+        dt.items.add(croppedFile);
+        input.files = dt.files;
+        showPhotoPreview(croppedFile);
+    }, function() {
+        if (file.type === 'image/gif') {
+            showPhotoPreview(file);
+        } else {
+            input.value = '';
+        }
+    });
 }
 
 function confirmPhoto() {
