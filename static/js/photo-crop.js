@@ -120,6 +120,10 @@
             var objectUrl = URL.createObjectURL(file);
 
             img.onload = function () {
+                // Make the viewport visible *before* measuring it — clientWidth
+                // reads 0 while the overlay is still display:none, which zeroed
+                // out the scale and left only the dark placeholder background.
+                overlay.classList.add('open');
                 var vp = viewport.clientWidth;
                 var baseScale = vp / Math.min(img.naturalWidth, img.naturalHeight);
                 state = {
@@ -131,7 +135,6 @@
                 };
                 zoom.value = 1;
                 applyTransform();
-                overlay.classList.add('open');
             };
             img.src = objectUrl;
 
