@@ -99,76 +99,93 @@
         state = null;
     }
 
+    function openWithFile(file, onConfirm, onCancel) {
+        if (file.type === 'image/gif') {
+            if (onCancel) onCancel();
+            return;
+        }
+        buildModal();
+        var overlay  = document.getElementById('pcropOverlay');
+        var img      = document.getElementById('pcropImg');
+        var viewport = document.getElementById('pcropViewport');
+        var zoom     = document.getElementById('pcropZoom');
+        var objectUrl = URL.createObjectURL(file);
+
+        img.onload = function () {
+            // Make the viewport visible *before* measuring it — clientWidth
+            // reads 0 while the overlay is still display:none, which zeroed
+            // out the scale and left only the dark placeholder background.
+            overlay.classList.add('open');
+            var vp = viewport.clientWidth;
+            var baseScale = vp / Math.min(img.naturalWidth, img.naturalHeight);
+            state = {
+                nw: img.naturalWidth, nh: img.naturalHeight,
+                vp: vp, baseScale: baseScale, scale: baseScale,
+                offX: (vp - img.naturalWidth * baseScale) / 2,
+                offY: (vp - img.naturalHeight * baseScale) / 2,
+                dragging: false, objectUrl: objectUrl
+            };
+            zoom.value = 1;
+            applyTransform();
+        };
+        img.src = objectUrl;
+
+        zoom.addEventListener('input', onZoom);
+        viewport.addEventListener('pointerdown', onPointerDown);
+        viewport.addEventListener('touchstart', onPointerDown, { passive: true });
+        window.addEventListener('pointermove', onPointerMove);
+        window.addEventListener('touchmove', onPointerMove, { passive: false });
+        window.addEventListener('pointerup', onPointerUp);
+        window.addEventListener('touchend', onPointerUp);
+
+        document.getElementById('pcropCancel').onclick = function () {
+            cleanup();
+            if (onCancel) onCancel();
+        };
+        document.getElementById('pcropConfirm').onclick = function () {
+            var canvas = document.createElement('canvas');
+            canvas.width = OUTPUT_SIZE; canvas.height = OUTPUT_SIZE;
+            var ctx = canvas.getContext('2d');
+            var sx = (0 - state.offX) / state.scale;
+            var sy = (0 - state.offY) / state.scale;
+            var sSize = state.vp / state.scale;
+            ctx.drawImage(img, sx, sy, sSize, sSize, 0, 0, OUTPUT_SIZE, OUTPUT_SIZE);
+            var mime = file.type === 'image/png' ? 'image/png'
+                     : file.type === 'image/webp' ? 'image/webp'
+                     : 'image/jpeg';
+            var ext = mime === 'image/png' ? '.png' : mime === 'image/webp' ? '.webp' : '.jpg';
+            canvas.toBlob(function (blob) {
+                var namePart = file.name.replace(/\.[^.]+$/, '');
+                var croppedFile = new File([blob], namePart + ext, { type: mime });
+                cleanup();
+                onConfirm(croppedFile);
+            }, mime, 0.9);
+        };
+    }
+
     window.BlueskyCrop = {
         /**
-         * Opens the crop modal for `file`. Calls onConfirm(croppedFile) once the
-         * user validates, or onCancel() if they cancel. Animated GIFs are passed
-         * straight to onCancel (signals "skip cropping") since rasterizing would
-         * flatten the animation to a single frame.
+         * Opens the crop modal for `source` — either a File (e.g. from a file
+         * input) or an image URL string (e.g. the user's already-uploaded
+         * avatar, fetched and converted to a File so the same crop pipeline
+         * applies). Calls onConfirm(croppedFile) once the user validates, or
+         * onCancel() if they cancel. Animated GIFs are passed straight to
+         * onCancel (signals "skip cropping") since rasterizing would flatten
+         * the animation to a single frame.
          */
-        open: function (file, onConfirm, onCancel) {
-            if (!file) return;
-            if (file.type === 'image/gif') {
-                if (onCancel) onCancel();
+        open: function (source, onConfirm, onCancel) {
+            if (!source) return;
+            if (typeof source === 'string') {
+                fetch(source, { credentials: 'same-origin' })
+                    .then(function (r) { return r.blob(); })
+                    .then(function (blob) {
+                        var name = source.split('/').pop().split('?')[0] || 'photo.jpg';
+                        openWithFile(new File([blob], name, { type: blob.type }), onConfirm, onCancel);
+                    })
+                    .catch(function () { if (onCancel) onCancel(); });
                 return;
             }
-            buildModal();
-            var overlay  = document.getElementById('pcropOverlay');
-            var img      = document.getElementById('pcropImg');
-            var viewport = document.getElementById('pcropViewport');
-            var zoom     = document.getElementById('pcropZoom');
-            var objectUrl = URL.createObjectURL(file);
-
-            img.onload = function () {
-                // Make the viewport visible *before* measuring it — clientWidth
-                // reads 0 while the overlay is still display:none, which zeroed
-                // out the scale and left only the dark placeholder background.
-                overlay.classList.add('open');
-                var vp = viewport.clientWidth;
-                var baseScale = vp / Math.min(img.naturalWidth, img.naturalHeight);
-                state = {
-                    nw: img.naturalWidth, nh: img.naturalHeight,
-                    vp: vp, baseScale: baseScale, scale: baseScale,
-                    offX: (vp - img.naturalWidth * baseScale) / 2,
-                    offY: (vp - img.naturalHeight * baseScale) / 2,
-                    dragging: false, objectUrl: objectUrl
-                };
-                zoom.value = 1;
-                applyTransform();
-            };
-            img.src = objectUrl;
-
-            zoom.addEventListener('input', onZoom);
-            viewport.addEventListener('pointerdown', onPointerDown);
-            viewport.addEventListener('touchstart', onPointerDown, { passive: true });
-            window.addEventListener('pointermove', onPointerMove);
-            window.addEventListener('touchmove', onPointerMove, { passive: false });
-            window.addEventListener('pointerup', onPointerUp);
-            window.addEventListener('touchend', onPointerUp);
-
-            document.getElementById('pcropCancel').onclick = function () {
-                cleanup();
-                if (onCancel) onCancel();
-            };
-            document.getElementById('pcropConfirm').onclick = function () {
-                var canvas = document.createElement('canvas');
-                canvas.width = OUTPUT_SIZE; canvas.height = OUTPUT_SIZE;
-                var ctx = canvas.getContext('2d');
-                var sx = (0 - state.offX) / state.scale;
-                var sy = (0 - state.offY) / state.scale;
-                var sSize = state.vp / state.scale;
-                ctx.drawImage(img, sx, sy, sSize, sSize, 0, 0, OUTPUT_SIZE, OUTPUT_SIZE);
-                var mime = file.type === 'image/png' ? 'image/png'
-                         : file.type === 'image/webp' ? 'image/webp'
-                         : 'image/jpeg';
-                var ext = mime === 'image/png' ? '.png' : mime === 'image/webp' ? '.webp' : '.jpg';
-                canvas.toBlob(function (blob) {
-                    var namePart = file.name.replace(/\.[^.]+$/, '');
-                    var croppedFile = new File([blob], namePart + ext, { type: mime });
-                    cleanup();
-                    onConfirm(croppedFile);
-                }, mime, 0.9);
-            };
+            openWithFile(source, onConfirm, onCancel);
         }
     };
 })();

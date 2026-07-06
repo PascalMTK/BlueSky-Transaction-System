@@ -267,8 +267,8 @@
             <div class="photo-upload-area" id="photoArea" onclick="document.getElementById('photoInput').click()">
                 <!-- Placeholder visible before selection -->
                 <div class="photo-avatar-placeholder" id="photoPlaceholder">📷</div>
-                <!-- Preview img, hidden until a file is chosen -->
-                <img id="photoPreview" class="photo-avatar" src="" alt="preview" style="display:none;">
+                <!-- Preview img, hidden until a file is chosen — click to re-adjust the crop -->
+                <img id="photoPreview" class="photo-avatar" src="" alt="preview" style="display:none;cursor:pointer;" title="{{ t.crop_photo|default:'Recadrer' }}" onclick="event.stopPropagation(); reCropSelectedPhoto();">
                 <div class="photo-text">
                     <strong id="photoLabel">{{ t.choose_photo }}</strong>
                     <span id="photoSub">{{ t.photo_sub_hint }}</span>
@@ -344,6 +344,19 @@ function previewPhoto(event) {
         } else {
             removePhoto(event);
         }
+    });
+}
+
+/* Re-open the cropper on the photo already selected, before submitting */
+function reCropSelectedPhoto() {
+    var input = document.getElementById('photoInput');
+    var file  = input.files[0];
+    if (!file) return;
+    BlueskyCrop.open(file, function(croppedFile) {
+        var dt = new DataTransfer();
+        dt.items.add(croppedFile);
+        input.files = dt.files;
+        renderPhotoPreview(croppedFile);
     });
 }
 
