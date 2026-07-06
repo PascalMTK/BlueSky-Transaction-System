@@ -372,9 +372,11 @@ function previewPhoto(input) {
         var dt = new DataTransfer();
         dt.items.add(croppedFile);
         input.files = dt.files;
-        showPhotoPreview(croppedFile);
+        document.getElementById('photoForm').submit();
     }, function() {
         if (file.type === 'image/gif') {
+            // GIFs skip cropping (would flatten the animation) — fall back
+            // to the plain preview/confirm step instead.
             showPhotoPreview(file);
         } else {
             input.value = '';
@@ -389,7 +391,7 @@ function editExistingPhoto() {
         var dt = new DataTransfer();
         dt.items.add(croppedFile);
         input.files = dt.files;
-        showPhotoPreview(croppedFile);
+        document.getElementById('photoForm').submit();
     });
 }
 
