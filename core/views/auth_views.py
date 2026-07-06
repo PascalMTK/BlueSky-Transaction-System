@@ -85,13 +85,13 @@ def _notify_agent_pending(user):
         print(f'[BLUESKY] Pending notify error: {e}')
 
 
-def _notify_admin_pending_login(user):
-    """Send email to all admins when a pending user tries to log in."""
+def _notify_admin_new_registration(user):
+    """Send email to all admins when a new agent registers and needs validation."""
     admin_emails = list(User.objects.filter(role='admin', status='active').values_list('email', flat=True))
     if not admin_emails:
         return
-    subject = f'[BLUESKY] Connexion en attente — {user.name}'
-    body = f"""Un utilisateur en attente de validation a tenté de se connecter.
+    subject = f'[BLUESKY] Nouvelle inscription en attente — {user.name}'
+    body = f"""Un nouvel utilisateur vient de s'inscrire et attend une validation.
 
 Nom    : {user.name}
 Email  : {user.email}
@@ -109,12 +109,12 @@ Connectez-vous au panneau d'administration pour valider ou rejeter ce compte.
     <div style="background:linear-gradient(135deg,#f59e0b,#d97706);padding:28px 32px;text-align:center;">
       <div style="font-size:36px;margin-bottom:8px;">⏳</div>
       <div style="color:white;font-size:20px;font-weight:900;letter-spacing:.5px;">BLUESKY TRANSACTIONS</div>
-      <div style="color:rgba(255,255,255,.8);font-size:13px;margin-top:4px;">Tentative de connexion — compte en attente</div>
+      <div style="color:rgba(255,255,255,.8);font-size:13px;margin-top:4px;">Nouvelle inscription — validation requise</div>
     </div>
     <div style="padding:32px;">
       <p style="color:#334155;font-size:15px;margin:0 0 16px;">Bonjour Administrateur,</p>
       <p style="color:#64748b;font-size:14px;margin:0 0 24px;line-height:1.6;">
-        L'utilisateur suivant a tenté de se connecter mais son compte est encore <strong>en attente de validation</strong>.
+        L'utilisateur suivant vient de s'inscrire et son compte est <strong>en attente de validation</strong>.
       </p>
       <table style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:24px;">
         <tr style="background:#f8fafc;"><td style="padding:10px 14px;color:#64748b;font-weight:600;border-radius:4px;">Nom</td><td style="padding:10px 14px;color:#1e293b;">{user.name}</td></tr>
@@ -157,7 +157,6 @@ def login_view(request):
             if user.check_password(password):
                 if user.status == 'pending':
                     messages.error(request, 'Votre compte est en attente de validation.')
-                    _notify_admin_pending_login(user)
                 elif user.status == 'inactive':
                     messages.error(request, 'Votre compte a été désactivé.')
                 else:
@@ -227,6 +226,7 @@ def register_view(request):
                     user.save()
 
             _notify_agent_pending(user)
+            _notify_admin_new_registration(user)
             messages.success(request, 'Compte créé avec succès. En attente de validation par l\'administrateur.')
             return redirect('login')
     return render(request, 'auth/register.html', {'countries': countries})
