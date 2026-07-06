@@ -5,6 +5,7 @@ from django.conf import settings
 from django.core.mail import send_mail
 from django.views.decorators.cache import never_cache
 from core.models import User, Country
+from core.mailer import send_async
 import bcrypt
 
 _PHOTO_EXTS = {'.jpg', '.jpeg', '.png', '.webp'}
@@ -228,8 +229,8 @@ def register_view(request):
                     user.profile_photo = rel
                     user.save()
 
-            _notify_agent_pending(user)
-            _notify_admin_new_registration(user)
+            send_async(_notify_agent_pending, user)
+            send_async(_notify_admin_new_registration, user)
             messages.success(request, 'Compte créé avec succès. En attente de validation par l\'administrateur.')
             return redirect('login')
     return render(request, 'auth/register.html', {'countries': countries})

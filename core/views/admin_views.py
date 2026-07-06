@@ -12,6 +12,7 @@ from django.core.mail import send_mail
 from core.models import User, Country, Transaction, AgentReport
 from core.decorators import admin_required, get_auth_user
 from core.views.profile_views import save_profile_photo
+from core.mailer import send_async
 
 
 def _notify_agent_activated(agent):
@@ -292,7 +293,7 @@ def agent_status(request, agent_id):
             agent.status = status
             agent.save()
             if status == 'active' and was_pending:
-                _notify_agent_activated(agent)
+                send_async(_notify_agent_activated, agent)
             messages.success(request, f'Statut de {agent.name} mis à jour.')
     return redirect('admin_agents')
 
