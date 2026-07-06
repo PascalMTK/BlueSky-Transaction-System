@@ -3,6 +3,7 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.conf import settings
 from django.core.mail import send_mail
+from django.views.decorators.cache import never_cache
 from core.models import User, Country
 import bcrypt
 
@@ -146,6 +147,7 @@ Connectez-vous au panneau d'administration pour valider ou rejeter ce compte.
         print(f'[BLUESKY] Admin notify error: {e}')
 
 
+@never_cache
 def login_view(request):
     if request.session.get('user_id'):
         return redirect('welcome')
@@ -176,6 +178,7 @@ def logout_view(request):
     return redirect('login')
 
 
+@never_cache
 def register_view(request):
     if request.session.get('user_id'):
         return redirect('welcome')
