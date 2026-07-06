@@ -20,8 +20,6 @@ Created by **Pascal Mutaka**
 - Email: vandervloger@gmail.com
 - Deployed: [pascal02.pythonanywhere.com](https://pascal02.pythonanywhere.com)
 
-Used [Claude Code](https://claude.com/claude-code) as an assistant for some debugging along the way.
-
 ---
 
 ## Features
