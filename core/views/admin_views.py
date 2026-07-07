@@ -14,6 +14,99 @@ from core.decorators import admin_required, get_auth_user
 from core.views.profile_views import save_profile_photo
 from core.mailer import send_async
 
+# Colors inspired by each country's national flag — used to give every
+# per-country stat (dashboard breakdown, statistics page) a consistent,
+# recognizable color instead of plain black text.
+COUNTRY_COLORS = {
+    # West Africa
+    'CI': '#F77F00',  # Ivory Coast — orange
+    'SN': '#00853F',  # Senegal — green
+    'ML': '#CE1126',  # Mali — red
+    'GN': '#FCD116',  # Guinea — yellow
+    'BF': '#EF2B2D',  # Burkina Faso — red
+    'GH': '#006B3F',  # Ghana — green
+    'NG': '#008751',  # Nigeria — green
+    'BJ': '#008751',  # Benin — green
+    'TG': '#D21034',  # Togo — red
+    'NE': '#E05206',  # Niger — orange
+    'MR': '#006233',  # Mauritania — green
+    'LR': '#BF0A30',  # Liberia — red
+    'SL': '#1EB53A',  # Sierra Leone — green
+    'GM': '#3A7728',  # Gambia — green
+    'GW': '#CE1126',  # Guinea-Bissau — red
+    'CV': '#003893',  # Cape Verde — dark blue
+    # Central Africa
+    'CD': '#007FFF',  # DRC Congo — sky blue
+    'CG': '#009543',  # Congo-Brazzaville — green
+    'CM': '#007A5E',  # Cameroon — forest green
+    'GA': '#009E60',  # Gabon — green
+    'GQ': '#3E9A00',  # Equatorial Guinea — green
+    'CF': '#003082',  # Central African Republic — blue
+    'TD': '#002664',  # Chad — dark blue
+    'ST': '#12AD2B',  # São Tomé — green
+    # East Africa
+    'KE': '#006600',  # Kenya — dark green
+    'TZ': '#1EB53A',  # Tanzania — green
+    'UG': '#FCDC04',  # Uganda — yellow
+    'RW': '#20603D',  # Rwanda — dark green
+    'BI': '#CE1126',  # Burundi — red
+    'ET': '#078930',  # Ethiopia — green
+    'SO': '#4189DD',  # Somalia — blue
+    'DJ': '#6AB2E7',  # Djibouti — light blue
+    'ER': '#4189DD',  # Eritrea — blue
+    'SS': '#078930',  # South Sudan — green
+    # Southern Africa
+    'ZA': '#007A4D',  # South Africa — green
+    'ZW': '#006400',  # Zimbabwe — dark green
+    'ZM': '#198A00',  # Zambia — green
+    'MW': '#C61B2D',  # Malawi — red (black removed, invisible on dark bg)
+    'MZ': '#009A44',  # Mozambique — green
+    'MG': '#FC3D32',  # Madagascar — red
+    'AO': '#CC0000',  # Angola — red
+    'NA': '#003580',  # Namibia — blue
+    'BW': '#75AADB',  # Botswana — blue
+    'LS': '#009543',  # Lesotho — green
+    'SZ': '#3E5EB9',  # Eswatini — blue
+    'MU': '#EA2839',  # Mauritius — red
+    'SC': '#003F87',  # Seychelles — blue
+    'KM': '#3A75C4',  # Comoros — blue
+    # North Africa
+    'MA': '#C1272D',  # Morocco — red
+    'DZ': '#006233',  # Algeria — green
+    'TN': '#E70013',  # Tunisia — red
+    'EG': '#C09300',  # Egypt — gold
+    'LY': '#239E46',  # Libya — green
+    'SD': '#D21034',  # Sudan — red
+    # Europe
+    'FR': '#0055A4',  # France — blue
+    'GB': '#CF142B',  # UK — red
+    'BE': '#FAE042',  # Belgium — yellow
+    'DE': '#FFCE00',  # Germany — gold
+    'PT': '#006600',  # Portugal — green
+    'ES': '#AA151B',  # Spain — red
+    'IT': '#009246',  # Italy — green
+    'CH': '#FF0000',  # Switzerland — red
+    'NL': '#AE1C28',  # Netherlands — red
+    # Americas
+    'US': '#B22234',  # USA — red
+    'CA': '#FF0000',  # Canada — red
+    'BR': '#009C3B',  # Brazil — green
+    # Asia & Middle East
+    'CN': '#DE2910',  # China — red
+    'AE': '#00732F',  # UAE — green
+    'SA': '#006C35',  # Saudi Arabia — green
+    'IN': '#FF9933',  # India — orange
+    'JP': '#BC002D',  # Japan — red
+}
+DEFAULT_PALETTE = [
+    '#0284c7','#7c3aed','#14b8a6','#f59e0b','#ef4444',
+    '#22c55e','#f97316','#8b5cf6','#06b6d4','#ec4899',
+]
+
+
+def _country_color(code, index):
+    return COUNTRY_COLORS.get((code or '').upper(), DEFAULT_PALETTE[index % len(DEFAULT_PALETTE)])
+
 
 def _notify_agent_activated(agent):
     """Send activation email to agent when admin activates their account."""
@@ -128,93 +221,6 @@ def dashboard(request):
             'count':     r.get('count') or 0,
         })
 
-    # Colors inspired by each country's national flag
-    COUNTRY_COLORS = {
-        # West Africa
-        'CI': '#F77F00',  # Ivory Coast — orange
-        'SN': '#00853F',  # Senegal — green
-        'ML': '#CE1126',  # Mali — red
-        'GN': '#FCD116',  # Guinea — yellow
-        'BF': '#EF2B2D',  # Burkina Faso — red
-        'GH': '#006B3F',  # Ghana — green
-        'NG': '#008751',  # Nigeria — green
-        'BJ': '#008751',  # Benin — green
-        'TG': '#D21034',  # Togo — red
-        'NE': '#E05206',  # Niger — orange
-        'MR': '#006233',  # Mauritania — green
-        'LR': '#BF0A30',  # Liberia — red
-        'SL': '#1EB53A',  # Sierra Leone — green
-        'GM': '#3A7728',  # Gambia — green
-        'GW': '#CE1126',  # Guinea-Bissau — red
-        'CV': '#003893',  # Cape Verde — dark blue
-        # Central Africa
-        'CD': '#007FFF',  # DRC Congo — sky blue
-        'CG': '#009543',  # Congo-Brazzaville — green
-        'CM': '#007A5E',  # Cameroon — forest green
-        'GA': '#009E60',  # Gabon — green
-        'GQ': '#3E9A00',  # Equatorial Guinea — green
-        'CF': '#003082',  # Central African Republic — blue
-        'TD': '#002664',  # Chad — dark blue
-        'ST': '#12AD2B',  # São Tomé — green
-        # East Africa
-        'KE': '#006600',  # Kenya — dark green
-        'TZ': '#1EB53A',  # Tanzania — green
-        'UG': '#FCDC04',  # Uganda — yellow
-        'RW': '#20603D',  # Rwanda — dark green
-        'BI': '#CE1126',  # Burundi — red
-        'ET': '#078930',  # Ethiopia — green
-        'SO': '#4189DD',  # Somalia — blue
-        'DJ': '#6AB2E7',  # Djibouti — light blue
-        'ER': '#4189DD',  # Eritrea — blue
-        'SS': '#078930',  # South Sudan — green
-        # Southern Africa
-        'ZA': '#007A4D',  # South Africa — green
-        'ZW': '#006400',  # Zimbabwe — dark green
-        'ZM': '#198A00',  # Zambia — green
-        'MW': '#C61B2D',  # Malawi — red (black removed, invisible on dark bg)
-        'MZ': '#009A44',  # Mozambique — green
-        'MG': '#FC3D32',  # Madagascar — red
-        'AO': '#CC0000',  # Angola — red
-        'NA': '#003580',  # Namibia — blue
-        'BW': '#75AADB',  # Botswana — blue
-        'LS': '#009543',  # Lesotho — green
-        'SZ': '#3E5EB9',  # Eswatini — blue
-        'MU': '#EA2839',  # Mauritius — red
-        'SC': '#003F87',  # Seychelles — blue
-        'KM': '#3A75C4',  # Comoros — blue
-        # North Africa
-        'MA': '#C1272D',  # Morocco — red
-        'DZ': '#006233',  # Algeria — green
-        'TN': '#E70013',  # Tunisia — red
-        'EG': '#C09300',  # Egypt — gold
-        'LY': '#239E46',  # Libya — green
-        'SD': '#D21034',  # Sudan — red
-        # Europe
-        'FR': '#0055A4',  # France — blue
-        'GB': '#CF142B',  # UK — red
-        'BE': '#FAE042',  # Belgium — yellow
-        'DE': '#FFCE00',  # Germany — gold
-        'PT': '#006600',  # Portugal — green
-        'ES': '#AA151B',  # Spain — red
-        'IT': '#009246',  # Italy — green
-        'CH': '#FF0000',  # Switzerland — red
-        'NL': '#AE1C28',  # Netherlands — red
-        # Americas
-        'US': '#B22234',  # USA — red
-        'CA': '#FF0000',  # Canada — red
-        'BR': '#009C3B',  # Brazil — green
-        # Asia & Middle East
-        'CN': '#DE2910',  # China — red
-        'AE': '#00732F',  # UAE — green
-        'SA': '#006C35',  # Saudi Arabia — green
-        'IN': '#FF9933',  # India — orange
-        'JP': '#BC002D',  # Japan — red
-    }
-    DEFAULT_PALETTE = [
-        '#0284c7','#7c3aed','#14b8a6','#f59e0b','#ef4444',
-        '#22c55e','#f97316','#8b5cf6','#06b6d4','#ec4899',
-    ]
-
     # Transactions by origin country (donut chart)
     country_qs = (
         Transaction.objects
@@ -229,8 +235,7 @@ def dashboard(request):
             'code':   (r['origin_country__code'] or '').upper(),
             'count':  r['tx_count'],
             'amount': float(r['tx_amount'] or 0),
-            'color':  COUNTRY_COLORS.get((r['origin_country__code'] or '').upper(),
-                          DEFAULT_PALETTE[i % len(DEFAULT_PALETTE)]),
+            'color':  _country_color(r['origin_country__code'], i),
         }
         for i, r in enumerate(country_qs)
     ]
@@ -608,10 +613,33 @@ def statistics(request):
             'pct':    round((cnt / total_tx_all * 100), 1) if total_tx_all else 0,
         })
 
+    # Per-country breakdown — colored per country (flag color) instead of
+    # plain black text, same palette as the dashboard's country panel.
+    country_qs = (
+        Transaction.objects.filter(status='completed')
+        .values('origin_country__name', 'origin_country__flag_emoji', 'origin_country__code')
+        .annotate(tx_count=Count('id'), tx_amount=Sum('amount'))
+        .order_by('-tx_count')
+    )
+    completed_total = sum(r['tx_count'] for r in country_qs) or 0
+    country_breakdown = [
+        {
+            'name':   r['origin_country__name'] or '?',
+            'flag':   r['origin_country__flag_emoji'] or '🌍',
+            'code':   (r['origin_country__code'] or '').upper(),
+            'count':  r['tx_count'],
+            'amount': float(r['tx_amount'] or 0),
+            'pct':    round((r['tx_count'] / completed_total * 100), 1) if completed_total else 0,
+            'color':  _country_color(r['origin_country__code'], i),
+        }
+        for i, r in enumerate(country_qs)
+    ]
+
     return render(request, 'admin/statistics.html', {
         'yearly_data':          yearly_data,
         'current_year_monthly': current_year_monthly,
         'status_breakdown':     status_breakdown,
+        'country_breakdown':    country_breakdown,
         'total_tx_all':         total_tx_all,
         'max_amount':           max_amount,
         'current_year':         today.year,

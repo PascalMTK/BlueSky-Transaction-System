@@ -358,6 +358,7 @@ FR = {
     'tx_by_country':         'Transactions par pays',
     'tx_by_country_sub':     'Répartition des envois par pays d\'origine',
     'country_breakdown':     'Détail par pays',
+    'country_breakdown_sub': 'Transactions complétées, réparties par pays d\'origine',
 
     # ── Profile
     'profile_title':         'Mon profil',
@@ -869,6 +870,7 @@ EN = {
     'tx_by_country':         'Transactions by country',
     'tx_by_country_sub':     'Distribution of transfers by origin country',
     'country_breakdown':     'Country breakdown',
+    'country_breakdown_sub': 'Completed transactions, split by origin country',
 
     # ── Profile
     'profile_title':         'My profile',
