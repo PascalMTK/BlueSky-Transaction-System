@@ -103,32 +103,89 @@
 .sp-completed { background:rgba(34,197,94,.12); color:#22c55e; border:1px solid rgba(34,197,94,.2); }
 .sp-pending   { background:rgba(245,158,11,.12); color:#f59e0b; border:1px solid rgba(245,158,11,.2); }
 .sp-cancelled { background:rgba(239,68,68,.1);  color:#ef4444;  border:1px solid rgba(239,68,68,.15); }
+
+/* ── Agent hero — "transfer ticket" look: gradient + banknote hatch + torn edge ── */
+.agent-hero {
+    position: relative;
+    overflow: hidden;
+    border-radius: 20px;
+    padding: 26px 28px;
+    margin-bottom: 22px;
+    background: linear-gradient(135deg, #002d6e 0%, #0055b3 45%, #0284C7 100%);
+    box-shadow: 0 14px 36px rgba(2,132,199,.3);
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 18px;
+}
+.agent-hero::before {
+    content: ''; position: absolute; inset: 0; z-index: 0;
+    background-image: repeating-linear-gradient(45deg, rgba(255,255,255,.055) 0 2px, transparent 2px 15px);
+}
+.agent-hero::after {
+    content: ''; position: absolute; top: -60px; right: -40px; z-index: 0;
+    width: 220px; height: 220px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,255,255,.09), transparent 70%);
+}
+.agent-hero-left { display: flex; align-items: center; gap: 16px; position: relative; z-index: 1; }
+.agent-hero-avatar {
+    width: 56px; height: 56px; border-radius: 50%; flex-shrink: 0;
+    background: rgba(255,255,255,.16); border: 2px solid rgba(255,255,255,.35);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 22px; font-weight: 900;
+    box-shadow: 0 4px 14px rgba(0,0,0,.22);
+}
+.agent-hero-eyebrow {
+    font-size: 11px; font-weight: 700; color: rgba(255,255,255,.65);
+    text-transform: uppercase; letter-spacing: 1px; margin-bottom: 3px;
+}
+.agent-hero-name { font-size: 21px; font-weight: 900; color: #fff; line-height: 1.1; }
+.agent-hero-code {
+    background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.28);
+    border-radius: 7px; padding: 3px 9px; font-size: 11.5px; font-weight: 700;
+    color: #fff; font-family: monospace;
+}
+.agent-hero-country { font-size: 12px; color: rgba(255,255,255,.8); }
+.agent-hero-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; position: relative; z-index: 1; }
+.agent-hero-actions .btn-primary { background: #fff; color: var(--sky-primary); box-shadow: 0 6px 18px rgba(0,0,0,.18); }
+.agent-hero-actions .btn-primary:hover { background: #f0f9ff; }
+.agent-hero-actions .btn-secondary {
+    background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.32); color: #fff;
+}
+.agent-hero-actions .btn-secondary:hover { background: rgba(255,255,255,.2); }
+@media (max-width: 480px) {
+    .agent-hero { padding: 20px 18px; border-radius: 16px; }
+    .agent-hero-avatar { width: 46px; height: 46px; font-size: 18px; }
+    .agent-hero-name { font-size: 17px; }
+}
 </style>
 {% endblock %}
 
 {% block content %}
 
 <!-- Welcome Banner -->
-<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;background:var(--bg-card);border-radius:16px;padding:22px 26px;margin-bottom:22px;border:1px solid var(--border);box-shadow:var(--shadow);" class="welcome-banner">
-    <div style="display:flex;align-items:center;gap:16px;">
-        <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--sky-primary),var(--sky-secondary));display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;font-weight:900;flex-shrink:0;box-shadow:0 4px 14px rgba(2,132,199,.3);">
-            {{ auth_user.name|initials }}
+<div class="agent-hero">
+    <div class="agent-hero-left">
+        <div class="agent-hero-avatar">
+            {% if auth_user.photo_url %}
+                <img src="{{ auth_user.photo_url }}" alt="{{ auth_user.name }}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
+            {% else %}
+                {{ auth_user.name|initials }}
+            {% endif %}
         </div>
         <div>
-            <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:3px;">{{ t.my_space }}</div>
-            <div style="font-size:20px;font-weight:900;color:var(--text-heading);line-height:1.1;">{{ auth_user.name }}</div>
+            <div class="agent-hero-eyebrow">{{ t.my_space }}</div>
+            <div class="agent-hero-name">{{ auth_user.name }}</div>
             <div style="display:flex;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap;">
                 {% if auth_user.agent_code %}
-                <span style="background:rgba(2,132,199,.1);border:1px solid rgba(2,132,199,.2);border-radius:7px;padding:3px 9px;font-size:11.5px;font-weight:700;color:var(--sky-primary);font-family:monospace;">🔑 {{ auth_user.agent_code }}</span>
+                <span class="agent-hero-code">🔑 {{ auth_user.agent_code }}</span>
                 {% endif %}
                 <span class="badge-status status-active" style="font-size:11px;">✅ {{ t.status_active }}</span>
                 {% if auth_user.country %}
-                <span style="font-size:12px;color:var(--text-muted);">{{ auth_user.country.flag_emoji }} {{ auth_user.country.name|country_name:locale }}</span>
+                <span class="agent-hero-country">{{ auth_user.country.flag_emoji }} {{ auth_user.country.name|country_name:locale }}</span>
                 {% endif %}
             </div>
         </div>
     </div>
-    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+    <div class="agent-hero-actions">
         <a href="{% url 'agent_export_csv' %}" class="btn btn-secondary">📥 {{ t.export_csv }}</a>
         <a href="{% url 'tx_create' %}" class="btn btn-primary btn-lg">➕ {{ t.new_transaction }}</a>
     </div>

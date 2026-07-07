@@ -77,10 +77,87 @@
     .kpi-grid { grid-template-columns: 1fr; }
     .kpi-card { padding: 14px 12px; }
 }
+
+/* ── Admin hero — "control center" look: dark navy + network-grid dots ── */
+.admin-hero {
+    position: relative;
+    overflow: hidden;
+    border-radius: 14px;
+    padding: 22px 28px;
+    margin-bottom: 20px;
+    background: linear-gradient(120deg, #050b18 0%, #0b1f3a 55%, #0e2a52 100%);
+    box-shadow: 0 14px 36px rgba(2,20,50,.4);
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 18px;
+    border: 1px solid rgba(56,189,248,.15);
+}
+.admin-hero::before {
+    content: ''; position: absolute; inset: 0; z-index: 0;
+    background-image: radial-gradient(rgba(56,189,248,.25) 1px, transparent 1px);
+    background-size: 18px 18px;
+    -webkit-mask-image: radial-gradient(ellipse at 20% 50%, #000 0%, transparent 75%);
+    mask-image: radial-gradient(ellipse at 20% 50%, #000 0%, transparent 75%);
+}
+.admin-hero-left { position: relative; z-index: 1; }
+.admin-hero-live {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 10.5px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase;
+    color: #34d399; margin-bottom: 6px;
+}
+.admin-hero-live-dot {
+    width: 7px; height: 7px; border-radius: 50%; background: #34d399;
+    box-shadow: 0 0 0 rgba(52,211,153,.6); animation: heroPulse 1.8s infinite;
+}
+@keyframes heroPulse {
+    0%   { box-shadow: 0 0 0 0 rgba(52,211,153,.55); }
+    70%  { box-shadow: 0 0 0 7px rgba(52,211,153,0); }
+    100% { box-shadow: 0 0 0 0 rgba(52,211,153,0); }
+}
+.admin-hero-title { font-size: 19px; font-weight: 900; color: #fff; letter-spacing: -.3px; }
+.admin-hero-sub { font-size: 12px; color: rgba(148,197,255,.65); margin-top: 3px; }
+.admin-hero-stats { display: flex; gap: 22px; position: relative; z-index: 1; flex-wrap: wrap; }
+.admin-hero-stat { text-align: right; }
+.admin-hero-stat-val {
+    font-size: 22px; font-weight: 900; color: #fff; font-family: 'SF Mono', 'Consolas', monospace;
+    line-height: 1;
+}
+.admin-hero-stat-label {
+    font-size: 10px; font-weight: 700; color: rgba(148,197,255,.6);
+    text-transform: uppercase; letter-spacing: .6px; margin-top: 5px;
+}
+@media (max-width: 640px) {
+    .admin-hero { padding: 18px 20px; }
+    .admin-hero-stats { gap: 16px; width: 100%; justify-content: space-between; }
+    .admin-hero-stat { text-align: left; }
+    .admin-hero-stat-val { font-size: 18px; }
+}
 </style>
 {% endblock %}
 
 {% block content %}
+
+<!-- Control center hero -->
+<div class="admin-hero">
+    <div class="admin-hero-left">
+        <div class="admin-hero-live"><span class="admin-hero-live-dot"></span> {{ t.live_label }}</div>
+        <div class="admin-hero-title">🛰️ {{ t.dashboard }}</div>
+        <div class="admin-hero-sub">{{ t.overview }} — {{ stats.countries_active }} {{ t.countries_active }}</div>
+    </div>
+    <div class="admin-hero-stats">
+        <div class="admin-hero-stat">
+            <div class="admin-hero-stat-val">{{ stats.active_agents }}</div>
+            <div class="admin-hero-stat-label">{{ t.active_agents }}</div>
+        </div>
+        <div class="admin-hero-stat">
+            <div class="admin-hero-stat-val">{{ stats.transactions_today }}</div>
+            <div class="admin-hero-stat-label">{{ t.tx_today }}</div>
+        </div>
+        <div class="admin-hero-stat">
+            <div class="admin-hero-stat-val">{{ stats.pending_agents }}</div>
+            <div class="admin-hero-stat-label">{{ t.pending_agents }}</div>
+        </div>
+    </div>
+</div>
 
 <!-- Agents Management Block -->
 {% if pending_agents_list %}
