@@ -16,6 +16,12 @@
     --sky-light:     #BAE6FD;
     --sky-dark:      #0369A1;
     --sky-deeper:    #075985;
+    /* Hero/cover gradient stops — used by big blue banners (agent dashboard
+       welcome banner, profile cover, transaction-form step headers) so they
+       can shift tone in dark mode instead of staying the exact daytime blue. */
+    --hero-1:        #002d6e;
+    --hero-2:        #0055b3;
+    --hero-3:        #0284C7;
     --gold:          #F59E0B;
     --gold-light:    #FCD34D;
     --success:       #10B981;
@@ -89,6 +95,11 @@
     --shadow-sm:     0 1px 3px rgba(0,0,0,0.4);
     --shadow:        0 4px 20px rgba(0,0,0,0.4);
     --shadow-lg:     0 10px 40px rgba(0,0,0,0.6);
+
+    /* Dark mode: deep midnight-to-teal instead of the daytime sky blue */
+    --hero-1:        #020617;
+    --hero-2:        #0c2d48;
+    --hero-3:        #0f766e;
 }
 
 /* ============================================================

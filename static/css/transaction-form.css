@@ -12,12 +12,17 @@
     padding: 12px 16px;
     background: linear-gradient(135deg, rgba(2,132,199,.08), rgba(14,165,233,.05));
     border-bottom: 1.5px solid var(--border);
+    transition: background .3s;
+}
+[data-theme="dark"] .tx-details-hdr {
+    background: linear-gradient(135deg, rgba(12,45,72,.35), rgba(15,118,110,.15));
 }
 .tx-details-hdr-icon {
     width: 32px; height: 32px; border-radius: 9px;
-    background: linear-gradient(135deg, var(--sky-primary), var(--sky-secondary));
+    background: linear-gradient(135deg, var(--hero-1), var(--hero-3));
     display: flex; align-items: center; justify-content: center;
     font-size: 16px; flex-shrink: 0;
+    transition: background .3s;
 }
 .tx-details-hdr-label {
     font-size: 12px; font-weight: 800; color: var(--text-primary);
