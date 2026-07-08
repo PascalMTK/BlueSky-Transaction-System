@@ -1,4 +1,8 @@
+from datetime import timedelta
 from django.db import models
+from django.utils import timezone
+
+ONLINE_THRESHOLD = timedelta(minutes=5)
 
 
 class Country(models.Model):
@@ -47,6 +51,7 @@ class User(models.Model):
     address       = models.CharField(max_length=255, null=True, blank=True)
     id_number     = models.CharField(max_length=50, null=True, blank=True)
     profile_photo = models.CharField(max_length=255, null=True, blank=True)
+    last_seen     = models.DateTimeField(null=True, blank=True)
     created_at    = models.DateTimeField(auto_now_add=True)
     updated_at    = models.DateTimeField(auto_now=True)
 
@@ -65,6 +70,9 @@ class User(models.Model):
 
     def is_active_user(self):
         return self.status == self.STATUS_ACTIVE
+
+    def is_online(self):
+        return bool(self.last_seen) and (timezone.now() - self.last_seen) < ONLINE_THRESHOLD
 
     def initials(self):
         return self.name[:2].upper()

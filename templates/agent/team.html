@@ -108,6 +108,20 @@
     .team-podium { grid-template-columns: 1fr; }
     .podium-card.rank-1, .podium-card.rank-2, .podium-card.rank-3 { order: initial; margin-top: 0; }
 }
+
+/* ── Online presence dot ── */
+.avatar-wrap { position: relative; display: inline-block; flex-shrink: 0; }
+.online-dot {
+    position: absolute; bottom: 1px; right: 1px;
+    width: 11px; height: 11px; border-radius: 50%;
+    background: var(--text-muted); border: 2px solid var(--bg-card);
+}
+.online-dot.is-online { background: #22c55e; }
+.podium-avatar-wrap .online-dot { width: 13px; height: 13px; bottom: 2px; right: 2px; }
+.online-label { font-size: 10.5px; font-weight: 700; margin-top: 4px; color: var(--text-muted); }
+.online-label.is-online { color: #22c55e; }
+.team-row-online { font-size: 10.5px; font-weight: 700; color: var(--text-muted); display: flex; align-items: center; gap: 4px; }
+.team-row-online.is-online { color: #22c55e; }
 </style>
 {% endblock %}
 
@@ -122,14 +136,20 @@
             <div class="podium-medal">
                 {% if row.rank == 1 %}🥇{% elif row.rank == 2 %}🥈{% else %}🥉{% endif %}
             </div>
-            {% if row.agent.photo_url %}
-                <img src="{{ row.agent.photo_url }}" alt="{{ row.agent.name }}" class="podium-avatar">
-            {% else %}
-                <div class="podium-avatar-circle">{{ row.agent.name|initials }}</div>
-            {% endif %}
+            <div class="avatar-wrap podium-avatar-wrap">
+                {% if row.agent.photo_url %}
+                    <img src="{{ row.agent.photo_url }}" alt="{{ row.agent.name }}" class="podium-avatar">
+                {% else %}
+                    <div class="podium-avatar-circle">{{ row.agent.name|initials }}</div>
+                {% endif %}
+                <span class="online-dot {% if row.agent.is_online %}is-online{% endif %}" title="{% if row.agent.is_online %}{{ t.online_now }}{% else %}{{ t.offline_now }}{% endif %}"></span>
+            </div>
             <div class="podium-name">{{ row.agent.name }}</div>
             <div class="podium-country">
                 {% if row.agent.country %}{{ row.agent.country.flag_emoji }} {{ row.agent.country.name|country_name:locale }}{% else %}—{% endif %}
+            </div>
+            <div class="online-label {% if row.agent.is_online %}is-online{% endif %}">
+                {% if row.agent.is_online %}🟢 {{ t.online_now }}{% else %}⚪ {{ t.offline_now }}{% endif %}
             </div>
             <div class="podium-stat">{{ row.count }}<span>{{ t.tx_this_month }}</span></div>
         </div>
@@ -148,11 +168,14 @@
             {% for row in board %}
             <div class="team-row {% if row.is_you %}is-you{% endif %}">
                 <div class="team-rank">#{{ row.rank }}</div>
-                {% if row.agent.photo_url %}
-                    <img src="{{ row.agent.photo_url }}" alt="{{ row.agent.name }}" class="team-row-avatar">
-                {% else %}
-                    <div class="team-row-avatar-circle">{{ row.agent.name|initials }}</div>
-                {% endif %}
+                <div class="avatar-wrap">
+                    {% if row.agent.photo_url %}
+                        <img src="{{ row.agent.photo_url }}" alt="{{ row.agent.name }}" class="team-row-avatar">
+                    {% else %}
+                        <div class="team-row-avatar-circle">{{ row.agent.name|initials }}</div>
+                    {% endif %}
+                    <span class="online-dot {% if row.agent.is_online %}is-online{% endif %}"></span>
+                </div>
                 <div class="team-row-info">
                     <div class="team-row-name">
                         {{ row.agent.name }}
@@ -161,6 +184,9 @@
                     </div>
                     <div class="team-row-sub">
                         {% if row.agent.country %}{{ row.agent.country.flag_emoji }} {{ row.agent.country.name|country_name:locale }} · {% endif %}{{ row.agent.agent_code|default:"—" }}
+                    </div>
+                    <div class="team-row-online {% if row.agent.is_online %}is-online{% endif %}">
+                        {% if row.agent.is_online %}🟢 {{ t.online_now }}{% else %}⚪ {{ t.offline_now }}{% endif %}
                     </div>
                 </div>
                 <div class="team-row-stats">

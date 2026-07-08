@@ -9,8 +9,10 @@ from django.http import HttpResponse, JsonResponse
 from decimal import Decimal, InvalidOperation
 from django.db.models import Sum, Count, Q
 from django.conf import settings
+from django.core.mail import send_mail
 from core.models import User, Country, Transaction, AgentReport
 from core.decorators import agent_required, get_auth_user
+from core.mailer import send_async
 
 
 def _send_transaction_email(tx, client_email: str, locale: str = 'fr'):
@@ -374,6 +376,39 @@ def tx_index(request):
     })
 
 
+def _notify_agents_new_transaction(tx):
+    """Let every other active agent know a new transaction was recorded.
+    Only fired on creation — editing a transaction stays silent."""
+    other_emails = list(
+        User.objects.filter(role='agent', status='active')
+        .exclude(pk=tx.agent_id)
+        .values_list('email', flat=True)
+    )
+    if not other_emails:
+        return
+    agent_name = tx.agent.name if tx.agent else '—'
+    subject = f'[BLUESKY] Nouvelle transaction — {tx.transaction_number}'
+    body = f"""Une nouvelle transaction vient d'être enregistrée.
+
+Numéro   : {tx.transaction_number}
+Agent    : {agent_name}
+Type     : {tx.get_transaction_type_display()}
+Montant  : {tx.amount:,.0f} {tx.currency}
+Origine  : {tx.origin_country.name if tx.origin_country else '—'}
+Destination : {tx.destination_country.name if tx.destination_country else '—'}
+"""
+    try:
+        send_mail(
+            subject=subject,
+            message=body,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=other_emails,
+            fail_silently=True,
+        )
+    except Exception as e:
+        print(f'[BLUESKY] New-transaction notify error: {e}')
+
+
 @agent_required
 def tx_create(request):
     user      = get_auth_user(request)
@@ -449,6 +484,7 @@ def tx_create(request):
             tx.save()
             locale = request.session.get('locale', 'fr')
             _send_transaction_sms(tx, locale)
+            send_async(_notify_agents_new_transaction, tx)
             messages.success(request, f'Transaction {tx_num} créée avec succès.')
             return redirect('tx_show', tx_id=tx.id)
         except ValueError:
