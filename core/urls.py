@@ -38,6 +38,7 @@ urlpatterns = [
 
     # ── Admin — Countries ─────────────────────────────────────────────────
     path('admin/countries/',              admin_views.countries_index,    name='admin_countries'),
+    path('admin/countries/refresh-rates/', admin_views.countries_refresh_rates, name='admin_countries_refresh_rates'),
     path('admin/countries/create/',       admin_views.countries_create,   name='admin_countries_create'),
     path('admin/countries/<int:country_id>/edit/',   admin_views.countries_edit,    name='admin_countries_edit'),
     path('admin/countries/<int:country_id>/toggle/', admin_views.countries_toggle,  name='admin_countries_toggle'),

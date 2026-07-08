@@ -492,6 +492,21 @@ def countries_index(request):
 
 
 @admin_required
+def countries_refresh_rates(request):
+    if request.method == 'POST':
+        from core.exchange_rates import fetch_and_update_rates
+        updated, skipped, error = fetch_and_update_rates()
+        if error:
+            messages.error(request, error)
+        else:
+            msg = f'{updated} taux de change mis à jour.'
+            if skipped:
+                msg += f" Devises non trouvées : {', '.join(skipped)}."
+            messages.success(request, msg)
+    return redirect('admin_countries')
+
+
+@admin_required
 def countries_create(request):
     user = get_auth_user(request)
     if request.method == 'POST':
