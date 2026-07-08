@@ -302,8 +302,11 @@ def dashboard(request):
     daily_map = {r['created_at__date']: float(r['total'] or 0) for r in daily_qs}
     volume_trend = [daily_map.get(since + timedelta(days=i), 0) for i in range(7)]
 
+    rate_ticker = Country.objects.filter(is_active=True).order_by('name')
+
     return render(request, 'agent/dashboard.html', {
         'stats': stats, 'recent_tx': recent_tx, 'auth_user': user, 'volume_trend': volume_trend,
+        'rate_ticker': rate_ticker,
     })
 
 
