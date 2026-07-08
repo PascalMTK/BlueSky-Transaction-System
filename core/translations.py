@@ -81,6 +81,8 @@ FR = {
     'daily_gains':           'Gains du jour',
     'monthly_gains':         'Gains du mois',
     'daily_gains_sub':       'Frais collectés par jour et total',
+    'daily_gains_sub_usd':   'Frais collectés, convertis en USD via le taux de change de chaque pays',
+    'usd_rate_hint':         'Ces montants utilisent le taux de change configuré pour chaque pays. Mets-les à jour dans',
 
     # ── Dashboard - Agent
     'agent_overview':        'Bienvenue dans votre espace',
@@ -326,6 +328,8 @@ FR = {
     'settings_section':         'Paramètres',
     'fee_applied_hint':         'Pourcentage appliqué automatiquement à chaque transaction',
     'active_hint':              'Les pays inactifs n\'apparaissent pas dans les formulaires',
+    'usd_rate_label':           'Taux de change (pour 1 USD)',
+    'usd_rate_field_hint':      'Combien d\'unités de cette devise pour 1 USD. Utilisé pour convertir les totaux (ex: gains) dans une devise unique.',
     'code_iso_hint':            'Code ISO 3166-1 alpha-2 (ex: CI, SN, FR)',
     'flag_auto_hint':           'Se génère automatiquement depuis le code ISO',
     'code_readonly_hint':       'Le code ISO ne peut pas être modifié après création',
@@ -597,6 +601,8 @@ EN = {
     'daily_gains':           'Daily gains',
     'monthly_gains':         'Monthly gains',
     'daily_gains_sub':       'Fees collected by day and total',
+    'daily_gains_sub_usd':   'Fees collected, converted to USD using each country\'s exchange rate',
+    'usd_rate_hint':         'These amounts use the exchange rate configured for each country. Update them in',
 
     # ── Dashboard - Agent
     'agent_overview':        'Welcome to your space',
@@ -840,6 +846,8 @@ EN = {
     'settings_section':         'Settings',
     'fee_applied_hint':         'Percentage automatically applied to each transaction',
     'active_hint':              'Inactive countries do not appear in forms',
+    'usd_rate_label':           'Exchange rate (per 1 USD)',
+    'usd_rate_field_hint':      'How many units of this currency equal 1 USD. Used to convert totals (e.g. gains) into a single currency.',
     'code_iso_hint':            'ISO 3166-1 alpha-2 code (e.g. CI, SN, FR)',
     'flag_auto_hint':           'Auto-generated from the ISO code',
     'code_readonly_hint':       'The ISO code cannot be changed after creation',

@@ -6,7 +6,7 @@ from datetime import datetime, date
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.http import HttpResponse
-from django.db.models import Sum, Count, Q
+from django.db.models import Sum, Count, Q, Max
 from django.conf import settings
 from django.core.mail import send_mail
 from core.models import User, Country, Transaction, AgentReport
@@ -106,6 +106,19 @@ DEFAULT_PALETTE = [
 
 def _country_color(code, index):
     return COUNTRY_COLORS.get((code or '').upper(), DEFAULT_PALETTE[index % len(DEFAULT_PALETTE)])
+
+
+def _fees_in_usd(qs):
+    """Sum fee_amount across a Transaction queryset, converting each row's
+    origin-country currency to USD via that country's usd_exchange_rate
+    (units of local currency per 1 USD) — summing raw fee_amount directly
+    would mix CDF/ZMW/KES/etc into one meaningless number."""
+    rows = qs.values('origin_country_id').annotate(total=Sum('fee_amount'), rate=Max('origin_country__usd_exchange_rate'))
+    usd_total = 0.0
+    for r in rows:
+        rate = float(r['rate'] or 1)
+        usd_total += float(r['total'] or 0) / rate if rate else 0
+    return usd_total
 
 
 def _notify_agent_activated(agent):
@@ -489,6 +502,7 @@ def countries_create(request):
         flag      = request.POST.get('flag_emoji', '').strip() or _code_to_emoji(code)
         phone_code= request.POST.get('phone_code', '').strip()
         fee_pct   = request.POST.get('default_fee_percentage', 3)
+        usd_rate  = request.POST.get('usd_exchange_rate') or 1
         is_active = request.POST.get('is_active') == '1'
 
         if not name or not code or not cur_code:
@@ -499,7 +513,7 @@ def countries_create(request):
             c = Country(
                 name=name, code=code, currency_code=cur_code, currency_name=cur_name,
                 flag_emoji=flag, phone_code=phone_code,
-                default_fee_percentage=fee_pct, is_active=is_active,
+                default_fee_percentage=fee_pct, usd_exchange_rate=usd_rate, is_active=is_active,
             )
             c.save()
             messages.success(request, f'{name} ajouté avec succès.')
@@ -519,6 +533,7 @@ def countries_edit(request, country_id):
         c.flag_emoji             = flag or _code_to_emoji(c.code)
         c.phone_code             = request.POST.get('phone_code', c.phone_code).strip()
         c.default_fee_percentage = request.POST.get('default_fee_percentage', c.default_fee_percentage)
+        c.usd_exchange_rate      = request.POST.get('usd_exchange_rate') or c.usd_exchange_rate
         c.is_active              = request.POST.get('is_active') == '1'
         c.save()
         messages.success(request, 'Pays mis à jour.')
@@ -595,9 +610,12 @@ def statistics(request):
         if amt > max_amount:
             max_amount = amt
 
-    daily_gains_today = float(Transaction.objects.filter(created_at__date=today, status='completed').aggregate(s=Sum('fee_amount'))['s'] or 0)
-    daily_gains_month = float(Transaction.objects.filter(created_at__month=today.month, created_at__year=today.year, status='completed').aggregate(s=Sum('fee_amount'))['s'] or 0)
-    daily_gains_total = float(Transaction.objects.filter(status='completed').aggregate(s=Sum('fee_amount'))['s'] or 0)
+    # Converted to USD (via each country's admin-set exchange rate) since
+    # fee_amount is stored in each country's own currency — summing those
+    # raw amounts across countries would mix CDF/ZMW/KES/etc together.
+    daily_gains_today = _fees_in_usd(Transaction.objects.filter(created_at__date=today, status='completed'))
+    daily_gains_month = _fees_in_usd(Transaction.objects.filter(created_at__month=today.month, created_at__year=today.year, status='completed'))
+    daily_gains_total = _fees_in_usd(Transaction.objects.filter(status='completed'))
 
     # Status breakdown — surfaces money stuck in pending and the cancellation
     # rate, which the completed-only stats above hide entirely.

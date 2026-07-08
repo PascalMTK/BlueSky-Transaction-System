@@ -9,6 +9,10 @@ class Country(models.Model):
     flag_emoji              = models.CharField(max_length=10)
     phone_code              = models.CharField(max_length=10)
     default_fee_percentage  = models.DecimalField(max_digits=5, decimal_places=2, default=3.00)
+    # Units of local currency per 1 USD — set/updated manually by an admin.
+    # Used to convert mixed-currency totals (e.g. total fees across all
+    # countries) into a single comparable USD figure.
+    usd_exchange_rate       = models.DecimalField(max_digits=14, decimal_places=4, default=1)
     is_active               = models.BooleanField(default=True)
     created_at              = models.DateTimeField(auto_now_add=True)
     updated_at              = models.DateTimeField(auto_now=True)
