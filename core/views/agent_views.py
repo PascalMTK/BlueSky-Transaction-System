@@ -487,7 +487,10 @@ def tx_edit(request, tx_id):
     tx   = get_object_or_404(Transaction, pk=tx_id)
     if not user.is_admin() and tx.agent_id != user.id:
         return redirect('tx_index')
-    countries  = Country.objects.filter(is_active=True)
+    # All countries (not just active ones) — an already-created transaction
+    # may reference a country that was deactivated since, and it must still
+    # show up as a selectable option so editing doesn't silently reassign it.
+    countries  = Country.objects.all().order_by('name')
     currencies = _build_currencies()
     if request.method == 'POST':
         tx_type  = request.POST.get('transaction_type', tx.transaction_type)
