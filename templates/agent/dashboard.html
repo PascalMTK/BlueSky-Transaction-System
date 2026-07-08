@@ -156,37 +156,6 @@
     .agent-hero-avatar { width: 46px; height: 46px; font-size: 18px; }
     .agent-hero-name { font-size: 17px; }
 }
-
-/* ── Exchange-rate ticker — scrolling strip below the hero ── */
-.rate-ticker {
-    position: relative;
-    overflow: hidden;
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 11px 0;
-    margin-bottom: 22px;
-}
-.rate-ticker::before, .rate-ticker::after {
-    content: ''; position: absolute; top: 0; bottom: 0; width: 50px; z-index: 2; pointer-events: none;
-}
-.rate-ticker::before { left: 0;  background: linear-gradient(to right, var(--bg-card), transparent); }
-.rate-ticker::after  { right: 0; background: linear-gradient(to left,  var(--bg-card), transparent); }
-.rt-track {
-    display: flex; gap: 10px; width: max-content;
-    animation: rtScroll 34s linear infinite;
-}
-.rate-ticker:hover .rt-track { animation-play-state: paused; }
-@keyframes rtScroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-.rt-chip {
-    display: inline-flex; align-items: center; gap: 7px;
-    background: rgba(2,132,199,.06); border: 1px solid rgba(2,132,199,.15);
-    border-radius: 100px; padding: 6px 14px; white-space: nowrap;
-    font-size: 12.5px; font-weight: 700; color: var(--text-primary);
-}
-.rt-chip .rt-flag { font-size: 16px; line-height: 1; }
-.rt-chip .rt-code { color: var(--sky-primary); }
-.rt-chip .rt-val { color: var(--text-muted); font-weight: 600; }
 </style>
 {% endblock %}
 
@@ -221,28 +190,6 @@
         <a href="{% url 'tx_create' %}" class="btn btn-primary btn-lg">➕ {{ t.new_transaction }}</a>
     </div>
 </div>
-
-<!-- Exchange rate ticker -->
-{% if rate_ticker %}
-<div class="rate-ticker">
-    <div class="rt-track">
-        {% for c in rate_ticker %}
-        <div class="rt-chip">
-            <span class="rt-flag">{{ c.flag_emoji }}</span>
-            <span class="rt-code">{{ c.currency_code }}</span>
-            <span class="rt-val">1$ = {{ c.usd_exchange_rate|number_format:2 }}</span>
-        </div>
-        {% endfor %}
-        {% for c in rate_ticker %}
-        <div class="rt-chip">
-            <span class="rt-flag">{{ c.flag_emoji }}</span>
-            <span class="rt-code">{{ c.currency_code }}</span>
-            <span class="rt-val">1$ = {{ c.usd_exchange_rate|number_format:2 }}</span>
-        </div>
-        {% endfor %}
-    </div>
-</div>
-{% endif %}
 
 <!-- Stats -->
 <div class="stats-grid" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));margin-bottom:22px;">
