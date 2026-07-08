@@ -4,7 +4,7 @@ from django.urls import reverse
 
 class AuthMiddleware:
     EXEMPT = [
-        '/login/', '/register/', '/logout/', '/',
+        '/login/', '/register/', '/logout/', '/', '/contact/',
         '/lang/', '/static/', '/media/',
     ]
 

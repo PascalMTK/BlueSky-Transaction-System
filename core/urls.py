@@ -7,6 +7,7 @@ urlpatterns = [
     path('login/',                        auth_views.login_view,    name='login'),
     path('logout/',                       auth_views.logout_view,   name='logout'),
     path('register/',                     auth_views.register_view, name='register'),
+    path('contact/',                      auth_views.contact_view,  name='contact'),
     path('lang/<str:locale>/',            auth_views.lang_switch,   name='lang_switch'),
     # ── Profile ───────────────────────────────────────────────────────────
     path('profile/',                      profile_views.profile_show,     name='profile_show'),

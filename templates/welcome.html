@@ -299,7 +299,7 @@
 </div>
 {% endif %}
 
-<footer>© {% now "Y" %} BLUESKY Transactions — {{ t.all_rights }}</footer>
+<footer>© {% now "Y" %} BLUESKY Transactions — {{ t.all_rights }} · <a href="{% url 'contact' %}" style="color:inherit;text-decoration:underline;">{{ t.contact_nav }}</a></footer>
 <script src="https://cdn.jsdelivr.net/npm/twemoji@14.0.2/dist/twemoji.min.js" crossorigin="anonymous"></script>
 <script>twemoji.parse(document.body,{folder:'svg',ext:'.svg'});</script>
 <script>

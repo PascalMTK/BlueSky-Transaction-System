@@ -1,0 +1,184 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="{{ locale|default:'fr' }}" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+    <title>{{ t.contact_title }} — BLUESKY</title>
+    <link rel="icon" href="{% static 'images/WhatsApp_Image_2026-01-27_at_11.11.59_PM__1_-removebg-preview.png' %}" type="image/png">
+    <link href="{% static 'css/bluesky.css' %}" rel="stylesheet">
+    <script>(function(){var t=localStorage.getItem('bluesky-theme')||'light';document.documentElement.setAttribute('data-theme',t);})();</script>
+    <style>
+        *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+        html,body{height:100%;}
+        body{
+            min-height:100vh;
+            font-family:'Inter',system-ui,sans-serif;
+            background:#04111f;
+            display:flex;align-items:center;justify-content:center;
+            padding:20px;
+            transition:background .3s;
+        }
+        [data-theme="light"] body{background:#e8f4fd;}
+
+        .bg{
+            position:fixed;inset:0;z-index:0;pointer-events:none;
+            background:url("{% static 'images/business-team-working-laptop.jpg' %}") center/cover no-repeat;
+            opacity:.20;
+            filter:grayscale(.5) blur(1px);
+        }
+
+        .card{
+            position:relative;z-index:10;
+            width:100%;max-width:480px;
+            background:var(--bg-primary,#fff);
+            border-radius:20px;
+            padding:44px 40px 36px;
+            box-shadow:0 24px 80px rgba(0,0,0,.35),0 0 0 1px rgba(255,255,255,.06);
+        }
+        [data-theme="dark"] .card{background:#0d1626;box-shadow:0 24px 80px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.06);}
+
+        .card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;}
+        .back{font-size:12.5px;color:var(--text-muted);text-decoration:none;display:flex;align-items:center;gap:4px;transition:color .15s;}
+        .back:hover{color:var(--sky-primary);}
+        .lang{display:flex;gap:6px;align-items:center;}
+        .lang a{font-size:12.5px;font-weight:700;color:var(--sky-primary);text-decoration:none;opacity:.45;transition:opacity .15s;}
+        .lang a.on,.lang a:hover{opacity:1;}
+        .lang s{text-decoration:none;color:var(--text-muted);font-style:normal;}
+
+        .logo-wrap{display:flex;justify-content:center;margin-bottom:16px;}
+        .logo{
+            width:120px;height:auto;object-fit:contain;
+            filter:drop-shadow(0 0 40px rgba(2,132,199,.58)) drop-shadow(0 4px 14px rgba(0,0,0,.2));
+        }
+        [data-theme="dark"] .logo{filter:drop-shadow(0 0 52px rgba(2,132,199,.75)) drop-shadow(0 4px 16px rgba(0,0,0,.5));}
+
+        .card-title{font-size:24px;font-weight:900;color:var(--text-primary);text-align:center;margin-bottom:5px;}
+        .card-sub{font-size:13px;color:var(--text-muted);text-align:center;line-height:1.55;margin-bottom:24px;}
+
+        .contact-info{
+            display:flex; gap:10px; flex-wrap:wrap; justify-content:center;
+            margin-bottom:24px; padding-bottom:22px; border-bottom:1px solid var(--border);
+        }
+        .contact-info-item{
+            display:flex; align-items:center; gap:7px;
+            font-size:12.5px; font-weight:600; color:var(--text-secondary);
+            background:rgba(2,132,199,.06); border:1px solid rgba(2,132,199,.15);
+            border-radius:100px; padding:6px 13px;
+        }
+
+        .btn-main{
+            display:flex;align-items:center;justify-content:center;gap:8px;
+            width:100%;padding:15px;
+            background:linear-gradient(135deg,#0284C7,#0EA5E9);
+            color:#fff;font-size:15px;font-weight:800;
+            border:none;border-radius:12px;cursor:pointer;
+            box-shadow:0 6px 24px rgba(2,132,199,.42);
+            transition:all .2s;margin-top:6px;
+        }
+        .btn-main:hover{transform:translateY(-2px);box-shadow:0 10px 34px rgba(2,132,199,.6);}
+
+        .card-foot{text-align:center;margin-top:14px;}
+        .card-foot a{font-size:12px;color:var(--text-muted);text-decoration:none;transition:color .15s;}
+        .card-foot a:hover{color:var(--sky-primary);}
+
+        input,select,textarea{font-size:16px;}
+        textarea.form-control{resize:vertical;min-height:110px;font-family:inherit;}
+
+        @media(max-width:768px){
+            body{align-items:flex-start;padding:32px 20px;}
+            .card{max-width:460px;margin:auto;}
+        }
+        @media(max-width:480px){
+            body{padding:12px;align-items:flex-start;}
+            .card{padding:32px 22px 28px;border-radius:16px;}
+            .logo{width:88px;}
+        }
+        @media(max-width:375px){
+            body{padding:8px;}
+            .card{padding:24px 16px 22px;border-radius:14px;}
+            .logo{width:76px;}
+            .card-title{font-size:20px;}
+        }
+        @supports(padding:env(safe-area-inset-top)){
+            body{
+                padding-top:max(20px,env(safe-area-inset-top));
+                padding-bottom:max(20px,env(safe-area-inset-bottom));
+                padding-left:max(20px,env(safe-area-inset-left));
+                padding-right:max(20px,env(safe-area-inset-right));
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="bg"></div>
+
+<div class="card">
+    <div class="card-top">
+        <a href="{% url 'welcome' %}" class="back">← {{ t.back_home }}</a>
+        <div class="lang">
+            <a href="{% url 'lang_switch' 'fr' %}" class="{% if locale == 'fr' or not locale %}on{% endif %}">🇫🇷 FR</a>
+            <s>|</s>
+            <a href="{% url 'lang_switch' 'en' %}" class="{% if locale == 'en' %}on{% endif %}">🇬🇧 EN</a>
+        </div>
+    </div>
+
+    <div class="logo-wrap">
+        <img src="{% static 'images/WhatsApp_Image_2026-01-27_at_11.11.59_PM__1_-removebg-preview.png' %}"
+             data-logo-light="{% static 'images/WhatsApp_Image_2026-01-27_at_11.11.59_PM__1_-removebg-preview.png' %}"
+             data-logo-dark="{% static 'images/WhatsApp_Image_2026-01-27_at_11.11.59_PM-removebg-preview.png' %}"
+             alt="BLUESKY" class="logo">
+    </div>
+    <div class="card-title">{{ t.contact_title }}</div>
+    <div class="card-sub">{{ t.contact_sub }}</div>
+
+    <div class="contact-info">
+        <span class="contact-info-item">📧 vandervloger@gmail.com</span>
+        <span class="contact-info-item">🌐 pascal02.pythonanywhere.com</span>
+    </div>
+
+    {% for message in messages %}
+        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %}" style="margin-bottom:12px;">
+            {% if message.tags == 'error' %}❌{% elif message.tags == 'success' %}✅{% else %}⚠️{% endif %}
+            {{ message }}
+        </div>
+    {% endfor %}
+
+    <form method="POST" action="{% url 'contact' %}">
+        {% csrf_token %}
+        <div class="form-group">
+            <label class="form-label">👤 {{ t.contact_name }}</label>
+            <input type="text" name="name" class="form-control" required autofocus>
+        </div>
+        <div class="form-group">
+            <label class="form-label">📧 {{ t.email }}</label>
+            <input type="email" name="email" class="form-control" placeholder="{{ t.email_placeholder }}" required>
+        </div>
+        <div class="form-group">
+            <label class="form-label">✏️ {{ t.contact_subject }}</label>
+            <input type="text" name="subject" class="form-control">
+        </div>
+        <div class="form-group">
+            <label class="form-label">💬 {{ t.contact_message }}</label>
+            <textarea name="message" class="form-control" required></textarea>
+        </div>
+        <button type="submit" class="btn-main">📨 {{ t.contact_send }}</button>
+    </form>
+
+    <div class="card-foot">
+        <a href="{% url 'welcome' %}">← {{ t.back_home }}</a>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/twemoji@14.0.2/dist/twemoji.min.js" crossorigin="anonymous"></script>
+<script>twemoji.parse(document.body,{folder:'svg',ext:'.svg'});</script>
+<script>
+(function(){
+    var t = localStorage.getItem('bluesky-theme') || 'light';
+    document.querySelectorAll('[data-logo-light]').forEach(function(img){
+        img.src = t === 'dark' ? img.dataset.logoDark : img.dataset.logoLight;
+    });
+})();
+</script>
+</body>
+</html>

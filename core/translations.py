@@ -55,6 +55,15 @@ FR = {
     'photo_hint':            '(optionnel — JPEG/PNG, max 5 Mo)',
     'back_home':             '← Retour à l\'accueil',
 
+    # ── Contact
+    'contact_title':         'Contactez-nous',
+    'contact_sub':           'Une question, un problème ? Écrivez-nous, nous vous répondrons rapidement.',
+    'contact_name':          'Nom complet',
+    'contact_subject':       'Sujet',
+    'contact_message':       'Message',
+    'contact_send':          'Envoyer le message',
+    'contact_nav':           'Contact',
+
     # ── Dashboard - Admin
     'overview':              'Vue d\'ensemble de la plateforme',
     'total_transactions':    'Transactions totales',
@@ -575,6 +584,15 @@ EN = {
     'photo_label':           'Profile photo',
     'photo_hint':            '(optional — JPEG/PNG, max 5 MB)',
     'back_home':             '← Back to home',
+
+    # ── Contact
+    'contact_title':         'Contact us',
+    'contact_sub':           'A question, an issue? Write to us and we\'ll get back to you quickly.',
+    'contact_name':          'Full name',
+    'contact_subject':       'Subject',
+    'contact_message':       'Message',
+    'contact_send':          'Send message',
+    'contact_nav':           'Contact',
 
     # ── Dashboard - Admin
     'overview':              'Platform overview',

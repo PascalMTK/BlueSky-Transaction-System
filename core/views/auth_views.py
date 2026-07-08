@@ -242,6 +242,52 @@ def lang_switch(request, locale):
     return redirect(request.META.get('HTTP_REFERER', '/'))
 
 
+def _notify_admin_contact_message(name, email, subject_line, message_body):
+    """Send a public contact-form submission to all active admins."""
+    admin_emails = list(User.objects.filter(role='admin', status='active').values_list('email', flat=True))
+    if not admin_emails:
+        return
+    subject = f'[BLUESKY] Nouveau message de contact — {name}'
+    body = f"""Nouveau message reçu via le formulaire de contact public.
+
+Nom    : {name}
+Email  : {email}
+Sujet  : {subject_line or '—'}
+
+Message :
+{message_body}
+"""
+    try:
+        send_mail(
+            subject=subject,
+            message=body,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=admin_emails,
+            fail_silently=True,
+        )
+    except Exception as e:
+        print(f'[BLUESKY] Contact notify error: {e}')
+
+
+@never_cache
+def contact_view(request):
+    if request.session.get('user_id'):
+        return redirect('welcome')
+    if request.method == 'POST':
+        name         = request.POST.get('name', '').strip()
+        email        = request.POST.get('email', '').strip()
+        subject_line = request.POST.get('subject', '').strip()
+        message_body = request.POST.get('message', '').strip()
+
+        if not name or not email or not message_body:
+            messages.error(request, 'Merci de remplir tous les champs obligatoires.')
+        else:
+            send_async(_notify_admin_contact_message, name, email, subject_line, message_body)
+            messages.success(request, 'Votre message a été envoyé. Nous vous répondrons rapidement.')
+            return redirect('contact')
+    return render(request, 'contact.html')
+
+
 # ── Forgot password removed — admin resets passwords directly ─────────────
 
 
