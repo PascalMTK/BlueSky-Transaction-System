@@ -6,130 +6,214 @@
 {% block page_subtitle %}{{ t.countries_sub }}{% endblock %}
 {% block nav_admin_countries %}active{% endblock %}
 
+{% block styles %}
+<style>
+/* ── Stats ── */
+.co-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+}
+.co-stat {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+    text-align: center;
+}
+.co-stat-num { font-size: 28px; font-weight: 900; }
+.co-stat-lbl { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .5px; margin-top: 2px; }
+.co-stat.active .co-stat-num   { color: #22c55e; }
+.co-stat.inactive .co-stat-num { color: #ef4444; }
+
+/* ── Toolbar ── */
+.co-toolbar {
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 10px; margin-bottom: 20px;
+}
+.co-toolbar-title { font-size: 16px; font-weight: 800; color: var(--text-heading); display: flex; align-items: center; gap: 8px; }
+.co-toolbar-sub { font-size: 12.5px; color: var(--text-muted); margin-top: 2px; }
+.co-toolbar-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ── Cards grid ── */
+.co-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+}
+
+/* ── Country card ── */
+.co-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: box-shadow .2s, transform .2s;
+}
+.co-card:hover { box-shadow: 0 8px 32px rgba(0,0,0,.12); transform: translateY(-2px); }
+.co-card.inactive { opacity: .75; }
+
+.co-card-top {
+    display: flex; align-items: center; gap: 14px;
+    padding: 18px 18px 12px;
+    border-bottom: 1px solid var(--border);
+}
+.co-card-flag {
+    width: 52px; height: 52px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px;
+    background: var(--bg-input);
+    border: 2px solid var(--bg-card);
+    box-shadow: 0 2px 8px rgba(2,132,199,.15);
+}
+.co-card-name { font-size: 15px; font-weight: 800; color: var(--text-primary); }
+.co-card-code {
+    font-size: 11px; font-family: monospace; font-weight: 700; color: var(--sky-primary);
+    background: var(--bg-input); border: 1px solid var(--border); border-radius: 4px;
+    padding: 1px 6px; margin-top: 3px; display: inline-block;
+}
+.co-card-badge {
+    margin-left: auto; flex-shrink: 0;
+    border: none; cursor: pointer; font-family: inherit;
+    font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px;
+    transition: opacity .15s;
+}
+.co-card-badge:hover { opacity: .8; }
+.co-card-badge.active   { background: rgba(34,197,94,.12);  color: #16a34a; }
+.co-card-badge.inactive { background: rgba(239,68,68,.12);  color: #dc2626; }
+
+.co-card-info {
+    padding: 12px 18px;
+    display: flex; flex-direction: column; gap: 5px;
+    border-bottom: 1px solid var(--border);
+}
+.co-card-row {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--text-secondary);
+}
+.co-card-row span:first-child { font-size: 14px; width: 20px; text-align: center; flex-shrink: 0; }
+.co-card-row .co-fee { margin-left: auto; font-weight: 800; color: var(--sky-primary); font-size: 14px; }
+
+.co-card-actions {
+    padding: 14px 18px;
+    display: flex; gap: 8px;
+}
+.co-card-actions a, .co-card-actions form { flex: 1; display: flex; }
+.co-card-actions form.co-del { flex: 0 0 auto; }
+.co-btn {
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 9px 12px; border-radius: 10px; font-size: 13px; font-weight: 700;
+    border: none; cursor: pointer; text-decoration: none; font-family: inherit;
+    transition: opacity .15s, transform .1s; width: 100%;
+}
+.co-btn:hover { opacity: .88; transform: translateY(-1px); }
+.co-btn:active { transform: scale(.97); }
+.co-btn-edit { background: linear-gradient(135deg,#0284c7,#0ea5e9); color: #fff; }
+.co-btn-del  { background: rgba(239,68,68,.12); color: #dc2626; border: 1px solid rgba(239,68,68,.2); width: 42px; flex: 0 0 auto; padding: 9px; }
+
+/* ── Empty ── */
+.co-empty { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+.co-empty-icon { font-size: 48px; margin-bottom: 12px; opacity: .4; }
+
+@media(max-width:900px){ .co-stats { grid-template-columns: 1fr 1fr; } }
+@media(max-width:580px){
+    .co-grid { grid-template-columns: 1fr; }
+    .co-stats { gap: 8px; }
+    .co-stat { padding: 12px 8px; }
+    .co-stat-num { font-size: 22px; }
+}
+</style>
+{% endblock %}
+
 {% block content %}
 
-<!-- Stat chips -->
-<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;">
-    <div style="display:flex;align-items:center;gap:10px;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:12px 20px;flex:1;min-width:130px;">
-        <span style="font-size:24px;">🌍</span>
-        <div>
-            <div style="font-size:22px;font-weight:900;color:var(--text-heading);">{{ countries|length }}</div>
-            <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;">{{ t.countries_configured }}</div>
-        </div>
+<!-- Stats -->
+<div class="co-stats">
+    <div class="co-stat">
+        <div class="co-stat-num" style="color:var(--sky-primary);">{{ countries|length }}</div>
+        <div class="co-stat-lbl">{{ t.countries_configured }}</div>
     </div>
-    <div style="display:flex;align-items:center;gap:10px;background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.15);border-radius:12px;padding:12px 20px;flex:1;min-width:130px;">
-        <span style="font-size:24px;">✅</span>
-        <div>
-            <div style="font-size:22px;font-weight:900;color:#22c55e;" id="cActive">—</div>
-            <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;">{{ t.active }}</div>
-        </div>
+    <div class="co-stat active">
+        <div class="co-stat-num" id="cActive">—</div>
+        <div class="co-stat-lbl">{{ t.active }}</div>
     </div>
-    <div style="display:flex;align-items:center;gap:10px;background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.12);border-radius:12px;padding:12px 20px;flex:1;min-width:130px;">
-        <span style="font-size:24px;">❌</span>
-        <div>
-            <div style="font-size:22px;font-weight:900;color:#ef4444;" id="cInactive">—</div>
-            <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;">{{ t.inactive }}</div>
-        </div>
-    </div>
-    <div style="display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--sky-primary),var(--sky-secondary));border-radius:12px;padding:12px 24px;min-width:180px;">
-        <a href="{% url 'admin_countries_create' %}" style="color:#fff;text-decoration:none;font-size:14px;font-weight:800;display:flex;align-items:center;gap:8px;">
-            ➕ {{ t.add_country }}
-        </a>
+    <div class="co-stat inactive">
+        <div class="co-stat-num" id="cInactive">—</div>
+        <div class="co-stat-lbl">{{ t.inactive }}</div>
     </div>
 </div>
 
-<div class="card">
-    <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
-        <div>
-            <div class="card-title">🌍 {{ t.countries_title }}</div>
-            <div class="card-subtitle">{{ t.countries_configured_sub }}</div>
-        </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <form method="POST" action="{% url 'admin_countries_refresh_rates' %}" style="display:inline;">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-secondary btn-sm">💱 {{ t.refresh_rates }}</button>
-            </form>
-            <a href="{% url 'admin_countries_create' %}" class="btn btn-primary btn-sm">➕ {{ t.add_country }}</a>
-        </div>
+<!-- Toolbar -->
+<div class="co-toolbar">
+    <div>
+        <div class="co-toolbar-title">🌍 {{ t.countries_title }}</div>
+        <div class="co-toolbar-sub">{{ t.countries_configured_sub }}</div>
     </div>
-    <div class="card-body" style="padding:0;overflow-x:auto;">
-        {% if countries %}
-        <table class="table" id="countriesTable">
-            <thead>
-                <tr>
-                    <th>{{ t.country_name }}</th>
-                    <th>{{ t.country_code }}</th>
-                    <th>{{ t.currency_code }}</th>
-                    <th>{{ t.usd_rate_label }}</th>
-                    <th>{{ t.phone_code }}</th>
-                    <th>{{ t.default_fee }}</th>
-                    <th>{{ t.status }}</th>
-                    <th>{{ t.actions }}</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for c in countries %}
-                <tr data-active="{{ c.is_active|yesno:'1,0' }}">
-                    <td>
-                        <div style="display:flex;align-items:center;gap:12px;">
-                            <span style="font-size:32px;line-height:1;">{{ c.flag_emoji }}</span>
-                            <div>
-                                <div style="font-weight:700;font-size:14px;">{{ c.name }}</div>
-                                <div style="font-size:11px;color:var(--text-muted);">{{ c.currency_name }}</div>
-                            </div>
-                        </div>
-                    </td>
-                    <td>
-                        <code style="font-size:12px;background:var(--bg-input);padding:3px 8px;border-radius:6px;font-weight:700;color:var(--sky-primary);">{{ c.code }}</code>
-                    </td>
-                    <td>
-                        <span style="font-weight:700;">{{ c.currency_code }}</span>
-                        <span style="font-size:11.5px;color:var(--text-muted);margin-left:4px;">{{ c.currency_name }}</span>
-                    </td>
-                    <td style="font-size:12.5px;">1 $ = {{ c.usd_exchange_rate }}</td>
-                    <td style="font-size:13px;">{{ c.phone_code|default:"—" }}</td>
-                    <td>
-                        <span style="font-weight:800;color:var(--sky-primary);font-size:15px;">{{ c.default_fee_percentage }}%</span>
-                    </td>
-                    <td>
-                        <form method="POST" action="{% url 'admin_countries_toggle' c.id %}" style="display:inline;">
-                            {% csrf_token %}
-                            <button type="submit" class="badge-status {% if c.is_active %}status-completed{% else %}status-cancelled{% endif %}" style="border:none;cursor:pointer;font-family:inherit;transition:all .2s;" title="{{ t.click_to_toggle }}">
-                                {% if c.is_active %}✅ {{ t.active }}{% else %}❌ {{ t.inactive }}{% endif %}
-                            </button>
-                        </form>
-                    </td>
-                    <td>
-                        <div style="display:flex;gap:6px;align-items:center;">
-                            <a href="{% url 'admin_countries_edit' c.id %}" class="btn btn-secondary btn-sm">✏️ {{ t.edit_country }}</a>
-                            <form method="POST" action="{% url 'admin_countries_destroy' c.id %}" style="display:inline;" onsubmit="return confirm('{{ t.delete_confirm }}');">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-danger btn-sm">🗑</button>
-                            </form>
-                        </div>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        {% else %}
-            <div class="empty-state" style="padding:60px 20px;">
-                <div style="font-size:56px;margin-bottom:16px;">🌍</div>
-                <div class="empty-text" style="font-size:16px;margin-bottom:8px;">{{ t.no_countries }}</div>
-                <div style="font-size:13px;color:var(--text-muted);margin-bottom:20px;">{{ t.countries_empty_hint }}</div>
-                <a href="{% url 'admin_countries_create' %}" class="btn btn-primary btn-lg">➕ {{ t.first_country_btn }}</a>
-            </div>
-        {% endif %}
+    <div class="co-toolbar-actions">
+        <form method="POST" action="{% url 'admin_countries_refresh_rates' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-secondary btn-sm">💱 {{ t.refresh_rates }}</button>
+        </form>
+        <a href="{% url 'admin_countries_create' %}" class="btn btn-primary btn-sm">➕ {{ t.add_country }}</a>
     </div>
 </div>
+
+{% if countries %}
+<div class="co-grid" id="countriesGrid">
+    {% for c in countries %}
+    <div class="co-card {% if not c.is_active %}inactive{% endif %}" data-active="{{ c.is_active|yesno:'1,0' }}">
+
+        <!-- Top: flag + name + badge -->
+        <div class="co-card-top">
+            <div class="co-card-flag">{{ c.flag_emoji }}</div>
+            <div>
+                <div class="co-card-name">{{ c.name }}</div>
+                <span class="co-card-code">{{ c.code }}</span>
+            </div>
+            <form method="POST" action="{% url 'admin_countries_toggle' c.id %}" style="margin-left:auto;">
+                {% csrf_token %}
+                <button type="submit" class="co-card-badge {% if c.is_active %}active{% else %}inactive{% endif %}" title="{{ t.click_to_toggle }}">
+                    {% if c.is_active %}✅ {{ t.active }}{% else %}❌ {{ t.inactive }}{% endif %}
+                </button>
+            </form>
+        </div>
+
+        <!-- Info rows -->
+        <div class="co-card-info">
+            <div class="co-card-row"><span>💰</span><span>{{ c.currency_code }} — {{ c.currency_name }}</span></div>
+            <div class="co-card-row"><span>💱</span><span>1 $ = {{ c.usd_exchange_rate }} {{ c.currency_code }}</span></div>
+            {% if c.phone_code %}<div class="co-card-row"><span>📞</span><span>{{ c.phone_code }}</span></div>{% endif %}
+            <div class="co-card-row"><span>⚙️</span><span>{{ t.default_fee }}</span><span class="co-fee">{{ c.default_fee_percentage }}%</span></div>
+        </div>
+
+        <!-- Actions -->
+        <div class="co-card-actions">
+            <a href="{% url 'admin_countries_edit' c.id %}" class="co-btn co-btn-edit">✏️ {{ t.edit_country }}</a>
+            <form method="POST" action="{% url 'admin_countries_destroy' c.id %}" class="co-del" onsubmit="return confirm('{{ t.delete_confirm }}');">
+                {% csrf_token %}
+                <button type="submit" class="co-btn co-btn-del">🗑</button>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="co-empty">
+    <div class="co-empty-icon">🌍</div>
+    <div style="font-size:15px;font-weight:600;margin-bottom:8px;">{{ t.no_countries }}</div>
+    <div style="font-size:13px;color:var(--text-muted);margin-bottom:20px;">{{ t.countries_empty_hint }}</div>
+    <a href="{% url 'admin_countries_create' %}" class="btn btn-primary btn-lg">➕ {{ t.first_country_btn }}</a>
+</div>
+{% endif %}
 {% endblock %}
 
 {% block scripts %}
 <script>
 (function(){
-    var rows = document.querySelectorAll('#countriesTable tbody tr');
+    var cards = document.querySelectorAll('#countriesGrid .co-card[data-active]');
     var active=0, inactive=0;
-    rows.forEach(function(r){ r.dataset.active === '1' ? active++ : inactive++; });
+    cards.forEach(function(c){ c.dataset.active === '1' ? active++ : inactive++; });
     var ea = document.getElementById('cActive');
     var ei = document.getElementById('cInactive');
     if(ea) ea.textContent = active;
