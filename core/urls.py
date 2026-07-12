@@ -66,6 +66,9 @@ urlpatterns = [
     # ── Agent — Network transactions (read-only, all countries) ───────────
     path('network/',                      agent_views.tx_network,             name='tx_network'),
 
+    # ── Agent — Country transactions (same-country colleagues, editable) ──
+    path('agent/country/',                agent_views.tx_country,             name='tx_country'),
+
     # ── Agent — Reports & Export ──────────────────────────────────────────
     path('agent/reports/',                    agent_views.report_store,         name='agent_report_store'),
     path('agent/reports/portal/',             agent_views.agent_reports_portal, name='agent_reports_portal'),

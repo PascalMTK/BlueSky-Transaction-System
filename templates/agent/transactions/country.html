@@ -1,16 +1,42 @@
 {% extends 'layouts/app.html' %}
 {% load static bluesky_tags %}
 
-{% block title %}{{ t.tx_history_mine }}{% endblock %}
-{% block page_title %}{{ t.tx_history_mine }}{% endblock %}
-{% block page_subtitle %}{{ t.tx_history_sub }}{% endblock %}
-{% block nav_tx_index %}active{% endblock %}
-{% block mob_tx %}active{% endblock %}
+{% block title %}{{ t.country_tx }}{% endblock %}
+{% block page_title %}{{ t.country_tx }}{% endblock %}
+{% block page_subtitle %}{{ t.country_tx_sub }}{% endblock %}
+{% block nav_country %}active{% endblock %}
 
 {% block content %}
+{% if not auth_user.country %}
+    <div class="empty-state">
+        <div class="empty-icon">🏳️</div>
+        <div class="empty-text">{{ t.no_country_assigned }}</div>
+    </div>
+{% else %}
+
+<!-- Colleagues strip -->
+<div class="table-card" style="margin-bottom:14px;">
+    <div class="table-header">
+        <div class="table-title">{{ auth_user.country.flag_emoji }} {{ t.country_colleagues }} — <span style="color:var(--sky-primary);">{{ colleagues|length }}</span></div>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;padding:14px;">
+        {% for c in colleagues %}
+            <div style="display:flex;align-items:center;gap:8px;background:var(--bg-body);border:1px solid var(--border);border-radius:10px;padding:8px 12px;">
+                <div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--sky-primary),var(--sky-secondary));display:flex;align-items:center;justify-content:center;color:white;font-size:10px;font-weight:800;flex-shrink:0;">{{ c.name|initials }}</div>
+                <div>
+                    <div style="font-size:12px;font-weight:700;">{{ c.name }}</div>
+                    <div style="font-size:10px;color:var(--text-muted);">{% if c.is_online %}🟢{% else %}⚪{% endif %} {{ c.agent_code|default:"" }}</div>
+                </div>
+            </div>
+        {% empty %}
+            <div style="color:var(--text-muted);font-size:13px;padding:4px 0;">{{ t.no_transaction }}</div>
+        {% endfor %}
+    </div>
+</div>
+
 <!-- Filters -->
 <div class="filters-bar">
-    <form method="GET" action="{% url 'tx_index' %}" style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;width:100%;">
+    <form method="GET" action="{% url 'tx_country' %}" style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;width:100%;">
         <div class="filter-group filter-group-search">
             <label class="filter-label">🔍 {{ t.search }}</label>
             <input type="text" name="q" class="filter-control" placeholder="{{ t.search_ph }}" value="{{ q }}">
@@ -20,24 +46,41 @@
             <select name="status" class="filter-control">
                 <option value="">{{ t.all_statuses }}</option>
                 <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>✅ {{ t.completed }}</option>
-                <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>⏳ {{ t.pending }}</option>
+                <option value="pending"   {% if status_filter == 'pending'   %}selected{% endif %}>⏳ {{ t.pending }}</option>
                 <option value="cancelled" {% if status_filter == 'cancelled' %}selected{% endif %}>❌ {{ t.cancelled }}</option>
             </select>
         </div>
+        <div class="filter-group">
+            <label class="filter-label">👤 {{ t.agent_col }}</label>
+            <select name="agent_id" class="filter-control">
+                <option value="">{{ t.all_agents_filter }}</option>
+                <option value="{{ auth_user.id }}" {% if agent_filter == auth_user.id|stringformat:"s" %}selected{% endif %}>{{ auth_user.name }} ({{ t.you_badge|default:"Vous" }})</option>
+                {% for ag in colleagues %}
+                    <option value="{{ ag.id }}" {% if agent_filter == ag.id|stringformat:"s" %}selected{% endif %}>{{ ag.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="filter-group">
+            <label class="filter-label">📅 {{ t.date_from }}</label>
+            <input type="date" name="date_from" class="filter-control" value="{{ date_from }}">
+        </div>
+        <div class="filter-group">
+            <label class="filter-label">📅 {{ t.date_to }}</label>
+            <input type="date" name="date_to" class="filter-control" value="{{ date_to }}">
+        </div>
         <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;">
             <button type="submit" class="btn btn-primary btn-sm">🔍 {{ t.filter_btn }}</button>
-            <a href="{% url 'tx_index' %}" class="btn btn-secondary btn-sm">↺</a>
-            <a href="{% url 'tx_create' %}" class="btn btn-primary btn-sm">➕ {{ t.new_tx_btn }}</a>
+            <a href="{% url 'tx_country' %}" class="btn btn-secondary btn-sm">↺</a>
         </div>
     </form>
 </div>
 
-<!-- Mini stats strip -->
-<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;" id="txStatsStrip">
+<!-- Stats strip -->
+<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;">
     <div style="display:flex;align-items:center;gap:8px;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:10px 16px;flex:1;min-width:120px;">
-        <span style="font-size:18px;">📋</span>
+        <span style="font-size:18px;">{{ auth_user.country.flag_emoji }}</span>
         <div>
-            <div style="font-size:18px;font-weight:900;color:var(--text-heading);" id="sCount">{{ transactions|length }}</div>
+            <div style="font-size:18px;font-weight:900;color:var(--text-heading);">{{ transactions|length }}</div>
             <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;">{{ t.results }}</div>
         </div>
     </div>
@@ -65,8 +108,8 @@
 </div>
 
 <!-- Selection bar -->
-<div class="sel-bar" id="txSelBar">
-    <div class="sel-bar-count"><em id="txSelCount">0</em> sélectionné(s)</div>
+<div class="sel-bar" id="ctrySelBar">
+    <div class="sel-bar-count"><em id="ctrySelCount">0</em> sélectionné(s)</div>
     <div class="sel-bar-actions">
         <button class="sel-bar-btn" data-action="view"  disabled>👁 {{ t.view|default:"Voir" }}</button>
         <button class="sel-bar-btn" data-action="edit"  disabled>✏️ {{ t.edit|default:"Modifier" }}</button>
@@ -77,20 +120,20 @@
 
 <div class="table-card">
     <div class="table-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
-        <div class="table-title">📋 {{ t.tx_history_mine }} — <span style="color:var(--sky-primary);">{{ transactions|length }}</span> {{ t.results }}</div>
+        <div class="table-title">{{ auth_user.country.flag_emoji }} {{ t.country_tx }} — <span style="color:var(--sky-primary);">{{ transactions|length }}</span> {{ t.results }}</div>
         <a href="{% url 'tx_create' %}" class="btn btn-primary btn-sm">➕ {{ t.new_tx_btn }}</a>
     </div>
     <div class="table-scroll" style="overflow-x:auto;">
         {% if transactions %}
-        <table class="bsky-table" id="txTable">
+        <table class="bsky-table" id="ctryTable">
             <thead>
                 <tr>
-                    <th class="sel-th"><input type="checkbox" class="sel-cb" id="selAllIdx" title="Tout sélectionner"></th>
+                    <th class="sel-th"><input type="checkbox" class="sel-cb" id="selAllCtry" title="Tout sélectionner"></th>
                     <th>{{ t.tx_number }}</th>
+                    <th>👤 {{ t.agent_col }}</th>
                     <th>{{ t.sender }}</th>
-                    <th>{{ t.beneficiary }}</th>
+                    <th class="hide-mobile">{{ t.beneficiary }}</th>
                     <th>{{ t.amount }}</th>
-                    <th class="hide-mobile">{{ t.fee }}</th>
                     <th class="hide-mobile">{{ t.total }}</th>
                     <th>{{ t.route }}</th>
                     <th>{{ t.status }}</th>
@@ -114,23 +157,30 @@
                         </div>
                     </td>
                     <td>
+                        <div style="display:flex;align-items:center;gap:7px;flex-wrap:nowrap;">
+                            <div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--sky-primary),var(--sky-secondary));display:flex;align-items:center;justify-content:center;color:white;font-size:10px;font-weight:800;flex-shrink:0;">{{ tx.agent.name|default:"?"|initials }}</div>
+                            <div class="hide-mobile" style="min-width:0;">
+                                <div style="font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px;">{{ tx.agent.name|default:"Agent supprimé" }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
                         <div style="font-weight:600;font-size:13px;">{{ tx.sender_name }}</div>
                         {% if tx.sender_phone %}<div style="font-size:11px;color:var(--text-muted);">{{ tx.sender_phone }}</div>{% endif %}
                     </td>
-                    <td>
+                    <td class="hide-mobile">
                         <div style="font-size:13px;">{{ tx.receiver_name|default:"—" }}</div>
                         {% if tx.receiver_phone %}<div style="font-size:11px;color:var(--text-muted);">{{ tx.receiver_phone }}</div>{% endif %}
                     </td>
                     <td><strong>{{ tx.amount|number_format:0 }}</strong></td>
-                    <td style="color:var(--text-muted);">{{ tx.fee_amount|number_format:0 }}</td>
-                    <td><strong style="color:var(--sky-primary);">{{ tx.total_amount|number_format:0 }}</strong></td>
+                    <td class="hide-mobile"><strong style="color:var(--sky-primary);">{{ tx.total_amount|number_format:0 }}</strong></td>
                     <td><span class="route-pill">{{ tx.origin_country.flag_emoji }} → {{ tx.destination_country.flag_emoji }}</span></td>
                     <td>
                         <span class="badge-status status-{{ tx.status }}">
                             {% if tx.status == 'completed' %}✅ {{ t.completed }}{% elif tx.status == 'pending' %}⏳ {{ t.pending }}{% else %}❌ {{ t.cancelled }}{% endif %}
                         </span>
                     </td>
-                    <td style="font-size:12px;color:var(--text-muted);white-space:nowrap;">{{ tx.created_at|date:"d/m/Y H:i" }}</td>
+                    <td class="hide-mobile" style="font-size:12px;color:var(--text-muted);white-space:nowrap;">{{ tx.created_at|date:"d/m/Y H:i" }}</td>
                     <td>
                         <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-start;">
                             <a href="{% url 'tx_show' tx.id %}" class="btn btn-secondary btn-sm" style="padding:6px 8px;min-width:34px;">👁</a>
@@ -144,19 +194,18 @@
         </table>
         {% else %}
             <div class="empty-state">
-                <div class="empty-icon">📭</div>
+                <div class="empty-icon">🏳️</div>
                 <div class="empty-text">{{ t.no_transaction }}</div>
-                <a href="{% url 'tx_create' %}" class="btn btn-primary" style="margin-top:14px;">{{ t.create_first_tx }}</a>
             </div>
         {% endif %}
     </div>
 </div>
+{% endif %}
 {% endblock %}
 
 {% block scripts %}
 <script>
 (function(){
-    /* ── Stats strip counter ── */
     var rows = document.querySelectorAll('.bsky-table tbody tr');
     var c=0, p=0, x=0;
     rows.forEach(function(r){
@@ -175,13 +224,12 @@
     if(ex) ex.textContent = x;
 })();
 
-/* ── Row selection ── */
 (function(){
-    var tbl    = document.getElementById('txTable');
-    var bar    = document.getElementById('txSelBar');
+    var tbl    = document.getElementById('ctryTable');
+    var bar    = document.getElementById('ctrySelBar');
     if (!tbl || !bar) return;
 
-    var countEl  = document.getElementById('txSelCount');
+    var countEl  = document.getElementById('ctrySelCount');
     var btnView  = bar.querySelector('[data-action="view"]');
     var btnEdit  = bar.querySelector('[data-action="edit"]');
     var btnPrint = bar.querySelector('[data-action="print"]');
@@ -203,7 +251,6 @@
         }
     }
 
-    /* Row checkboxes + click-row-to-toggle */
     tbl.querySelectorAll('tbody tr[data-id]').forEach(function(row){
         var cb = row.querySelector('.sel-cb');
         if(!cb) return;
@@ -220,7 +267,6 @@
         });
     });
 
-    /* Select-all */
     if(allCb){
         allCb.addEventListener('change', function(){
             tbl.querySelectorAll('tbody tr[data-id] .sel-cb').forEach(function(cb){
@@ -233,7 +279,6 @@
         });
     }
 
-    /* Action buttons */
     if(btnView){
         btnView.addEventListener('click', function(){
             if(sel.size!==1) return;
@@ -257,7 +302,6 @@
         });
     }
 
-    /* Clear */
     if(clearBtn){
         clearBtn.addEventListener('click', function(){
             sel.clear();

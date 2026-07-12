@@ -357,11 +357,7 @@ def team_index(request):
 @agent_required
 def tx_index(request):
     user = get_auth_user(request)
-    if user.country_id:
-        qs = Transaction.objects.filter(agent__country_id=user.country_id)
-    else:
-        qs = Transaction.objects.filter(agent=user)
-    qs = qs.select_related('origin_country', 'destination_country', 'agent').order_by('-created_at')
+    qs   = Transaction.objects.filter(agent=user).select_related('origin_country', 'destination_country').order_by('-created_at')
     q           = request.GET.get('q', '')
     status_f    = request.GET.get('status', '')
     type_f      = request.GET.get('transaction_type', '')
@@ -826,6 +822,53 @@ def tx_network(request):
         'q':             q,
         'status_filter': status_f,
         'country_filter':country_f,
+        'agent_filter':  agent_f,
+        'date_from':     date_from,
+        'date_to':       date_to,
+        'auth_user':     user,
+    })
+
+
+@agent_required
+def tx_country(request):
+    """Colleagues who share the same country as the logged-in agent,
+    and every transaction they've recorded — all editable, since
+    _can_access_tx() already grants same-country agents edit rights."""
+    user = get_auth_user(request)
+
+    colleagues = User.objects.none()
+    qs         = Transaction.objects.none()
+    if user.country_id:
+        colleagues = (
+            User.objects.filter(role='agent', status='active', country_id=user.country_id)
+            .exclude(pk=user.id).order_by('name')
+        )
+        qs = (
+            Transaction.objects.filter(agent__country_id=user.country_id)
+            .select_related('agent', 'origin_country', 'destination_country')
+            .order_by('-created_at')
+        )
+
+    q         = request.GET.get('q', '')
+    status_f  = request.GET.get('status', '')
+    agent_f   = request.GET.get('agent_id', '')
+    date_from = request.GET.get('date_from', '')
+    date_to   = request.GET.get('date_to', '')
+    if q:         qs = qs.filter(Q(transaction_number__icontains=q) | Q(sender_name__icontains=q) | Q(receiver_name__icontains=q))
+    if status_f:  qs = qs.filter(status=status_f)
+    if agent_f:   qs = qs.filter(agent_id=agent_f)
+    if date_from:
+        try: qs = qs.filter(created_at__date__gte=date_from)
+        except Exception: pass
+    if date_to:
+        try: qs = qs.filter(created_at__date__lte=date_to)
+        except Exception: pass
+
+    return render(request, 'agent/transactions/country.html', {
+        'transactions':  qs[:500],
+        'colleagues':    colleagues,
+        'q':             q,
+        'status_filter': status_f,
         'agent_filter':  agent_f,
         'date_from':     date_from,
         'date_to':       date_to,
