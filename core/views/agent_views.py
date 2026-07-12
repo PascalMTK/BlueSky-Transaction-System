@@ -15,6 +15,18 @@ from core.decorators import agent_required, get_auth_user
 from core.mailer import send_async
 
 
+def _can_access_tx(user, tx):
+    """Admins can access any transaction. Agents can access their own
+    transactions plus those of any other agent from their own country."""
+    if user.is_admin():
+        return True
+    if tx.agent_id == user.id:
+        return True
+    if user.country_id and tx.agent_id and tx.agent.country_id == user.country_id:
+        return True
+    return False
+
+
 def _send_transaction_email(tx, client_email: str, locale: str = 'fr'):
     """Send a styled HTML confirmation email to the client.
     Returns (True, None) on success or (False, error_message) on failure."""
@@ -345,7 +357,11 @@ def team_index(request):
 @agent_required
 def tx_index(request):
     user = get_auth_user(request)
-    qs   = Transaction.objects.filter(agent=user).select_related('origin_country', 'destination_country').order_by('-created_at')
+    if user.country_id:
+        qs = Transaction.objects.filter(agent__country_id=user.country_id)
+    else:
+        qs = Transaction.objects.filter(agent=user)
+    qs = qs.select_related('origin_country', 'destination_country', 'agent').order_by('-created_at')
     q           = request.GET.get('q', '')
     status_f    = request.GET.get('status', '')
     type_f      = request.GET.get('transaction_type', '')
@@ -512,7 +528,7 @@ def tx_create(request):
 def tx_show(request, tx_id):
     user = get_auth_user(request)
     tx   = get_object_or_404(Transaction, pk=tx_id)
-    if not user.is_admin() and tx.agent_id != user.id:
+    if not _can_access_tx(user, tx):
         return redirect('tx_index')
     return render(request, 'agent/transactions/show.html', {'transaction': tx, 'auth_user': user})
 
@@ -521,7 +537,7 @@ def tx_show(request, tx_id):
 def tx_edit(request, tx_id):
     user = get_auth_user(request)
     tx   = get_object_or_404(Transaction, pk=tx_id)
-    if not user.is_admin() and tx.agent_id != user.id:
+    if not _can_access_tx(user, tx):
         return redirect('tx_index')
     # All countries (not just active ones) — an already-created transaction
     # may reference a country that was deactivated since, and it must still
@@ -581,7 +597,7 @@ def tx_send_receipt(request, tx_id):
     — the agent decides when, rather than it firing automatically on save."""
     user = get_auth_user(request)
     tx   = get_object_or_404(Transaction, pk=tx_id)
-    if not user.is_admin() and tx.agent_id != user.id:
+    if not _can_access_tx(user, tx):
         return JsonResponse({'ok': False, 'error': "Vous n'avez pas accès à cette transaction."}, status=403)
     if request.method != 'POST':
         return JsonResponse({'ok': False, 'error': 'Méthode non autorisée.'}, status=405)
@@ -601,7 +617,7 @@ def tx_send_receipt(request, tx_id):
 def tx_print(request, tx_id):
     user = get_auth_user(request)
     tx   = get_object_or_404(Transaction, pk=tx_id)
-    if not user.is_admin() and tx.agent_id != user.id:
+    if not _can_access_tx(user, tx):
         return redirect('tx_index')
     return render(request, 'agent/transactions/print.html', {'transaction': tx, 'auth_user': user})
 
