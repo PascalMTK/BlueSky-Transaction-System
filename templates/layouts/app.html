@@ -145,7 +145,8 @@
     {% endif %}
 
     <div style="padding:10px 10px 16px;">
-        <a href="{% url 'logout' %}" class="nav-link" style="color:rgba(255,100,100,.8);">
+        <a href="{% url 'logout' %}" class="nav-link" style="color:rgba(255,100,100,.8);"
+           onclick="return confirm('{{ t.logout_confirm|escapejs }}');">
             <span class="nav-icon">🚪</span> {{ t.logout }}
         </a>
     </div>
@@ -196,7 +197,8 @@
                     {% endif %}
                     <a href="{% url 'profile_show' %}" class="dropdown-item">👤 {{ t.my_profile }}</a>
                     <div class="dropdown-divider"></div>
-                    <a href="{% url 'logout' %}" class="dropdown-item danger">🚪 {{ t.logout }}</a>
+                    <a href="{% url 'logout' %}" class="dropdown-item danger"
+                       onclick="return confirm('{{ t.logout_confirm|escapejs }}');">🚪 {{ t.logout }}</a>
                 </div>
             </div>
         </div>
@@ -245,7 +247,8 @@
     <a href="{% url 'profile_show' %}" class="mob-nav-item {% block mob_adm_profile %}{% endblock %}">
         <span class="mob-icon">👤</span><span class="mob-label">{{ t.my_profile }}</span>
     </a>
-    <a href="{% url 'logout' %}" class="mob-nav-item" style="color:rgba(220,60,60,.8);">
+    <a href="{% url 'logout' %}" class="mob-nav-item" style="color:rgba(220,60,60,.8);"
+       onclick="return confirm('{{ t.logout_confirm|escapejs }}');">
         <span class="mob-icon">🚪</span><span class="mob-label">{{ t.logout }}</span>
     </a>
 </nav>
@@ -275,7 +278,8 @@
     <a href="{% url 'agent_export_csv' %}" class="mob-nav-item">
         <span class="mob-icon">📥</span><span class="mob-label">{{ t.export_my_data }}</span>
     </a>
-    <a href="{% url 'logout' %}" class="mob-nav-item" style="color:rgba(220,60,60,.8);">
+    <a href="{% url 'logout' %}" class="mob-nav-item" style="color:rgba(220,60,60,.8);"
+       onclick="return confirm('{{ t.logout_confirm|escapejs }}');">
         <span class="mob-icon">🚪</span><span class="mob-label">{{ t.logout }}</span>
     </a>
 </nav>

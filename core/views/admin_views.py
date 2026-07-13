@@ -2,7 +2,7 @@ import csv, io, json
 import openpyxl
 from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.http import HttpResponse
@@ -253,6 +253,25 @@ def dashboard(request):
         for i, r in enumerate(country_qs)
     ]
 
+    # Daily progress — last 30 days of completed-transaction volume/count.
+    since_daily = today - timedelta(days=29)
+    daily_qs = (
+        Transaction.objects
+        .filter(status='completed', created_at__date__gte=since_daily)
+        .values('created_at__date')
+        .annotate(total=Sum('amount'), count=Count('id'))
+    )
+    daily_map = {r['created_at__date']: r for r in daily_qs}
+    daily_data = []
+    for i in range(30):
+        d = since_daily + timedelta(days=i)
+        r = daily_map.get(d, {})
+        daily_data.append({
+            'date':  d.strftime('%d/%m'),
+            'total': float(r.get('total') or 0),
+            'count': r.get('count') or 0,
+        })
+
     pending_agents_list = User.objects.filter(role='agent', status='pending').select_related('country').order_by('created_at')
 
     # Trailing months only (up to the current one) so the sparkline reads as
@@ -271,6 +290,7 @@ def dashboard(request):
         'volume_trend':        volume_trend,
         'fees_trend':          fees_trend,
         'monthly_data_json':   json.dumps(monthly_data),
+        'daily_data_json':     json.dumps(daily_data),
         'country_tx_json':     json.dumps(country_tx_data),
         'country_tx_data':     country_tx_data,
         'pending_agents_list': pending_agents_list,

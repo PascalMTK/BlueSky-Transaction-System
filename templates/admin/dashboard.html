@@ -246,6 +246,19 @@
     </div>
 </div>
 
+<!-- Daily progress -->
+<div class="card" style="margin-bottom:22px;">
+    <div class="card-header">
+        <div>
+            <div class="card-title">📅 {{ t.daily_activity }}</div>
+            <div class="card-subtitle">{{ t.daily_subtitle }}</div>
+        </div>
+    </div>
+    <div class="card-body" style="padding:16px 20px;">
+        <canvas id="dailyChart" height="90"></canvas>
+    </div>
+</div>
+
 <!-- Chart + reports -->
 <div class="charts-row" style="margin-bottom:22px;">
     <div class="card">
@@ -506,6 +519,47 @@
 
 {% block scripts %}
 <script>
+// ── Daily progress chart — last 30 days, transaction volume ───────────────
+const dailyData = {{ daily_data_json|safe }};
+const dailyCtx  = document.getElementById('dailyChart');
+if (dailyCtx && typeof Chart !== 'undefined') {
+    const d = getChartDefaults();
+    new Chart(dailyCtx, {
+        type: 'line',
+        data: {
+            labels: dailyData.map(r => r.date),
+            datasets: [{
+                label: '{{ t.total_volume }}',
+                data: dailyData.map(r => r.total),
+                borderColor: 'rgba(2,132,199,0.9)',
+                backgroundColor: 'rgba(2,132,199,0.12)',
+                borderWidth: 2,
+                pointRadius: 0,
+                pointHoverRadius: 4,
+                pointHoverBackgroundColor: 'rgba(2,132,199,1)',
+                tension: 0.3,
+                fill: true,
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => ctx.parsed.y.toLocaleString('fr-FR'),
+                        afterLabel: ctx => dailyData[ctx.dataIndex].count + ' transactions'
+                    }
+                }
+            },
+            scales: {
+                x: { ticks: { color: d.tickColor, font: { size: 10 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 10 }, grid: { display: false } },
+                y: { ticks: { color: d.tickColor, font: { size: 11 }, callback: v => v >= 1e6 ? (v/1e6).toFixed(1)+'M' : v >= 1000 ? (v/1000)+'K' : v }, grid: { color: d.gridColor } }
+            }
+        }
+    });
+}
+
 const monthlyData = {{ monthly_data_json|safe }};
 const ctx = document.getElementById('monthlyChart');
 if(ctx && typeof Chart !== 'undefined'){
