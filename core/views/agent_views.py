@@ -433,7 +433,28 @@ def tx_create(request):
         try:
             origin  = Country.objects.get(pk=origin_id)
             dest    = Country.objects.get(pk=dest_id)
-            amount = _parse_decimal(request.POST.get('amount', 0), 0)
+
+            amount_raw = (request.POST.get('amount') or '').strip()
+            if not amount_raw:
+                messages.error(request, "Le montant est obligatoire.")
+                raise ValueError('amount required')
+            amount = _parse_decimal(amount_raw, 0)
+            if amount <= 0:
+                messages.error(request, "Le montant doit être supérieur à zéro.")
+                raise ValueError('amount invalid')
+
+            currency_raw = (request.POST.get('currency') or '').strip()
+            if not currency_raw:
+                messages.error(request, "La devise est obligatoire.")
+                raise ValueError('currency required')
+            currency = currency_raw.upper()
+
+            fee_raw   = (request.POST.get('fee_amount') or '').strip()
+            total_raw = (request.POST.get('total_amount') or '').strip()
+            if not fee_raw and not total_raw:
+                messages.error(request, "Les frais sont obligatoires.")
+                raise ValueError('fee required')
+
             default_pct = float(origin.default_fee_percentage or 0)
             default_fee = round(amount * default_pct / 100, 2)
             fee_amt = _resolve_fee_amount(request.POST, amount, default_fee)
@@ -443,7 +464,6 @@ def tx_create(request):
             total = round(amount - fee_amt, 2)
             fee_pct = round((fee_amt / amount * 100), 2) if amount else 0
             tx_num  = 'BSK-' + datetime.now().strftime('%Y%m%d') + '-' + str(uuid.uuid4())[:6].upper()
-            currency = (request.POST.get('currency') or origin.currency_code or '').upper()
             sent_at_str = request.POST.get('sent_at', '')
             sent_at = None
             if sent_at_str:
@@ -541,17 +561,38 @@ def tx_edit(request, tx_id):
     countries  = Country.objects.all().order_by('name')
     currencies = _build_currencies()
     if request.method == 'POST':
+        ctx = {
+            'transaction': tx, 'countries': countries, 'currencies': currencies, 'auth_user': user,
+        }
         tx_type  = request.POST.get('transaction_type', tx.transaction_type)
-        amount = _parse_decimal(request.POST.get('amount', tx.amount), tx.amount)
+
+        amount_raw = (request.POST.get('amount') or '').strip()
+        if not amount_raw:
+            messages.error(request, "Le montant est obligatoire.")
+            return render(request, 'agent/transactions/edit.html', ctx)
+        amount = _parse_decimal(amount_raw, tx.amount)
+        if amount <= 0:
+            messages.error(request, "Le montant doit être supérieur à zéro.")
+            return render(request, 'agent/transactions/edit.html', ctx)
+
+        currency_raw = (request.POST.get('currency') or '').strip()
+        if not currency_raw:
+            messages.error(request, "La devise est obligatoire.")
+            return render(request, 'agent/transactions/edit.html', ctx)
+        currency = currency_raw.upper()
+
+        fee_raw   = (request.POST.get('fee_amount') or '').strip()
+        total_raw = (request.POST.get('total_amount') or '').strip()
+        if not fee_raw and not total_raw:
+            messages.error(request, "Les frais sont obligatoires.")
+            return render(request, 'agent/transactions/edit.html', ctx)
+
         fee_amt = _resolve_fee_amount(request.POST, amount, tx.fee_amount)
         if fee_amt < 0 or fee_amt > amount:
             messages.error(request, "Les frais ne peuvent pas dépasser le montant donné par le client.")
-            return render(request, 'agent/transactions/edit.html', {
-                'transaction': tx, 'countries': countries, 'currencies': currencies, 'auth_user': user,
-            })
+            return render(request, 'agent/transactions/edit.html', ctx)
         total = round(amount - fee_amt, 2)
         fee_pct = round((fee_amt / amount * 100), 2) if amount else 0
-        currency = (request.POST.get('currency') or tx.currency or '').upper()
         sent_at_str = request.POST.get('sent_at', '')
         if sent_at_str:
             try:

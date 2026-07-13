@@ -245,18 +245,18 @@
                         <div class="tx-cur-grp">
                             <label class="form-label" style="opacity:0;pointer-events:none;">·</label>
                             <input type="text" name="currency" id="currencyInput" class="form-control"
-                                   list="currencyList" placeholder="XAF" autocomplete="off">
+                                   list="currencyList" placeholder="XAF" autocomplete="off" required>
                         </div>
                     </div>
 
                     <!-- Rangée 2 : Frais (pré-rempli, modifiable) ↔ Montant remis (calculé, aussi modifiable) -->
                     <div class="tx-row-result">
                         <div class="tx-fee-grp">
-                            <label class="form-label">{{ t.fee_amount_label }}</label>
+                            <label class="form-label">{{ t.fee_amount_label }} *</label>
                             <div class="tx-field-icon-wrap">
                                 <span class="tx-icon" id="feeCurIcon" style="font-size:11px;font-weight:700;">$</span>
                                 <input type="number" name="fee_amount" id="feeInput" class="form-control"
-                                       placeholder="2500" step="0.01" min="0" oninput="onFeeInput()">
+                                       placeholder="2500" step="0.01" min="0" required oninput="onFeeInput()">
                             </div>
                         </div>
                         <div class="tx-result-arrow">→</div>
