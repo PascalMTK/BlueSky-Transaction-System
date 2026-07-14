@@ -318,7 +318,7 @@
 <script>
 /* ── Mobile horizontal scroll hint for tables ── */
 (function () {
-    if (window.innerWidth > 768) return;
+    if (window.innerWidth > 1024) return;
     var hint_fr = '{% if locale == "en" %}Swipe left / right to see all columns{% else %}Glissez pour voir toutes les colonnes{% endif %}';
     document.querySelectorAll('.table-scroll').forEach(function (wrap) {
         if (wrap.scrollWidth <= wrap.clientWidth + 4) return;

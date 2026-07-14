@@ -957,6 +957,62 @@ body {
 }
 
 /* ============================================================
+   RESPONSIVE — Tables: horizontal scroll affordance (max 1024px)
+   Wide tables clip against the sidebar well before the 768px mobile
+   breakpoint (e.g. laptop/tablet-landscape widths) — give the scroll
+   cue and sticky action column the same range so it isn't silently
+   cut off with no indication more columns exist.
+   ============================================================ */
+@media (max-width: 1024px) {
+    .table-card {
+        border-radius: 10px;
+        overflow: visible !important; /* allow inner scroll-wrap to overflow */
+    }
+    .table-scroll {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        border-radius: 0 0 10px 10px;
+        /* CSS scroll-shadow: gradient edges signal scrollable content */
+        background:
+            linear-gradient(to right,  var(--bg-card,#fff) 0%,   transparent 100%),
+            linear-gradient(to left,   var(--bg-card,#fff) 0%,   transparent 100%) right,
+            radial-gradient(farthest-side at 0   50%, rgba(0,0,0,.10), transparent),
+            radial-gradient(farthest-side at 100% 50%, rgba(0,0,0,.10), transparent) right;
+        background-color: var(--bg-card,#fff);
+        background-size: 28px 100%, 28px 100%, 10px 100%, 10px 100%;
+        background-repeat: no-repeat;
+        background-attachment: local, local, scroll, scroll;
+    }
+    /* Visible scrollbar */
+    .table-scroll::-webkit-scrollbar { height: 5px; }
+    .table-scroll::-webkit-scrollbar-track { background: var(--border,#e2e8f0); }
+    .table-scroll::-webkit-scrollbar-thumb { background: var(--sky-primary,#0284c7); border-radius: 3px; }
+
+    /* Sticky action column */
+    .bsky-table td:last-child, .bsky-table th:last-child {
+        position: sticky; right: 0;
+        background: var(--bg-card); z-index: 2;
+        box-shadow: -3px 0 8px rgba(0,0,0,0.06);
+    }
+    .bsky-table thead th:last-child { background: var(--bg-table-head); }
+    .bsky-table tbody tr:hover td:last-child { background: var(--bg-row-hover); }
+
+    /* Scroll hint bar — injected by JS, shown below table-header */
+    .table-scroll-hint {
+        display: flex; align-items: center; justify-content: center; gap: 5px;
+        padding: 5px 14px 0;
+        font-size: 10px; font-weight: 600;
+        color: var(--sky-primary,#0284c7);
+        letter-spacing: .2px;
+        animation: hintPulse 2s ease-in-out 1s both;
+    }
+    @keyframes hintPulse {
+        0%,100% { opacity:.55; }
+        50%      { opacity:1; }
+    }
+}
+
+/* ============================================================
    RESPONSIVE — Mobile (max 768px)
    ============================================================ */
 @media (max-width: 768px) {
@@ -1010,56 +1066,8 @@ body {
     .rg-3 { grid-template-columns: 1fr 1fr; gap: 10px; }
     .summary-inner-grid { grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
 
-    /* Tables — horizontal scroll */
-    .table-card {
-        border-radius: 10px;
-        overflow: visible !important; /* allow inner scroll-wrap to overflow */
-    }
-    .table-scroll {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        border-radius: 0 0 10px 10px;
-        /* CSS scroll-shadow: gradient edges signal scrollable content */
-        background:
-            linear-gradient(to right,  var(--bg-card,#fff) 0%,   transparent 100%),
-            linear-gradient(to left,   var(--bg-card,#fff) 0%,   transparent 100%) right,
-            radial-gradient(farthest-side at 0   50%, rgba(0,0,0,.10), transparent),
-            radial-gradient(farthest-side at 100% 50%, rgba(0,0,0,.10), transparent) right;
-        background-color: var(--bg-card,#fff);
-        background-size: 28px 100%, 28px 100%, 10px 100%, 10px 100%;
-        background-repeat: no-repeat;
-        background-attachment: local, local, scroll, scroll;
-    }
-    /* Visible scrollbar on mobile */
-    .table-scroll::-webkit-scrollbar { height: 5px; }
-    .table-scroll::-webkit-scrollbar-track { background: var(--border,#e2e8f0); }
-    .table-scroll::-webkit-scrollbar-thumb { background: var(--sky-primary,#0284c7); border-radius: 3px; }
-
-    /* Sticky action column */
-    .bsky-table td:last-child, .bsky-table th:last-child {
-        position: sticky; right: 0;
-        background: var(--bg-card); z-index: 2;
-        box-shadow: -3px 0 8px rgba(0,0,0,0.06);
-    }
-    .bsky-table thead th:last-child { background: var(--bg-table-head); }
-    .bsky-table tbody tr:hover td:last-child { background: var(--bg-row-hover); }
-
     .bsky-table thead th { padding: 9px 10px; font-size: 9.5px; }
     .bsky-table tbody td { padding: 10px; font-size: 12px; }
-
-    /* Scroll hint bar — injected by JS, shown below table-header */
-    .table-scroll-hint {
-        display: flex; align-items: center; justify-content: center; gap: 5px;
-        padding: 5px 14px 0;
-        font-size: 10px; font-weight: 600;
-        color: var(--sky-primary,#0284c7);
-        letter-spacing: .2px;
-        animation: hintPulse 2s ease-in-out 1s both;
-    }
-    @keyframes hintPulse {
-        0%,100% { opacity:.55; }
-        50%      { opacity:1; }
-    }
 
     /* Hide less critical table columns on mobile */
     .hide-mobile { display: none; }
