@@ -182,7 +182,7 @@
                     {% if auth_user %}
                     <div>
                         <div class="user-info-name">{{ auth_user.name|limit:16 }}</div>
-                        <div class="user-info-role" style="display:flex;align-items:center;gap:4px;">
+                        <div class="user-info-role">
                             <span>{% if auth_user.is_admin %}🛡️ {{ t.role_admin }}{% else %}🏢 {{ t.role_agent }}{% endif %}</span>
                             {% if auth_user.country %}<span style="font-size:13px;line-height:1;" title="{{ auth_user.country.name|country_name:locale }}">{{ auth_user.country.flag_emoji }}</span>{% endif %}
                         </div>
