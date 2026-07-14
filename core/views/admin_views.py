@@ -449,7 +449,7 @@ def transactions(request):
     country_f   = request.GET.get('country', '')
     date_from   = request.GET.get('date_from', '')
     date_to     = request.GET.get('date_to', '')
-    if q:         qs = qs.filter(Q(transaction_number__icontains=q) | Q(sender_name__icontains=q) | Q(receiver_name__icontains=q))
+    if q:         qs = qs.filter(Q(transaction_number__icontains=q) | Q(sender_name__icontains=q) | Q(receiver_name__icontains=q) | Q(sender_phone__icontains=q) | Q(receiver_phone__icontains=q))
     if status_f:  qs = qs.filter(status=status_f)
     if country_f: qs = qs.filter(Q(origin_country__code=country_f) | Q(destination_country__code=country_f))
     if date_from:
