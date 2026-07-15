@@ -19,16 +19,17 @@ def admin_required(f):
         if not uid:
             return redirect('login')
         try:
-            user = User.objects.get(pk=uid)
+            user = User.objects.select_related('country').get(pk=uid)
             if not user.is_admin():
                 return redirect('agent_dashboard')
             # Admins must be active — deleted/inactive admins are locked out
-            if user.status not in ('active',):
+            if user.status != 'active':
                 request.session.flush()
                 return redirect('login')
         except User.DoesNotExist:
             request.session.flush()
             return redirect('login')
+        request.auth_user = user
         return f(request, *args, **kwargs)
     return wrapper
 
@@ -40,7 +41,7 @@ def agent_required(f):
         if not uid:
             return redirect('login')
         try:
-            user = User.objects.get(pk=uid)
+            user = User.objects.select_related('country').get(pk=uid)
             # Only active users can access agent pages
             if user.status != 'active':
                 request.session.flush()
@@ -48,15 +49,21 @@ def agent_required(f):
         except User.DoesNotExist:
             request.session.flush()
             return redirect('login')
+        request.auth_user = user
         return f(request, *args, **kwargs)
     return wrapper
 
 
 def get_auth_user(request):
+    cached = getattr(request, 'auth_user', None)
+    if cached is not None:
+        return cached
     uid = request.session.get('user_id')
     if uid:
         try:
-            return User.objects.select_related('country').get(pk=uid)
+            user = User.objects.select_related('country').get(pk=uid)
+            request.auth_user = user
+            return user
         except User.DoesNotExist:
             pass
     return None

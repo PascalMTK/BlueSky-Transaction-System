@@ -296,13 +296,23 @@ def dashboard(request):
     user  = get_auth_user(request)
     today = date.today()
     my_tx = Transaction.objects.filter(agent=user)
+    aggregated = my_tx.aggregate(
+        total_transactions=Count('id'),
+        transactions_today=Count('id', filter=Q(created_at__date=today)),
+        transactions_month=Count('id', filter=Q(created_at__year=today.year, created_at__month=today.month)),
+        total_amount=Sum('amount', filter=Q(status='completed')),
+        total_fees=Sum('fee_amount', filter=Q(status='completed')),
+        amount_month=Sum('amount', filter=Q(
+            status='completed', created_at__year=today.year, created_at__month=today.month,
+        )),
+    )
     stats = {
-        'total_transactions': my_tx.count(),
-        'transactions_today': my_tx.filter(created_at__date=today).count(),
-        'transactions_month': my_tx.filter(created_at__month=today.month, created_at__year=today.year).count(),
-        'total_amount':       float(my_tx.filter(status='completed').aggregate(s=Sum('amount'))['s'] or 0),
-        'total_fees':         float(my_tx.filter(status='completed').aggregate(s=Sum('fee_amount'))['s'] or 0),
-        'amount_month':       float(my_tx.filter(created_at__month=today.month, created_at__year=today.year, status='completed').aggregate(s=Sum('amount'))['s'] or 0),
+        'total_transactions': aggregated['total_transactions'],
+        'transactions_today': aggregated['transactions_today'],
+        'transactions_month': aggregated['transactions_month'],
+        'total_amount':       float(aggregated['total_amount'] or 0),
+        'total_fees':         float(aggregated['total_fees'] or 0),
+        'amount_month':       float(aggregated['amount_month'] or 0),
     }
     recent_tx = my_tx.select_related('origin_country', 'destination_country').order_by('-created_at')[:10]
 
@@ -376,7 +386,7 @@ def tx_index(request):
         except Exception: pass
     countries = Country.objects.filter(is_active=True)
     return render(request, 'agent/transactions/index.html', {
-        'transactions':      qs,
+        'transactions':      qs[:500],
         'countries':         countries,
         'q':                 q,
         'status_filter':     status_f,
@@ -543,7 +553,10 @@ def tx_create(request):
 @agent_required
 def tx_show(request, tx_id):
     user = get_auth_user(request)
-    tx   = get_object_or_404(Transaction, pk=tx_id)
+    tx = get_object_or_404(
+        Transaction.objects.select_related('agent__country', 'origin_country', 'destination_country'),
+        pk=tx_id,
+    )
     if not _can_access_tx(user, tx):
         return redirect('tx_index')
     return render(request, 'agent/transactions/show.html', {'transaction': tx, 'auth_user': user})
@@ -552,7 +565,10 @@ def tx_show(request, tx_id):
 @agent_required
 def tx_edit(request, tx_id):
     user = get_auth_user(request)
-    tx   = get_object_or_404(Transaction, pk=tx_id)
+    tx = get_object_or_404(
+        Transaction.objects.select_related('agent__country', 'origin_country', 'destination_country'),
+        pk=tx_id,
+    )
     if not _can_access_tx(user, tx):
         return redirect('tx_index')
     # All countries (not just active ones) — an already-created transaction
@@ -633,7 +649,10 @@ def tx_send_receipt(request, tx_id):
     """Send (or resend) the confirmation email for a transaction, on demand
     — the agent decides when, rather than it firing automatically on save."""
     user = get_auth_user(request)
-    tx   = get_object_or_404(Transaction, pk=tx_id)
+    tx = get_object_or_404(
+        Transaction.objects.select_related('agent__country', 'origin_country', 'destination_country'),
+        pk=tx_id,
+    )
     if not _can_access_tx(user, tx):
         return JsonResponse({'ok': False, 'error': "Vous n'avez pas accès à cette transaction."}, status=403)
     if request.method != 'POST':
@@ -653,7 +672,10 @@ def tx_send_receipt(request, tx_id):
 @agent_required
 def tx_print(request, tx_id):
     user = get_auth_user(request)
-    tx   = get_object_or_404(Transaction, pk=tx_id)
+    tx = get_object_or_404(
+        Transaction.objects.select_related('agent__country', 'origin_country', 'destination_country'),
+        pk=tx_id,
+    )
     if not _can_access_tx(user, tx):
         return redirect('tx_index')
     return render(request, 'agent/transactions/print.html', {'transaction': tx, 'auth_user': user})
@@ -698,16 +720,17 @@ def agent_reports_portal(request):
             return redirect(f'/agent/reports/portal/?r={report.id}')
         return redirect('agent_reports_portal')
 
-    reports     = AgentReport.objects.filter(agent=user).order_by('-created_at')
+    reports_qs  = AgentReport.objects.filter(agent=user).order_by('-created_at')
     selected_id = request.GET.get('r')
     selected    = None
     if selected_id:
         try:
-            selected = reports.get(id=int(selected_id))
+            selected = reports_qs.get(id=int(selected_id))
         except (AgentReport.DoesNotExist, ValueError):
             pass
 
-    replied_count = reports.filter(admin_reply__isnull=False).exclude(admin_reply='').count()
+    replied_count = reports_qs.filter(admin_reply__isnull=False).exclude(admin_reply='').count()
+    reports = reports_qs[:500]
 
     return render(request, 'agent/reports.html', {
         'reports':       reports,

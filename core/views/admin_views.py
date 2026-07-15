@@ -185,23 +185,42 @@ def dashboard(request):
     user  = get_auth_user(request)
     today = date.today()
 
+    tx_agg = Transaction.objects.aggregate(
+        total_transactions=Count('id'),
+        transactions_today=Count('id', filter=Q(created_at__date=today)),
+        transactions_month=Count('id', filter=Q(created_at__year=today.year, created_at__month=today.month)),
+        total_amount=Sum('amount', filter=Q(status='completed')),
+        amount_today=Sum('amount', filter=Q(status='completed', created_at__date=today)),
+        amount_month=Sum('amount', filter=Q(status='completed', created_at__year=today.year, created_at__month=today.month)),
+        total_fees=Sum('fee_amount', filter=Q(status='completed')),
+        fees_today=Sum('fee_amount', filter=Q(status='completed', created_at__date=today)),
+        fees_month=Sum('fee_amount', filter=Q(status='completed', created_at__year=today.year, created_at__month=today.month)),
+        tx_completed=Count('id', filter=Q(status='completed')),
+        tx_pending=Count('id', filter=Q(status='pending')),
+        tx_cancelled=Count('id', filter=Q(status='cancelled')),
+    )
+    agent_agg = User.objects.filter(role='agent').aggregate(
+        total_agents=Count('id'),
+        active_agents=Count('id', filter=Q(status='active')),
+        pending_agents=Count('id', filter=Q(status='pending')),
+    )
     stats = {
-        'total_transactions':  Transaction.objects.count(),
-        'transactions_today':  Transaction.objects.filter(created_at__date=today).count(),
-        'transactions_month':  Transaction.objects.filter(created_at__month=today.month, created_at__year=today.year).count(),
-        'total_amount':        float(Transaction.objects.filter(status='completed').aggregate(s=Sum('amount'))['s'] or 0),
-        'amount_today':        float(Transaction.objects.filter(created_at__date=today, status='completed').aggregate(s=Sum('amount'))['s'] or 0),
-        'amount_month':        float(Transaction.objects.filter(created_at__month=today.month, created_at__year=today.year, status='completed').aggregate(s=Sum('amount'))['s'] or 0),
-        'total_fees':          float(Transaction.objects.filter(status='completed').aggregate(s=Sum('fee_amount'))['s'] or 0),
-        'fees_today':          float(Transaction.objects.filter(created_at__date=today, status='completed').aggregate(s=Sum('fee_amount'))['s'] or 0),
-        'fees_month':          float(Transaction.objects.filter(created_at__month=today.month, created_at__year=today.year, status='completed').aggregate(s=Sum('fee_amount'))['s'] or 0),
-        'total_agents':        User.objects.filter(role='agent').count(),
-        'active_agents':       User.objects.filter(role='agent', status='active').count(),
-        'pending_agents':      User.objects.filter(role='agent', status='pending').count(),
+        'total_transactions':  tx_agg['total_transactions'],
+        'transactions_today':  tx_agg['transactions_today'],
+        'transactions_month':  tx_agg['transactions_month'],
+        'total_amount':        float(tx_agg['total_amount'] or 0),
+        'amount_today':        float(tx_agg['amount_today'] or 0),
+        'amount_month':        float(tx_agg['amount_month'] or 0),
+        'total_fees':          float(tx_agg['total_fees'] or 0),
+        'fees_today':          float(tx_agg['fees_today'] or 0),
+        'fees_month':          float(tx_agg['fees_month'] or 0),
+        'total_agents':        agent_agg['total_agents'],
+        'active_agents':       agent_agg['active_agents'],
+        'pending_agents':      agent_agg['pending_agents'],
         'countries_active':    Country.objects.filter(is_active=True).count(),
-        'tx_completed':        Transaction.objects.filter(status='completed').count(),
-        'tx_pending':          Transaction.objects.filter(status='pending').count(),
-        'tx_cancelled':        Transaction.objects.filter(status='cancelled').count(),
+        'tx_completed':        tx_agg['tx_completed'],
+        'tx_pending':          tx_agg['tx_pending'],
+        'tx_cancelled':        tx_agg['tx_cancelled'],
     }
 
     unread_reports = AgentReport.objects.filter(status='unread').select_related('agent')
@@ -474,7 +493,7 @@ def transactions(request):
 @admin_required
 def reports(request):
     user = get_auth_user(request)
-    qs   = AgentReport.objects.select_related('agent').order_by('-created_at')
+    qs   = AgentReport.objects.select_related('agent').order_by('-created_at')[:500]
     return render(request, 'admin/reports.html', {'reports': qs, 'auth_user': user})
 
 
@@ -635,12 +654,19 @@ def statistics(request):
         prev_amount = row['total_amount'] or 0
 
     # Monthly detail for current year
+    monthly_rows = (
+        Transaction.objects.filter(created_at__year=today.year, status='completed')
+        .annotate(month=ExtractMonth('created_at'))
+        .values('month')
+        .annotate(amount=Sum('amount'), count=Count('id'))
+    )
+    monthly_by_number = {row['month']: row for row in monthly_rows}
     current_year_monthly = []
     max_amount = 0
     for m in range(1, 13):
-        qs = Transaction.objects.filter(created_at__year=today.year, created_at__month=m, status='completed')
-        amt = float(qs.aggregate(s=Sum('amount'))['s'] or 0)
-        cnt = qs.count()
+        row = monthly_by_number.get(m, {})
+        amt = float(row.get('amount') or 0)
+        cnt = row.get('count') or 0
         current_year_monthly.append({'month': months[m - 1], 'month_num': m, 'amount': amt, 'count': cnt})
         if amt > max_amount:
             max_amount = amt
@@ -654,15 +680,21 @@ def statistics(request):
 
     # Status breakdown — surfaces money stuck in pending and the cancellation
     # rate, which the completed-only stats above hide entirely.
-    total_tx_all = Transaction.objects.count()
+    status_rows = {
+        row['status']: row
+        for row in Transaction.objects.values('status').annotate(
+            count=Count('id'), amount=Sum('amount'),
+        )
+    }
+    total_tx_all = sum(row['count'] for row in status_rows.values())
     status_breakdown = []
     for code in ('completed', 'pending', 'cancelled'):
-        qs  = Transaction.objects.filter(status=code)
-        cnt = qs.count()
+        row = status_rows.get(code, {})
+        cnt = row.get('count') or 0
         status_breakdown.append({
             'code':   code,
             'count':  cnt,
-            'amount': float(qs.aggregate(s=Sum('amount'))['s'] or 0),
+            'amount': float(row.get('amount') or 0),
             'pct':    round((cnt / total_tx_all * 100), 1) if total_tx_all else 0,
         })
 

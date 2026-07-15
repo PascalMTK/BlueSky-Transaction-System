@@ -58,6 +58,10 @@ class User(models.Model):
     class Meta:
         managed  = True
         db_table = 'users'
+        indexes = [
+            models.Index(fields=['role', 'status'], name='user_role_status_idx'),
+            models.Index(fields=['country', 'status'], name='user_country_status_idx'),
+        ]
 
     def __str__(self):
         return self.name
@@ -138,6 +142,11 @@ class Transaction(models.Model):
         managed  = True
         db_table = 'transactions'
         ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['status', 'created_at'], name='tx_status_created_idx'),
+            models.Index(fields=['agent', 'created_at'], name='tx_agent_created_idx'),
+            models.Index(fields=['transaction_type'], name='tx_type_idx'),
+        ]
 
     def __str__(self):
         return self.transaction_number
@@ -159,6 +168,10 @@ class AgentReport(models.Model):
         managed  = True
         db_table = 'agent_reports'
         ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['status', 'created_at'], name='report_status_created_idx'),
+            models.Index(fields=['agent', 'created_at'], name='report_agent_created_idx'),
+        ]
 
     def __str__(self):
         return self.subject
