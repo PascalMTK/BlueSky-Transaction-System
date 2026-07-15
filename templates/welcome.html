@@ -28,8 +28,6 @@
         [data-theme="dark"] .lang-sw a { color: rgba(255,255,255,.35); }
         [data-theme="dark"] .lang-sw a.on, [data-theme="dark"] .lang-sw a:hover { color: #fff; }
         [data-theme="dark"] .lang-sw s { color: rgba(255,255,255,.1); }
-        [data-theme="dark"] .btn-o { border-color: rgba(255,255,255,.15); color: rgba(255,255,255,.65); }
-        [data-theme="dark"] .btn-o:hover { border-color: rgba(255,255,255,.4); color: #fff; }
         [data-theme="dark"] .theme-btn { border-color: rgba(255,255,255,.15); background: rgba(255,255,255,.06); color: rgba(255,255,255,.7); }
         [data-theme="dark"] .badge { background: rgba(0,212,106,.08); border-color: rgba(0,212,106,.2); color: #00d46a; }
         [data-theme="dark"] .dot  { background: #00d46a; }
@@ -72,8 +70,6 @@
         [data-theme="light"] .lang-sw a { color: rgba(15,23,42,.45); }
         [data-theme="light"] .lang-sw a.on, [data-theme="light"] .lang-sw a:hover { color: #0369a1; }
         [data-theme="light"] .lang-sw s { color: rgba(15,23,42,.15); }
-        [data-theme="light"] .btn-o { border-color: rgba(2,132,199,.25); color: #0369a1; }
-        [data-theme="light"] .btn-o:hover { border-color: #0284C7; color: #0284C7; }
         [data-theme="light"] .theme-btn { border-color: rgba(2,132,199,.25); background: rgba(2,132,199,.06); color: #0369a1; }
         [data-theme="light"] .badge { background: rgba(2,132,199,.08); border-color: rgba(2,132,199,.2); color: #0369a1; }
         [data-theme="light"] .dot  { background: #0284C7; }
@@ -121,7 +117,6 @@
         .lang-sw{display:flex;gap:6px;align-items:center;padding-right:10px;border-right:1px solid rgba(128,128,128,.15);margin-right:4px;}
         .lang-sw a{font-size:12px;font-weight:700;text-decoration:none;transition:color .15s;}
         .lang-sw s{text-decoration:none;font-style:normal;}
-        .btn-o{padding:7px 16px;border-radius:8px;border:1.5px solid;font-size:13px;font-weight:600;text-decoration:none;transition:all .15s;}
         .btn-f{padding:8px 18px;border-radius:8px;background:linear-gradient(135deg,#0284C7,#0EA5E9);color:#fff;font-size:13px;font-weight:700;text-decoration:none;box-shadow:0 4px 14px rgba(2,132,199,.38);transition:all .15s;}
         .btn-f:hover{box-shadow:0 6px 22px rgba(2,132,199,.55);transform:translateY(-1px);}
         .theme-btn{width:36px;height:36px;border-radius:8px;border:1.5px solid;font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;backdrop-filter:blur(6px);}
@@ -190,7 +185,7 @@
         /* Tablet (768px) */
         @media(max-width:768px){
             nav{padding:0 20px;height:56px;}
-            .btn-o,.btn-f{font-size:12px;padding:6px 13px;}
+            .btn-f{font-size:12px;padding:6px 13px;}
             .hero{padding:52px 16px 36px;}
             .logo{width:175px;}
             h1{letter-spacing:-1px;}
@@ -206,7 +201,6 @@
         @media(max-width:580px){
             nav{padding:0 14px;height:52px;}
             .nav-logo{font-size:20px;letter-spacing:2px;}
-            .btn-o{display:none;}
             .btn-f{padding:7px 14px;font-size:12px;}
             .lang-sw{padding-right:8px;}
             .hero{padding:44px 14px 28px;}
@@ -252,8 +246,7 @@
             <a href="{% url 'lang_switch' 'en' %}" class="{% if locale == 'en' %}on{% endif %}"><span class="lang-flag">🇬🇧</span> EN</a>
         </div>
         <button class="theme-btn" id="wThemeBtn" onclick="wToggleTheme()" aria-label="{{ t.theme_toggle_label }}">🌙</button>
-        <a href="{% url 'login' %}" class="btn-o">{{ t.login_btn }}</a>
-        <a href="{% url 'register' %}" class="btn-f">🚀 {{ t.nav_register }}</a>
+        <a href="{% url 'login' %}" class="btn-f">🔑 {{ t.login_btn }}</a>
     </div>
 </nav>
 
