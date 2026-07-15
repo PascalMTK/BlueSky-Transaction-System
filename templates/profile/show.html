@@ -147,11 +147,11 @@
 <!-- Photo preview overlay -->
 <div class="photo-preview-overlay" id="photoOverlay">
     <div class="photo-preview-box">
-        <img src="" alt="Aperçu" class="photo-preview-img" id="photoPreviewImg">
+        <img src="" alt="{{ t.preview_alt }}" class="photo-preview-img" id="photoPreviewImg">
         <div class="photo-preview-name" id="photoPreviewName"></div>
         <div class="photo-preview-actions">
-            <button type="button" class="btn btn-secondary" onclick="cancelPhoto()">✕ Annuler</button>
-            <button type="button" class="btn btn-primary" onclick="confirmPhoto()">✅ Enregistrer</button>
+            <button type="button" class="btn btn-secondary" onclick="cancelPhoto()">✕ {{ t.cancel }}</button>
+            <button type="button" class="btn btn-primary" onclick="confirmPhoto()">✅ {{ t.save_info }}</button>
         </div>
     </div>
 </div>
@@ -303,7 +303,7 @@
                         </div>
                         <div class="form-group">
                             <label class="form-label">{{ t.address_label }}</label>
-                            <input type="text" name="address" class="form-control" value="{{ auth_user.address|default:'' }}" placeholder="Abidjan, Côte d'Ivoire">
+                            <input type="text" name="address" class="form-control" value="{{ auth_user.address|default:'' }}" placeholder="{% if locale == 'en' %}Abidjan, Ivory Coast{% else %}Abidjan, Côte d'Ivoire{% endif %}">
                         </div>
                     </div>
                     <button type="submit" class="btn btn-primary">💾 {{ t.save_info }}</button>

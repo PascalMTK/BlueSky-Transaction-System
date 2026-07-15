@@ -177,7 +177,7 @@
         <div class="form-group">
             <label>{{ t.country_label }}</label>
             <select name="country_id">
-                <option value="">— Aucun pays —</option>
+                <option value="">— {{ t.no_country }} —</option>
                 {% for c in countries %}
                 <option value="{{ c.id }}" {% if agent.country_id == c.id %}selected{% endif %}>{{ c.flag_emoji }} {{ c.name|country_name:locale }}</option>
                 {% endfor %}
@@ -199,11 +199,11 @@
             <div class="form-grid">
                 <div class="form-group">
                     <label>{{ t.new_password }}</label>
-                    <input type="password" name="new_password" placeholder="Min. 8 caractères">
+                    <input type="password" name="new_password" placeholder="{{ t.min_8_characters }}">
                 </div>
                 <div class="form-group">
                     <label>{{ t.confirm_password }}</label>
-                    <input type="password" name="confirm_password" placeholder="Répéter">
+                    <input type="password" name="confirm_password" placeholder="{{ t.repeat }}">
                 </div>
             </div>
             <button type="submit" class="btn-save" style="background:linear-gradient(135deg,#7c3aed,#6d28d9);">🔑 {{ t.change_password_title }}</button>

@@ -541,6 +541,16 @@ FR = {
     'choose_photo':          'Choisir une photo',
     'photo_sub_hint':        'JPEG · PNG · WebP — max 5 Mo',
     'photo_remove_label':    'Supprimer la photo',
+    'selected_count':        'sélectionné(s)',
+    'clear_selection':       'Désélectionner',
+    'select_all':            'Tout sélectionner',
+    'deleted_agent':         'Agent supprimé',
+    'delete_report_title':   'Supprimer ce rapport ?',
+    'delete_report_warning': 'Le rapport sera définitivement supprimé.',
+    'preview_alt':           'Aperçu',
+    'no_country':            'Aucun pays',
+    'min_8_characters':      'Minimum 8 caractères',
+    'repeat':                'Répéter',
 }
 
 EN = {
@@ -714,6 +724,8 @@ EN = {
     'fee_pct':               'Fee (%)',
     'fee_amount_label':       'Agency fee',
     'amount_remitted':        'Amount remitted to client',
+    'transaction_date':       'Transaction date',
+    'select_tx_type_error':   'Please select a transaction type.',
     'fee_total_exceeds_amount': 'The fee cannot exceed the amount given by the client.',
     'currency':              'Currency',
     'payment_method':        'Payment method',
@@ -1079,6 +1091,16 @@ EN = {
     'choose_photo':          'Choose a photo',
     'photo_sub_hint':        'JPEG · PNG · WebP — max 5 MB',
     'photo_remove_label':    'Remove photo',
+    'selected_count':        'selected',
+    'clear_selection':       'Clear selection',
+    'select_all':            'Select all',
+    'deleted_agent':         'Deleted agent',
+    'delete_report_title':   'Delete this report?',
+    'delete_report_warning': 'This report will be permanently deleted.',
+    'preview_alt':           'Preview',
+    'no_country':            'No country',
+    'min_8_characters':      'Minimum 8 characters',
+    'repeat':                'Repeat',
 }
 
 TRANSLATIONS = {'fr': FR, 'en': EN}
@@ -1086,3 +1108,8 @@ TRANSLATIONS = {'fr': FR, 'en': EN}
 
 def get_translations(locale: str) -> dict:
     return TRANSLATIONS.get(locale, FR)
+
+
+def localized(request, french: str, english: str) -> str:
+    """Return a localized dynamic message for view code and JSON responses."""
+    return english if getattr(request, 'locale', 'fr') == 'en' else french

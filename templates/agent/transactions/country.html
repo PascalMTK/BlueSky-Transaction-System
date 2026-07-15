@@ -109,12 +109,12 @@
 
 <!-- Selection bar -->
 <div class="sel-bar" id="ctrySelBar">
-    <div class="sel-bar-count"><em id="ctrySelCount">0</em> sélectionné(s)</div>
+    <div class="sel-bar-count"><em id="ctrySelCount">0</em> {{ t.selected_count }}</div>
     <div class="sel-bar-actions">
         <button class="sel-bar-btn" data-action="view"  disabled>👁 {{ t.view|default:"Voir" }}</button>
-        <button class="sel-bar-btn" data-action="edit"  disabled>✏️ {{ t.edit|default:"Modifier" }}</button>
+        <button class="sel-bar-btn" data-action="edit"  disabled>✏️ {{ t.edit }}</button>
         <button class="sel-bar-btn" data-action="print">🖨 {{ t.print|default:"Imprimer" }}</button>
-        <button class="sel-bar-clear" title="Désélectionner">✕</button>
+        <button class="sel-bar-clear" title="{{ t.clear_selection }}">✕</button>
     </div>
 </div>
 
@@ -128,7 +128,7 @@
         <table class="bsky-table" id="ctryTable">
             <thead>
                 <tr>
-                    <th class="sel-th"><input type="checkbox" class="sel-cb" id="selAllCtry" title="Tout sélectionner"></th>
+                    <th class="sel-th"><input type="checkbox" class="sel-cb" id="selAllCtry" title="{{ t.select_all }}"></th>
                     <th>{{ t.tx_number }}</th>
                     <th>👤 {{ t.agent_col }}</th>
                     <th>{{ t.sender }}</th>
@@ -160,7 +160,7 @@
                         <div style="display:flex;align-items:center;gap:7px;flex-wrap:nowrap;">
                             <div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--sky-primary),var(--sky-secondary));display:flex;align-items:center;justify-content:center;color:white;font-size:10px;font-weight:800;flex-shrink:0;">{{ tx.agent.name|default:"?"|initials }}</div>
                             <div class="hide-mobile" style="min-width:0;">
-                                <div style="font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px;">{{ tx.agent.name|default:"Agent supprimé" }}</div>
+                                <div style="font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px;">{{ tx.agent.name|default:t.deleted_agent }}</div>
                             </div>
                         </div>
                     </td>

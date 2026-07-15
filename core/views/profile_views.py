@@ -3,6 +3,7 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.conf import settings
 from core.decorators import login_required, get_auth_user
+from core.translations import localized
 import bcrypt
 from PIL import Image, ImageOps
 
@@ -43,7 +44,7 @@ def profile_update(request):
         user.address = request.POST.get('address', user.address)
         user.save()
         request.session['user_name'] = user.name
-        messages.success(request, 'Profil mis à jour avec succès.')
+        messages.success(request, localized(request, 'Profil mis à jour avec succès.', 'Profile updated successfully.'))
     return redirect('profile_show')
 
 
@@ -97,7 +98,7 @@ def profile_photo(request):
     if error:
         messages.error(request, error)
     else:
-        messages.success(request, 'Photo de profil mise à jour.')
+        messages.success(request, localized(request, 'Photo de profil mise à jour.', 'Profile photo updated.'))
     return redirect('profile_show')
 
 
@@ -110,15 +111,15 @@ def profile_password(request):
         confirm = request.POST.get('password_confirmation', '')
 
         if not user.check_password(current):
-            messages.error(request, 'Mot de passe actuel incorrect.')
+            messages.error(request, localized(request, 'Mot de passe actuel incorrect.', 'Current password is incorrect.'))
         elif len(new_pw) < 8:
-            messages.error(request, 'Le nouveau mot de passe doit contenir au moins 8 caractères.')
+            messages.error(request, localized(request, 'Le nouveau mot de passe doit contenir au moins 8 caractères.', 'The new password must be at least 8 characters long.'))
         elif new_pw != confirm:
-            messages.error(request, 'Les mots de passe ne correspondent pas.')
+            messages.error(request, localized(request, 'Les mots de passe ne correspondent pas.', 'Passwords do not match.'))
         else:
             hashed = bcrypt.hashpw(new_pw.encode(), bcrypt.gensalt(10)).decode()
             user.password = hashed
             user.save()
-            messages.success(request, 'Mot de passe modifié avec succès.')
+            messages.success(request, localized(request, 'Mot de passe modifié avec succès.', 'Password changed successfully.'))
 
     return redirect('profile_show')

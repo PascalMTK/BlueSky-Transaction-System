@@ -173,7 +173,7 @@
                 <div>
                     <div style="font-size:14px;font-weight:700;color:var(--text-primary);">{{ agent.name }}</div>
                     <div style="font-size:12px;color:var(--text-muted);">{{ agent.email }}{% if agent.country %} · {{ agent.country.flag_emoji }} {{ agent.country.name|country_name:locale }}{% endif %}</div>
-                    <div style="font-size:11px;color:var(--text-muted);">{{ t.registration }} {{ agent.created_at|date:"d/m/Y à H:i" }}</div>
+                    <div style="font-size:11px;color:var(--text-muted);">{{ t.registration }} {% if locale == 'en' %}{{ agent.created_at|date:"m/d/Y, H:i" }}{% else %}{{ agent.created_at|date:"d/m/Y à H:i" }}{% endif %}</div>
                 </div>
             </div>
             <div style="display:flex;gap:8px;flex-shrink:0;flex-wrap:wrap;">
@@ -186,7 +186,7 @@
                     {% csrf_token %}
                     <button type="submit" style="display:inline-flex;align-items:center;gap:5px;padding:8px 14px;background:linear-gradient(135deg,#7c3aed,#6d28d9);color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;">⬆ {{ t.promote_admin }}</button>
                 </form>
-                <form method="POST" action="{% url 'admin_agent_destroy' agent.id %}" onsubmit="return confirm('Supprimer {{ agent.name }} ?');">
+                <form method="POST" action="{% url 'admin_agent_destroy' agent.id %}" onsubmit="return confirm('{{ t.delete }} {{ agent.name|escapejs }}?');">
                     {% csrf_token %}
                     <button type="submit" style="display:inline-flex;align-items:center;gap:5px;padding:8px 14px;background:linear-gradient(135deg,#ef4444,#dc2626);color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;">🗑 {{ t.delete }}</button>
                 </form>

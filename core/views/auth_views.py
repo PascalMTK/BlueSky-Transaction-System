@@ -6,6 +6,7 @@ from django.core.mail import send_mail
 from django.views.decorators.cache import never_cache
 from core.models import User, Country
 from core.mailer import send_async
+from core.translations import localized
 import bcrypt
 
 _PHOTO_EXTS = {'.jpg', '.jpeg', '.png', '.webp'}
@@ -159,18 +160,18 @@ def login_view(request):
             user = User.objects.get(email=email)
             if user.check_password(password):
                 if user.status == 'pending':
-                    messages.error(request, 'Votre compte est en attente de validation.')
+                    messages.error(request, localized(request, 'Votre compte est en attente de validation.', 'Your account is awaiting approval.'))
                 elif user.status == 'inactive':
-                    messages.error(request, 'Votre compte a été désactivé.')
+                    messages.error(request, localized(request, 'Votre compte a été désactivé.', 'Your account has been deactivated.'))
                 else:
                     request.session['user_id']   = user.id
                     request.session['user_role']  = user.role
                     request.session['user_name']  = user.name
                     return redirect('admin_dashboard' if user.is_admin() else 'agent_dashboard')
             else:
-                messages.error(request, 'Email ou mot de passe incorrect.')
+                messages.error(request, localized(request, 'Email ou mot de passe incorrect.', 'Incorrect email or password.'))
         except User.DoesNotExist:
-            messages.error(request, 'Email ou mot de passe incorrect.')
+            messages.error(request, localized(request, 'Email ou mot de passe incorrect.', 'Incorrect email or password.'))
     return render(request, 'auth/login.html')
 
 
@@ -193,11 +194,11 @@ def register_view(request):
         country_id = request.POST.get('country_id')
 
         errors = []
-        if not name:     errors.append('Le nom est requis.')
-        if not email:    errors.append("L'email est requis.")
-        if len(password) < 8: errors.append('Le mot de passe doit contenir au moins 8 caractères.')
-        if password != password2: errors.append('Les mots de passe ne correspondent pas.')
-        if User.objects.filter(email=email).exists(): errors.append('Cet email est déjà utilisé.')
+        if not name:     errors.append(localized(request, 'Le nom est requis.', 'Name is required.'))
+        if not email:    errors.append(localized(request, "L'email est requis.", 'Email is required.'))
+        if len(password) < 8: errors.append(localized(request, 'Le mot de passe doit contenir au moins 8 caractères.', 'Password must be at least 8 characters long.'))
+        if password != password2: errors.append(localized(request, 'Les mots de passe ne correspondent pas.', 'Passwords do not match.'))
+        if User.objects.filter(email=email).exists(): errors.append(localized(request, 'Cet email est déjà utilisé.', 'This email address is already in use.'))
 
         if errors:
             for e in errors:
@@ -231,7 +232,7 @@ def register_view(request):
 
             send_async(_notify_agent_pending, user)
             send_async(_notify_admin_new_registration, user)
-            messages.success(request, 'Compte créé avec succès. En attente de validation par l\'administrateur.')
+            messages.success(request, localized(request, 'Compte créé avec succès. En attente de validation par l\'administrateur.', 'Account created successfully. It is awaiting administrator approval.'))
             return redirect('login')
     return render(request, 'auth/register.html', {'countries': countries})
 
@@ -280,10 +281,10 @@ def contact_view(request):
         message_body = request.POST.get('message', '').strip()
 
         if not name or not email or not message_body:
-            messages.error(request, 'Merci de remplir tous les champs obligatoires.')
+            messages.error(request, localized(request, 'Merci de remplir tous les champs obligatoires.', 'Please complete all required fields.'))
         else:
             send_async(_notify_admin_contact_message, name, email, subject_line, message_body)
-            messages.success(request, 'Votre message a été envoyé. Nous vous répondrons rapidement.')
+            messages.success(request, localized(request, 'Votre message a été envoyé. Nous vous répondrons rapidement.', 'Your message has been sent. We will get back to you shortly.'))
             return redirect('contact')
     return render(request, 'contact.html')
 

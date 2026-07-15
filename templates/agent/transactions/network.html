@@ -90,12 +90,12 @@
 
 <!-- Selection bar (appears on row click) -->
 <div class="sel-bar" id="netSelBar">
-    <div class="sel-bar-count"><em id="netSelCount">0</em> sélectionné(s)</div>
+    <div class="sel-bar-count"><em id="netSelCount">0</em> {{ t.selected_count }}</div>
     <div class="sel-bar-actions">
         <button class="sel-bar-btn" data-action="view"  disabled>👁 {{ t.view|default:"Voir" }}</button>
-        <button class="sel-bar-btn" data-action="edit"  disabled id="netBtnEdit" style="display:none;">✏️ {{ t.edit|default:"Modifier" }}</button>
+        <button class="sel-bar-btn" data-action="edit"  disabled id="netBtnEdit" style="display:none;">✏️ {{ t.edit }}</button>
         <button class="sel-bar-btn" data-action="print">🖨 {{ t.print|default:"Imprimer" }}</button>
-        <button class="sel-bar-clear" title="Désélectionner">✕</button>
+        <button class="sel-bar-clear" title="{{ t.clear_selection }}">✕</button>
     </div>
 </div>
 
@@ -111,7 +111,7 @@
         <table class="bsky-table" id="netTable">
             <thead>
                 <tr>
-                    <th class="sel-th"><input type="checkbox" class="sel-cb" id="selAllNet" title="Tout sélectionner"></th>
+                    <th class="sel-th"><input type="checkbox" class="sel-cb" id="selAllNet" title="{{ t.select_all }}"></th>
                     <th>{{ t.tx_number }}</th>
                     <th>👤 {{ t.agent_col }}</th>
                     <th>{{ t.sender }}</th>
@@ -145,7 +145,7 @@
                         <div style="display:flex;align-items:center;gap:7px;flex-wrap:nowrap;">
                             <div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--sky-primary),var(--sky-secondary));display:flex;align-items:center;justify-content:center;color:white;font-size:10px;font-weight:800;flex-shrink:0;" title="{{ tx.agent.name|default:'—' }}{% if tx.agent.country %} · {{ tx.agent.country.name|country_name:locale }}{% endif %}">{{ tx.agent.name|default:"?"|initials }}</div>
                             <div class="hide-mobile" style="min-width:0;">
-                                <div style="font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px;">{{ tx.agent.name|default:"Agent supprimé" }}</div>
+                                <div style="font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px;">{{ tx.agent.name|default:t.deleted_agent }}</div>
                                 {% if tx.agent.country %}<div style="font-size:10px;color:var(--text-muted);">{{ tx.agent.country.flag_emoji }} {{ tx.agent.country.name|country_name:locale }}</div>{% endif %}
                             </div>
                         </div>

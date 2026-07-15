@@ -316,11 +316,11 @@
 <div class="del-confirm-overlay" id="delConfirmOverlay">
     <div class="del-confirm-box">
         <div style="font-size:36px;margin-bottom:10px;">🗑️</div>
-        <div style="font-size:16px;font-weight:800;color:var(--text-primary);margin-bottom:6px;">Supprimer ce rapport ?</div>
-        <div style="font-size:13px;color:var(--text-muted);">Le rapport sera définitivement supprimé.</div>
+        <div style="font-size:16px;font-weight:800;color:var(--text-primary);margin-bottom:6px;">{{ t.delete_report_title }}</div>
+        <div style="font-size:13px;color:var(--text-muted);">{{ t.delete_report_warning }}</div>
         <div class="del-confirm-btns">
             <button class="btn-del-cancel" onclick="closeDelConfirm()">{{ t.cancel }}</button>
-            <button class="btn-del-ok" id="delConfirmOkBtn" onclick="doDelReport()">Supprimer</button>
+            <button class="btn-del-ok" id="delConfirmOkBtn" onclick="doDelReport()">{{ t.delete }}</button>
         </div>
     </div>
 </div>
@@ -379,12 +379,12 @@
 
         <!-- Header -->
         <div class="rpt-chat-hdr">
-            <a href="{% url 'agent_reports_portal' %}" class="rpt-back-btn ms-hdr-btn" style="display:none;" aria-label="Retour">← Retour</a>
+            <a href="{% url 'agent_reports_portal' %}" class="rpt-back-btn ms-hdr-btn" style="display:none;" aria-label="{{ t.back }}">{{ t.back }}</a>
             <div class="rpt-av" style="width:44px;height:44px;font-size:16px;">{{ auth_user.name|initials }}</div>
             <div class="rpt-chat-hdr-info">
                 <div class="rpt-chat-hdr-subject">{{ selected.subject }}</div>
                 <div class="rpt-chat-hdr-date">
-                    {{ t.sent_at }} {{ selected.created_at|date:"d/m/Y à H:i" }}
+                    {{ t.sent_at }} {% if locale == 'en' %}{{ selected.created_at|date:"m/d/Y, H:i" }}{% else %}{{ selected.created_at|date:"d/m/Y à H:i" }}{% endif %}
                     {% if selected.admin_reply %} · {{ t.replied_on }} {{ selected.replied_at|date:"d/m/Y" }}{% endif %}
                 </div>
             </div>

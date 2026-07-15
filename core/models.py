@@ -38,7 +38,7 @@ class User(models.Model):
     STATUS_ACTIVE  = 'active'
     STATUS_PENDING = 'pending'
     STATUS_DELETED = 'deleted'
-    STATUS_CHOICES = [('active', 'Active'), ('pending', 'Pending'), ('inactive', 'Inactive'), ('deleted', 'Supprimé')]
+    STATUS_CHOICES = [('active', 'Active'), ('pending', 'Pending'), ('inactive', 'Inactive'), ('deleted', 'Deleted')]
 
     name          = models.CharField(max_length=255)
     email         = models.EmailField(unique=True)

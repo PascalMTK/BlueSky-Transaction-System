@@ -247,8 +247,9 @@ window.formatMoney = (n) => {
 function bskyConfirm(message) {
     return new Promise(resolve => {
         const i18n      = window.bskyI18n || {};
-        const okLabel   = i18n.confirm_ok     || 'Confirmer';
-        const noLabel   = i18n.confirm_cancel || 'Annuler';
+        const isEnglish = document.documentElement.lang === 'en';
+        const okLabel   = i18n.confirm_ok     || (isEnglish ? 'Confirm' : 'Confirmer');
+        const noLabel   = i18n.confirm_cancel || (isEnglish ? 'Cancel' : 'Annuler');
 
         const overlay = document.createElement('div');
         overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);animation:fadeIn 0.2s ease;';
@@ -283,7 +284,7 @@ function bskyDangerConfirm(opts) {
         const message    = opts.message    || '';
         const checkLabel = opts.checkLabel || i18n.reset_system_confirm_check || 'Je confirme';
         const okLabel    = opts.okLabel    || i18n.confirm_ok                 || 'Confirmer';
-        const noLabel    = opts.noLabel    || i18n.confirm_cancel             || 'Annuler';
+        const noLabel    = opts.noLabel    || i18n.confirm_cancel             || (document.documentElement.lang === 'en' ? 'Cancel' : 'Annuler');
 
         const overlay = document.createElement('div');
         overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);animation:fadeIn 0.2s ease;';

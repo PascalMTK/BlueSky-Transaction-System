@@ -23,7 +23,8 @@
                 '</div>' +
                 '<div class="pcrop-hint">Glissez pour repositionner &middot; curseur pour zoomer</div>' +
                 '<div class="pcrop-actions">' +
-                    '<button type="button" class="btn btn-secondary" id="pcropCancel">✕ Annuler</button>' +
+                    '<button type="button" class="btn btn-secondary" id="pcropCancel">✕ ' +
+                    (document.documentElement.lang === 'en' ? 'Cancel' : 'Annuler') + '</button>' +
                     '<button type="button" class="btn btn-primary" id="pcropConfirm">✓ Valider</button>' +
                 '</div>' +
             '</div>';

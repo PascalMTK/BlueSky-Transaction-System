@@ -66,12 +66,12 @@
 
 <!-- Selection bar -->
 <div class="sel-bar" id="txSelBar">
-    <div class="sel-bar-count"><em id="txSelCount">0</em> sélectionné(s)</div>
+    <div class="sel-bar-count"><em id="txSelCount">0</em> {{ t.selected_count }}</div>
     <div class="sel-bar-actions">
         <button class="sel-bar-btn" data-action="view"  disabled>👁 {{ t.view|default:"Voir" }}</button>
-        <button class="sel-bar-btn" data-action="edit"  disabled>✏️ {{ t.edit|default:"Modifier" }}</button>
+        <button class="sel-bar-btn" data-action="edit"  disabled>✏️ {{ t.edit }}</button>
         <button class="sel-bar-btn" data-action="print">🖨 {{ t.print|default:"Imprimer" }}</button>
-        <button class="sel-bar-clear" title="Désélectionner">✕</button>
+        <button class="sel-bar-clear" title="{{ t.clear_selection }}">✕</button>
     </div>
 </div>
 
@@ -85,7 +85,7 @@
         <table class="bsky-table" id="txTable">
             <thead>
                 <tr>
-                    <th class="sel-th"><input type="checkbox" class="sel-cb" id="selAllIdx" title="Tout sélectionner"></th>
+                    <th class="sel-th"><input type="checkbox" class="sel-cb" id="selAllIdx" title="{{ t.select_all }}"></th>
                     <th>{{ t.tx_number }}</th>
                     <th>{{ t.sender }}</th>
                     <th>{{ t.beneficiary }}</th>

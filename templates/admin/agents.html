@@ -274,7 +274,7 @@
         <button type="button" class="ac-btn ac-btn-pw"
                 data-agent-id="{{ agent.id }}" data-agent-name="{{ agent.name }}"
                 onclick="openPwModal(this.dataset.agentId, this.dataset.agentName)">
-            🔑 Mot de passe
+            🔑 {{ t.password_label }}
         </button>
 
         <!-- Activate / Deactivate -->
@@ -358,7 +358,7 @@
                         onclick="openPwModal(this.dataset.agentId, this.dataset.agentName)">
                     🔑 {{ t.change_password }}
                 </button>
-                <form method="POST" action="{% url 'admin_agent_permanent_delete' agent.id %}" class="form-full" onsubmit="return confirm('Supprimer définitivement cet agent archivés ?');">
+                <form method="POST" action="{% url 'admin_agent_permanent_delete' agent.id %}" class="form-full" onsubmit="return confirm('{{ t.delete_forever_confirm|escapejs }}');">
                     {% csrf_token %}
                     <button type="submit" class="ac-btn ac-btn-archive" style="background:rgba(239,68,68,.16);border:1px solid rgba(239,68,68,.25);">🗑 {{ t.delete_forever }}</button>
                 </form>
@@ -379,15 +379,15 @@
             {% csrf_token %}
             <div class="pw-field">
                 <label class="pw-label">{{ t.new_password }}</label>
-                <input type="password" name="new_password" class="pw-input" placeholder="Minimum 8 caractères" required minlength="8" autocomplete="new-password">
+                <input type="password" name="new_password" class="pw-input" placeholder="{{ t.min_8_characters }}" required minlength="8" autocomplete="new-password">
             </div>
             <div class="pw-field">
                 <label class="pw-label">{{ t.confirm_password }}</label>
                 <input type="password" name="confirm_password" class="pw-input" placeholder="{{ t.repeat_password }}" required minlength="8" autocomplete="new-password">
             </div>
             <div class="pw-actions">
-                <button type="button" class="pw-cancel" onclick="closePwModal()">Annuler</button>
-                <button type="submit" class="pw-submit">🔑 Enregistrer</button>
+                <button type="button" class="pw-cancel" onclick="closePwModal()">{{ t.cancel }}</button>
+                <button type="submit" class="pw-submit">🔑 {{ t.save_info }}</button>
             </div>
         </form>
     </div>
