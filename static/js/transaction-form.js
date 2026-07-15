@@ -58,6 +58,22 @@ function calcTotal() {
     }
 }
 
+/* La devise doit être choisie dans la liste (datalist) — on bloque la
+   saisie de chiffres pour éviter qu'un montant soit tapé par erreur
+   dans ce champ. */
+document.addEventListener('DOMContentLoaded', function () {
+    const currencyInput = document.getElementById('currencyInput');
+    if (currencyInput) {
+        currencyInput.addEventListener('keypress', function (e) {
+            if (/[0-9]/.test(e.key)) e.preventDefault();
+        });
+        currencyInput.addEventListener('input', function () {
+            const stripped = this.value.replace(/[0-9]/g, '');
+            if (stripped !== this.value) this.value = stripped;
+        });
+    }
+});
+
 document.addEventListener('DOMContentLoaded', function () {
     const form = document.getElementById('txForm');
     if (!form) return;

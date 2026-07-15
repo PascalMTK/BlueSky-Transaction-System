@@ -141,7 +141,7 @@
                             <div class="tx-total-panel-label">{{ t.amount_remitted }}</div>
                             <div class="tx-total-panel-right">
                                 <input type="number" name="total_amount" id="totalInput" class="tx-total-input"
-                                       value="{{ transaction.total_amount }}" step="0.01" min="0" oninput="onTotalInput()">
+                                       value="{{ transaction.total_amount }}" step="0.01" min="0" required oninput="onTotalInput()">
                                 <div class="tx-total-panel-cur" id="totalCurLabel">{{ transaction.currency }}</div>
                             </div>
                         </div>
