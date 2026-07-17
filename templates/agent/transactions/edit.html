@@ -55,8 +55,9 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">🌍 {{ t.dest_country }} *</label>
-                    <select name="destination_country_id" class="form-control" required>
+                    <label class="form-label">🌍 {{ t.dest_country }}</label>
+                    <select name="destination_country_id" class="form-control">
+                        <option value="" {% if not transaction.destination_country_id %}selected{% endif %}>-- {{ t.select_country }} --</option>
                         {% for c in countries %}
                             <option value="{{ c.id }}" {% if transaction.destination_country_id == c.id %}selected{% endif %}>{{ c.flag_emoji }} {{ c.name|country_name:locale }}</option>
                         {% endfor %}

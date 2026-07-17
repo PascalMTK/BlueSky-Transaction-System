@@ -16,15 +16,9 @@ from core.mailer import send_async
 
 
 def _can_access_tx(user, tx):
-    """Admins can access any transaction. Agents can access their own
-    transactions plus those of any other agent from their own country."""
-    if user.is_admin():
-        return True
-    if tx.agent_id == user.id:
-        return True
-    if user.country_id and tx.agent_id and tx.agent.country_id == user.country_id:
-        return True
-    return False
+    """Admins and agents can access any transaction, including those
+    created by other agents."""
+    return True
 
 
 def _send_transaction_email(tx, client_email: str, locale: str = 'fr'):
@@ -442,7 +436,7 @@ def tx_create(request):
         dest_id   = request.POST.get('destination_country_id')
         try:
             origin  = Country.objects.get(pk=origin_id)
-            dest    = Country.objects.get(pk=dest_id)
+            dest    = Country.objects.get(pk=dest_id) if dest_id else None
 
             amount_raw = (request.POST.get('amount') or '').strip()
             if not amount_raw:
@@ -633,7 +627,7 @@ def tx_edit(request, tx_id):
         origin_id  = request.POST.get('origin_country_id')
         dest_id    = request.POST.get('destination_country_id')
         if origin_id:  tx.origin_country_id = origin_id
-        if dest_id:    tx.destination_country_id = dest_id
+        tx.destination_country_id = dest_id or None
         tx.save()
         locale = request.session.get('locale', 'fr')
         _send_transaction_sms(tx, locale)
