@@ -21,7 +21,7 @@ function calcTotal() {
     const amt        = parseFloat(document.getElementById('amountInput').value) || 0;
     const feeInput   = document.getElementById('feeInput');
     const totalInput = document.getElementById('totalInput');
-    const cur        = (document.getElementById('currencyInput').value || '').toUpperCase();
+    const cur        = window.TX_CURRENCY || 'USD';
     const panel      = document.getElementById('totalPanel');
     const errorBox   = document.getElementById('totalError');
 
@@ -57,22 +57,6 @@ function calcTotal() {
         document.getElementById('calcBar').style.display = 'none';
     }
 }
-
-/* La devise doit être choisie dans la liste (datalist) — on bloque la
-   saisie de chiffres pour éviter qu'un montant soit tapé par erreur
-   dans ce champ. */
-document.addEventListener('DOMContentLoaded', function () {
-    const currencyInput = document.getElementById('currencyInput');
-    if (currencyInput) {
-        currencyInput.addEventListener('keypress', function (e) {
-            if (/[0-9]/.test(e.key)) e.preventDefault();
-        });
-        currencyInput.addEventListener('input', function () {
-            const stripped = this.value.replace(/[0-9]/g, '');
-            if (stripped !== this.value) this.value = stripped;
-        });
-    }
-});
 
 document.addEventListener('DOMContentLoaded', function () {
     const form = document.getElementById('txForm');

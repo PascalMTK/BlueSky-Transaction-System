@@ -268,23 +268,6 @@ def _resolve_fee_amount(post, amount, fallback_fee):
     return round(_parse_decimal(fee_value, fallback_fee), 2)
 
 
-def _build_currencies():
-    """Build currency dict from DB countries."""
-    currencies = {}
-    for c in Country.objects.values('currency_code', 'currency_name').distinct():
-        if c['currency_code']:
-            currencies[c['currency_code']] = c['currency_name'] or c['currency_code']
-    # Add common international currencies not in DB
-    extra = {
-        'USD': 'Dollar américain', 'EUR': 'Euro', 'GBP': 'Livre sterling',
-        'CHF': 'Franc suisse', 'CAD': 'Dollar canadien', 'AED': 'Dirham EAU',
-    }
-    for k, v in extra.items():
-        if k not in currencies:
-            currencies[k] = v
-    return dict(sorted(currencies.items()))
-
-
 @agent_required
 def dashboard(request):
     user  = get_auth_user(request)
@@ -429,7 +412,6 @@ Destination : {tx.destination_country.name if tx.destination_country else '—'}
 def tx_create(request):
     user      = get_auth_user(request)
     countries = Country.objects.filter(is_active=True)
-    currencies = _build_currencies()
     if request.method == 'POST':
         tx_type   = request.POST.get('transaction_type') or request.GET.get('type', 'send')
         origin_id = request.POST.get('origin_country_id')
@@ -447,11 +429,7 @@ def tx_create(request):
                 messages.error(request, "Le montant doit être supérieur à zéro.")
                 raise ValueError('amount invalid')
 
-            currency_raw = (request.POST.get('currency') or '').strip()
-            if not currency_raw:
-                messages.error(request, "La devise est obligatoire.")
-                raise ValueError('currency required')
-            currency = currency_raw.upper()
+            currency = 'USD'
 
             fee_raw   = (request.POST.get('fee_amount') or '').strip()
             total_raw = (request.POST.get('total_amount') or '').strip()
@@ -537,7 +515,7 @@ def tx_create(request):
             default_tx_type = 'send'
     sent_at_value = datetime.now().strftime('%Y-%m-%dT%H:%M')
     return render(request, 'agent/transactions/create.html', {
-        'countries': countries, 'currencies': currencies, 'auth_user': user,
+        'countries': countries, 'auth_user': user,
         'default_tx_type': default_tx_type,
         'type_preselected': type_preselected,
         'sent_at_value': sent_at_value,
@@ -569,10 +547,9 @@ def tx_edit(request, tx_id):
     # may reference a country that was deactivated since, and it must still
     # show up as a selectable option so editing doesn't silently reassign it.
     countries  = Country.objects.all().order_by('name')
-    currencies = _build_currencies()
     if request.method == 'POST':
         ctx = {
-            'transaction': tx, 'countries': countries, 'currencies': currencies, 'auth_user': user,
+            'transaction': tx, 'countries': countries, 'auth_user': user,
         }
         tx_type  = request.POST.get('transaction_type', tx.transaction_type)
 
@@ -584,12 +561,6 @@ def tx_edit(request, tx_id):
         if amount <= 0:
             messages.error(request, "Le montant doit être supérieur à zéro.")
             return render(request, 'agent/transactions/edit.html', ctx)
-
-        currency_raw = (request.POST.get('currency') or '').strip()
-        if not currency_raw:
-            messages.error(request, "La devise est obligatoire.")
-            return render(request, 'agent/transactions/edit.html', ctx)
-        currency = currency_raw.upper()
 
         fee_raw   = (request.POST.get('fee_amount') or '').strip()
         total_raw = (request.POST.get('total_amount') or '').strip()
@@ -620,7 +591,6 @@ def tx_edit(request, tx_id):
         tx.fee_percentage    = fee_pct
         tx.fee_amount        = fee_amt
         tx.total_amount      = total
-        tx.currency          = currency
         tx.status            = request.POST.get('status', tx.status)
         tx.payment_method    = request.POST.get('payment_method', tx.payment_method)
         tx.notes             = request.POST.get('notes', tx.notes)
@@ -634,7 +604,7 @@ def tx_edit(request, tx_id):
         messages.success(request, 'Transaction mise à jour.')
         return redirect('tx_show', tx_id=tx.id)
     return render(request, 'agent/transactions/edit.html', {
-        'transaction': tx, 'countries': countries, 'currencies': currencies, 'auth_user': user,
+        'transaction': tx, 'countries': countries, 'auth_user': user,
     })
 
 

@@ -1,5 +1,5 @@
 {% extends 'layouts/app.html' %}
-{% load static bluesky_tags %}
+{% load static bluesky_tags l10n %}
 
 {% block title %}{{ t.edit_tx_title }}{% endblock %}
 {% block page_title %}{{ t.edit_tx_title }}{% endblock %}
@@ -48,20 +48,22 @@
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:4px;" class="form-grid">
                 <div class="form-group">
                     <label class="form-label">🌍 {{ t.origin_country }} *</label>
-                    <select name="origin_country_id" class="form-control" required>
+                    <select name="origin_country_id" class="form-control" id="originCountry" required onchange="updateRateHint('originCountry','originRateHint')">
                         {% for c in countries %}
-                            <option value="{{ c.id }}" {% if transaction.origin_country_id == c.id %}selected{% endif %}>{{ c.flag_emoji }} {{ c.name|country_name:locale }} ({{ c.currency_code }})</option>
+                            <option value="{{ c.id }}" data-currency="{{ c.currency_code }}" data-rate="{{ c.usd_exchange_rate|unlocalize }}" {% if transaction.origin_country_id == c.id %}selected{% endif %}>{{ c.flag_emoji }} {{ c.name|country_name:locale }} ({{ c.currency_code }})</option>
                         {% endfor %}
                     </select>
+                    <div class="fx-hint" id="originRateHint" style="display:none;font-size:11.5px;font-weight:600;color:var(--sky-primary);background:rgba(2,132,199,.08);border-radius:6px;padding:4px 8px;margin-top:6px;"></div>
                 </div>
                 <div class="form-group">
                     <label class="form-label">🌍 {{ t.dest_country }}</label>
-                    <select name="destination_country_id" class="form-control">
+                    <select name="destination_country_id" class="form-control" id="destCountry" onchange="updateRateHint('destCountry','destRateHint')">
                         <option value="" {% if not transaction.destination_country_id %}selected{% endif %}>-- {{ t.select_country }} --</option>
                         {% for c in countries %}
-                            <option value="{{ c.id }}" {% if transaction.destination_country_id == c.id %}selected{% endif %}>{{ c.flag_emoji }} {{ c.name|country_name:locale }}</option>
+                            <option value="{{ c.id }}" data-currency="{{ c.currency_code }}" data-rate="{{ c.usd_exchange_rate|unlocalize }}" {% if transaction.destination_country_id == c.id %}selected{% endif %}>{{ c.flag_emoji }} {{ c.name|country_name:locale }}</option>
                         {% endfor %}
                     </select>
+                    <div class="fx-hint" id="destRateHint" style="display:none;font-size:11.5px;font-weight:600;color:var(--sky-primary);background:rgba(2,132,199,.08);border-radius:6px;padding:4px 8px;margin-top:6px;"></div>
                 </div>
             </div>
 
@@ -95,12 +97,6 @@
                 </div>
             </div>
 
-<!-- Datalist devises -->
-<datalist id="currencyList">
-{% for code, name in currencies.items %}<option value="{{ code }}">{{ name }}</option>
-{% endfor %}
-</datalist>
-
             <!-- Amount -->
             <div class="tx-details-block">
                 <div class="tx-details-hdr">
@@ -121,9 +117,8 @@
                         </div>
                         <div class="tx-cur-grp">
                             <label class="form-label" style="opacity:0;pointer-events:none;">·</label>
-                            <input type="text" name="currency" id="currencyInput" class="form-control"
-                                   list="currencyList" value="{{ transaction.currency }}"
-                                   placeholder="XAF" autocomplete="off" required>
+                            <input type="text" class="form-control" value="{{ transaction.currency|default:'USD' }}" disabled
+                                   style="font-weight:800;text-align:center;">
                         </div>
                     </div>
 
@@ -228,15 +223,30 @@
 {% endblock %}
 
 {% block scripts %}
-<script>window.FEE_TOTAL_ERROR_MSG = "{{ t.fee_total_exceeds_amount|escapejs }}";</script>
+<script>
+window.FEE_TOTAL_ERROR_MSG = "{{ t.fee_total_exceeds_amount|escapejs }}";
+window.TX_CURRENCY = "{{ transaction.currency|default:'USD'|escapejs }}";
+window.FX_RATE_HINT_LABEL = "{{ t.fx_rate_hint_label|escapejs }}";
+</script>
 <script src="{% static 'js/transaction-form.js' %}"></script>
 <script>
-(function(){
-    var cur=document.getElementById('currencyInput');
-    if(cur){
-        cur.addEventListener('change',function(){ this.value=this.value.toUpperCase(); calcTotal(); });
-        cur.addEventListener('input',function(){ calcTotal(); });
+function updateRateHint(selId, hintId) {
+    const sel  = document.getElementById(selId);
+    const hint = document.getElementById(hintId);
+    if (!sel || !hint) return;
+    const opt = sel.options[sel.selectedIndex];
+    const rate = opt ? parseFloat(opt.dataset.rate) : NaN;
+    const cur  = opt ? opt.dataset.currency : '';
+    if (opt && opt.value && rate && cur) {
+        hint.textContent = '💱 ' + (window.FX_RATE_HINT_LABEL || '') + ' : 1 USD = ' + rate.toLocaleString('fr-FR') + ' ' + cur;
+        hint.style.display = 'block';
+    } else {
+        hint.style.display = 'none';
     }
+}
+(function(){
+    updateRateHint('originCountry', 'originRateHint');
+    updateRateHint('destCountry', 'destRateHint');
 })();
 
 function sendReceiptEmail(txId){

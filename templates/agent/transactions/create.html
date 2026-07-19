@@ -1,5 +1,5 @@
 {% extends 'layouts/app.html' %}
-{% load static bluesky_tags %}
+{% load static bluesky_tags l10n %}
 
 {% block title %}{{ t.create_tx_title }}{% endblock %}
 {% block page_title %}{{ t.create_tx_title }}{% endblock %}
@@ -129,6 +129,12 @@
 .tx-btn-save  { flex: 1; min-width: 140px; justify-content: center; }
 .tx-btn-cancel { flex-shrink: 0; }
 
+.fx-hint {
+    font-size: 11.5px; font-weight: 600; color: var(--sky-primary);
+    background: rgba(2,132,199,.08); border-radius: 6px;
+    padding: 4px 8px; margin-top: 6px;
+}
+
 @media (max-width: 480px) {
     .ip-row { gap: 6px; }
     .ip-btn { padding: 10px 8px; min-width: 60px; }
@@ -177,18 +183,20 @@
                     <select name="origin_country_id" class="form-control" id="originCountry" required onchange="loadFee()">
                         <option value="">-- {{ t.select_country }} --</option>
                         {% for c in countries %}
-                            <option value="{{ c.id }}" data-currency="{{ c.currency_code }}" data-fee-pct="{{ c.default_fee_percentage }}">{{ c.flag_emoji }} {{ c.name|country_name:locale }} ({{ c.currency_code }})</option>
+                            <option value="{{ c.id }}" data-currency="{{ c.currency_code }}" data-fee-pct="{{ c.default_fee_percentage|unlocalize }}" data-rate="{{ c.usd_exchange_rate|unlocalize }}">{{ c.flag_emoji }} {{ c.name|country_name:locale }} ({{ c.currency_code }})</option>
                         {% endfor %}
                     </select>
+                    <div class="fx-hint" id="originRateHint" style="display:none;"></div>
                 </div>
                 <div class="form-group" style="margin:0;">
                     <label class="form-label">{{ t.dest_country }}</label>
-                    <select name="destination_country_id" class="form-control" id="destCountry">
+                    <select name="destination_country_id" class="form-control" id="destCountry" onchange="updateRateHint('destCountry','destRateHint')">
                         <option value="">-- {{ t.select_country }} --</option>
                         {% for c in countries %}
-                            <option value="{{ c.id }}">{{ c.flag_emoji }} {{ c.name|country_name:locale }}</option>
+                            <option value="{{ c.id }}" data-currency="{{ c.currency_code }}" data-rate="{{ c.usd_exchange_rate|unlocalize }}">{{ c.flag_emoji }} {{ c.name|country_name:locale }}</option>
                         {% endfor %}
                     </select>
+                    <div class="fx-hint" id="destRateHint" style="display:none;"></div>
                 </div>
             </div>
 
@@ -218,12 +226,6 @@
                 </div>
             </div>
 
-<!-- Datalist devises -->
-<datalist id="currencyList">
-{% for code, name in currencies.items %}<option value="{{ code }}">{{ name }}</option>
-{% endfor %}
-</datalist>
-
             <!-- Amount & fees -->
             <div class="tx-details-block">
                 <div class="tx-details-hdr">
@@ -244,8 +246,8 @@
                         </div>
                         <div class="tx-cur-grp">
                             <label class="form-label" style="opacity:0;pointer-events:none;">·</label>
-                            <input type="text" name="currency" id="currencyInput" class="form-control"
-                                   list="currencyList" placeholder="XAF" autocomplete="off" required>
+                            <input type="text" class="form-control" value="USD" disabled
+                                   style="font-weight:800;text-align:center;">
                         </div>
                     </div>
 
@@ -340,7 +342,11 @@
 {% endblock %}
 
 {% block scripts %}
-<script>window.FEE_TOTAL_ERROR_MSG = "{{ t.fee_total_exceeds_amount|escapejs }}";</script>
+<script>
+window.FEE_TOTAL_ERROR_MSG = "{{ t.fee_total_exceeds_amount|escapejs }}";
+window.TX_CURRENCY = 'USD';
+window.FX_RATE_HINT_LABEL = "{{ t.fx_rate_hint_label|escapejs }}";
+</script>
 <script src="{% static 'js/transaction-form.js' %}"></script>
 <script>
 // ── Étape 1 : type de transaction — requis, révèle le reste du formulaire ──
@@ -392,14 +398,26 @@ function updateFlag(selId, flagId) {
     setTimeout(function(){ el.style.transform = 'scale(1)'; }, 200);
 }
 function loadFee() {
-    const sel = document.getElementById('originCountry');
-    const opt = sel.options[sel.selectedIndex];
-    if (opt.dataset.currency) {
-        const cur = document.getElementById('currencyInput');
-        if (!cur.dataset.userEdited) cur.value = opt.dataset.currency;
-    }
     applyDefaultFee();
+    updateRateHint('originCountry', 'originRateHint');
     calcTotal();
+}
+
+/* Affiche le taux USD ⇄ devise locale du pays choisi, à titre indicatif —
+   le système n'enregistre que des montants en USD. */
+function updateRateHint(selId, hintId) {
+    const sel  = document.getElementById(selId);
+    const hint = document.getElementById(hintId);
+    if (!sel || !hint) return;
+    const opt = sel.options[sel.selectedIndex];
+    const rate = opt ? parseFloat(opt.dataset.rate) : NaN;
+    const cur  = opt ? opt.dataset.currency : '';
+    if (opt && opt.value && rate && cur) {
+        hint.textContent = '💱 ' + (window.FX_RATE_HINT_LABEL || '') + ' : 1 USD = ' + rate.toLocaleString('fr-FR') + ' ' + cur;
+        hint.style.display = 'block';
+    } else {
+        hint.style.display = 'none';
+    }
 }
 
 /* Le frais est pré-rempli à partir du % par défaut du pays d'origine —
@@ -421,15 +439,9 @@ function onAmountInput() {
     calcTotal();
 }
 
-/* Mark currency as manually edited so country change won't overwrite it */
+/* Si un type est déjà présélectionné (lien ?type=... ou re-render après erreur),
+   synchronise les champs obligatoires sans attendre un clic. */
 (function(){
-    var cur = document.getElementById('currencyInput');
-    if(cur){
-        cur.addEventListener('input', function(){ this.dataset.userEdited = '1'; calcTotal(); });
-        cur.addEventListener('change', function(){ this.value = this.value.toUpperCase(); calcTotal(); });
-    }
-    /* Si un type est déjà présélectionné (lien ?type=... ou re-render après erreur),
-       synchronise les champs obligatoires sans attendre un clic. */
     var activeBtn = document.querySelector('[data-tx-type].ip-active');
     if(activeBtn) pickTxType(activeBtn.dataset.txType, activeBtn);
 })();
