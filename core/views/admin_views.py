@@ -653,23 +653,49 @@ def statistics(request):
         })
         prev_amount = row['total_amount'] or 0
 
-    # Monthly detail for current year
+    available_years = [row['year'] for row in yearly_data]
+    try:
+        selected_year = int(request.GET.get('year', today.year))
+    except (TypeError, ValueError):
+        selected_year = today.year
+    if available_years and selected_year not in available_years:
+        selected_year = available_years[-1]
+
+    # Monthly detail for the selected year and the preceding year. Keeping the
+    # two series aligned makes the direction of travel immediately visible.
     monthly_rows = (
-        Transaction.objects.filter(created_at__year=today.year, status='completed')
+        Transaction.objects.filter(
+            created_at__year__in=(selected_year, selected_year - 1),
+            status='completed',
+        )
+        .annotate(year=ExtractYear('created_at'))
         .annotate(month=ExtractMonth('created_at'))
-        .values('month')
+        .values('year', 'month')
         .annotate(amount=Sum('amount'), count=Count('id'))
     )
-    monthly_by_number = {row['month']: row for row in monthly_rows}
+    monthly_by_key = {(row['year'], row['month']): row for row in monthly_rows}
     current_year_monthly = []
+    previous_year_monthly = []
     max_amount = 0
     for m in range(1, 13):
-        row = monthly_by_number.get(m, {})
+        row = monthly_by_key.get((selected_year, m), {})
+        previous_row = monthly_by_key.get((selected_year - 1, m), {})
         amt = float(row.get('amount') or 0)
+        previous_amt = float(previous_row.get('amount') or 0)
         cnt = row.get('count') or 0
         current_year_monthly.append({'month': months[m - 1], 'month_num': m, 'amount': amt, 'count': cnt})
-        if amt > max_amount:
-            max_amount = amt
+        previous_year_monthly.append({'month': months[m - 1], 'month_num': m, 'amount': previous_amt, 'count': previous_row.get('count') or 0})
+        max_amount = max(max_amount, amt, previous_amt)
+
+    selected_total = sum(row['amount'] for row in current_year_monthly)
+    previous_total = sum(row['amount'] for row in previous_year_monthly)
+    selected_count = sum(row['count'] for row in current_year_monthly)
+    previous_count = sum(row['count'] for row in previous_year_monthly)
+    selected_growth = round(((selected_total - previous_total) / previous_total) * 100, 1) if previous_total else None
+    count_growth = round(((selected_count - previous_count) / previous_count) * 100, 1) if previous_count else None
+    active_months = [row for row in current_year_monthly if row['amount'] > 0]
+    best_month = max(active_months, key=lambda row: row['amount']) if active_months else None
+    average_monthly = selected_total / len(active_months) if active_months else 0
 
     # Converted to USD (via each country's admin-set exchange rate) since
     # fee_amount is stored in each country's own currency — summing those
@@ -722,12 +748,26 @@ def statistics(request):
 
     return render(request, 'admin/statistics.html', {
         'yearly_data':          yearly_data,
+        'available_years':      available_years,
+        'selected_year':        selected_year,
+        'previous_year':        selected_year - 1,
         'current_year_monthly': current_year_monthly,
+        'previous_year_monthly': previous_year_monthly,
+        'monthly_labels':       months,
+        'monthly_amounts':      [row['amount'] for row in current_year_monthly],
+        'previous_amounts':     [row['amount'] for row in previous_year_monthly],
+        'monthly_counts':       [row['count'] for row in current_year_monthly],
+        'selected_total':       selected_total,
+        'selected_count':       selected_count,
+        'selected_growth':      selected_growth,
+        'count_growth':         count_growth,
+        'best_month':           best_month,
+        'average_monthly':      average_monthly,
         'status_breakdown':     status_breakdown,
         'country_breakdown':    country_breakdown,
         'total_tx_all':         total_tx_all,
         'max_amount':           max_amount,
-        'current_year':         today.year,
+        'current_year':         selected_year,
         'daily_gains_today':    daily_gains_today,
         'daily_gains_month':    daily_gains_month,
         'daily_gains_total':    daily_gains_total,

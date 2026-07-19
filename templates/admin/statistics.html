@@ -8,191 +8,179 @@
 
 {% block styles %}
 <style>
-.monthly-row { display: grid; grid-template-columns: 50px 1fr 120px 70px; gap: 10px; align-items: center; }
-@media (max-width: 480px) {
-    .monthly-row { grid-template-columns: 32px 1fr 58px; gap: 6px; }
-    .monthly-row .monthly-count { display: none; }
-}
+.analytics-page { --chart-blue:#0284c7; --chart-cyan:#38bdf8; --chart-muted:#94a3b8; }
+.analytics-hero { position:relative; overflow:hidden; border-radius:22px; padding:24px; margin-bottom:18px; color:#fff; background:linear-gradient(125deg,#075985 0%,#0284c7 55%,#38bdf8 100%); box-shadow:0 18px 42px rgba(2,132,199,.20); }
+.analytics-hero::after { content:""; position:absolute; width:280px; height:280px; right:-90px; top:-150px; border-radius:50%; border:48px solid rgba(255,255,255,.09); }
+.analytics-hero-top { position:relative; z-index:1; display:flex; align-items:flex-start; justify-content:space-between; gap:18px; }
+.analytics-eyebrow { font-size:11px; text-transform:uppercase; letter-spacing:1.4px; font-weight:800; opacity:.75; }
+.analytics-heading { margin:5px 0 0; font-size:clamp(22px,3vw,31px); line-height:1.15; font-weight:900; }
+.analytics-description { margin:8px 0 0; font-size:13px; max-width:600px; opacity:.82; }
+.year-picker { display:flex; align-items:center; gap:9px; padding:7px 10px 7px 13px; background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.25); border-radius:12px; backdrop-filter:blur(8px); }
+.year-picker label { font-size:11px; font-weight:700; opacity:.8; }
+.year-picker select { appearance:none; border:0; outline:0; border-radius:8px; padding:7px 29px 7px 10px; font-family:inherit; font-size:13px; font-weight:800; color:#075985; background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23075985' stroke-width='3'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 9px center; }
+.trend-kpis { position:relative; z-index:1; display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-top:24px; }
+.trend-kpi { min-width:0; padding:13px 14px; border-radius:14px; background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.16); border-top:2.5px solid var(--kpi-accent, rgba(255,255,255,.35)); transition:transform .18s, background .18s; }
+.trend-kpi:hover { background:rgba(255,255,255,.17); transform:translateY(-2px); }
+.trend-kpi-head { display:flex; align-items:center; gap:8px; }
+.trend-kpi-icon { display:grid; place-items:center; width:26px; height:26px; border-radius:9px; font-size:13.5px; flex-shrink:0; background:var(--kpi-accent, rgba(255,255,255,.18)); }
+.trend-kpi-label { font-size:10px; text-transform:uppercase; letter-spacing:.65px; opacity:.75; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.trend-kpi-value { margin-top:8px; font-size:clamp(17px,2.3vw,24px); font-weight:900; line-height:1; overflow:hidden; text-overflow:ellipsis; }
+.trend-kpi-note { margin-top:6px; font-size:10.5px; opacity:.72; }
+.trend-kpi.kpi-volume  { --kpi-accent: rgba(52,211,153,.32); }
+.trend-kpi.kpi-count   { --kpi-accent: rgba(167,139,250,.32); }
+.trend-kpi.kpi-best    { --kpi-accent: rgba(251,191,36,.34); }
+.trend-kpi.kpi-average { --kpi-accent: rgba(244,114,182,.32); }
+.delta { display:inline-flex; align-items:center; gap:3px; padding:3px 7px; margin-left:5px; border-radius:99px; font-size:10px; vertical-align:3px; background:rgba(255,255,255,.16); }
+.analytics-grid { display:grid; grid-template-columns:minmax(0,1.8fr) minmax(260px,.8fr); gap:18px; margin-bottom:18px; }
+.analytics-card { background:var(--bg-card); border:1px solid var(--border); border-radius:18px; box-shadow:var(--shadow-sm); }
+.analytics-card-head { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:18px 20px 0; }
+.analytics-card-title { color:var(--text-heading); font-size:15px; font-weight:850; }
+.analytics-card-sub { margin-top:3px; color:var(--text-muted); font-size:11.5px; }
+.chart-legend { display:flex; gap:13px; color:var(--text-muted); font-size:10.5px; white-space:nowrap; }
+.chart-legend span { display:flex; align-items:center; gap:5px; }
+.chart-legend i { display:block; width:16px; height:3px; border-radius:5px; background:var(--chart-blue); }
+.chart-legend span:last-child i { background:var(--chart-muted); }
+.chart-shell { position:relative; height:310px; padding:18px 18px 12px; }
+.chart-mode { display:inline-flex; align-items:center; gap:6px; padding:5px 8px; border-radius:8px; background:rgba(2,132,199,.08); color:var(--sky-primary); font-size:10px; font-weight:800; }
+.insights { display:flex; flex-direction:column; padding:18px 20px 20px; }
+.insight-list { display:flex; flex-direction:column; gap:11px; margin-top:17px; }
+.insight-item { display:grid; grid-template-columns:38px 1fr; gap:11px; align-items:center; padding:12px; border-radius:13px; background:var(--bg-secondary); border:1px solid var(--border); }
+.insight-icon { display:grid; place-items:center; width:38px; height:38px; border-radius:11px; background:rgba(2,132,199,.10); font-size:18px; }
+.insight-label { color:var(--text-muted); font-size:10.5px; }
+.insight-value { color:var(--text-heading); font-size:15px; font-weight:850; margin-top:2px; }
+.section-heading { display:flex; justify-content:space-between; align-items:end; margin:26px 2px 12px; }
+.section-heading h2 { margin:0; color:var(--text-heading); font-size:17px; }
+.section-heading p { margin:4px 0 0; color:var(--text-muted); font-size:11.5px; }
+.split-grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+.breakdown-body { padding:18px 20px 20px; }
+.distribution-bar { display:flex; height:9px; overflow:hidden; border-radius:99px; background:var(--bg-secondary); margin-bottom:18px; }
+.distribution-list { display:flex; flex-direction:column; gap:12px; }
+.distribution-row { display:grid; grid-template-columns:minmax(90px,1fr) auto auto; align-items:center; gap:12px; }
+.distribution-name { display:flex; align-items:center; gap:8px; min-width:0; color:var(--text-heading); font-size:12px; font-weight:750; }
+.distribution-name strong { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.distribution-value { color:var(--text-heading); font-size:12px; font-weight:800; }
+.distribution-pct { min-width:45px; padding:4px 7px; border-radius:7px; text-align:center; color:var(--text-muted); background:var(--bg-secondary); font-size:10px; font-weight:750; }
+.dot { width:9px; height:9px; flex:0 0 auto; border-radius:50%; }
+.year-table { margin-top:18px; }
+.growth-pill { display:inline-flex; padding:4px 8px; border-radius:99px; font-size:10.5px; font-weight:800; }
+.growth-pill.up { color:#15803d; background:rgba(34,197,94,.12); }
+.growth-pill.down { color:#dc2626; background:rgba(239,68,68,.11); }
+.growth-pill.flat { color:var(--text-muted); background:var(--bg-secondary); }
+@media (max-width:900px) { .trend-kpis { grid-template-columns:1fr 1fr; } .analytics-grid,.split-grid { grid-template-columns:1fr; } }
+@media (max-width:600px) { .analytics-hero { padding:18px; border-radius:17px; } .analytics-hero-top { flex-direction:column; } .year-picker { width:100%; justify-content:space-between; } .trend-kpis { margin-top:18px; gap:8px; } .trend-kpi { padding:11px; } .trend-kpi-icon { width:21px; height:21px; font-size:11px; border-radius:7px; } .trend-kpi-label { font-size:8.5px; } .trend-kpi-value { font-size:16px; } .chart-shell { height:260px; padding:12px 8px 8px; } .analytics-card-head { align-items:flex-start; flex-direction:column; padding:16px 16px 0; } .distribution-row { grid-template-columns:minmax(80px,1fr) auto auto; gap:7px; } }
 </style>
 {% endblock %}
 
 {% block content %}
+<div class="analytics-page">
+    <section class="analytics-hero">
+        <div class="analytics-hero-top">
+            <div>
+                <div class="analytics-eyebrow">{% if locale == 'en' %}Performance overview{% else %}Vue d’ensemble{% endif %}</div>
+                <h1 class="analytics-heading">{% if locale == 'en' %}Evolution in {{ selected_year }}{% else %}Évolution en {{ selected_year }}{% endif %}</h1>
+                <p class="analytics-description">{% if locale == 'en' %}Follow completed transaction volume and compare it with {{ previous_year }}.{% else %}Suivez le volume des transactions terminées et comparez-le à {{ previous_year }}.{% endif %}</p>
+            </div>
+            <form class="year-picker" method="get">
+                <label for="statsYear">{{ t.year }}</label>
+                <select id="statsYear" name="year" onchange="this.form.submit()">
+                    {% for year in available_years %}<option value="{{ year }}" {% if year == selected_year %}selected{% endif %}>{{ year }}</option>{% empty %}<option>{{ selected_year }}</option>{% endfor %}
+                </select>
+            </form>
+        </div>
+        <div class="trend-kpis">
+            <div class="trend-kpi kpi-volume">
+                <div class="trend-kpi-head"><span class="trend-kpi-icon">💰</span><span class="trend-kpi-label">{{ t.volume }}</span></div>
+                <div class="trend-kpi-value">{{ selected_total|number_format:0 }}</div>
+                <div class="trend-kpi-note">{% if selected_growth is not None %}<span class="delta">{% if selected_growth >= 0 %}↗{% else %}↘{% endif %} {{ selected_growth }}%</span> {% if locale == 'en' %}vs {{ previous_year }}{% else %}vs {{ previous_year }}{% endif %}{% else %}{% if locale == 'en' %}No previous comparison{% else %}Pas de comparaison antérieure{% endif %}{% endif %}</div>
+            </div>
+            <div class="trend-kpi kpi-count">
+                <div class="trend-kpi-head"><span class="trend-kpi-icon">📊</span><span class="trend-kpi-label">{{ t.nb_tx }}</span></div>
+                <div class="trend-kpi-value">{{ selected_count }}</div>
+                <div class="trend-kpi-note">{% if count_growth is not None %}<span class="delta">{% if count_growth >= 0 %}↗{% else %}↘{% endif %} {{ count_growth }}%</span> vs {{ previous_year }}{% else %}—{% endif %}</div>
+            </div>
+            <div class="trend-kpi kpi-best">
+                <div class="trend-kpi-head"><span class="trend-kpi-icon">🏆</span><span class="trend-kpi-label">{% if locale == 'en' %}Best month{% else %}Meilleur mois{% endif %}</span></div>
+                <div class="trend-kpi-value">{% if best_month %}{{ best_month.month }}{% else %}—{% endif %}</div>
+                <div class="trend-kpi-note">{% if best_month %}{{ best_month.amount|number_format:0 }} · {{ best_month.count }} tx{% else %}{{ t.no_data }}{% endif %}</div>
+            </div>
+            <div class="trend-kpi kpi-average">
+                <div class="trend-kpi-head"><span class="trend-kpi-icon">📈</span><span class="trend-kpi-label">{% if locale == 'en' %}Monthly average{% else %}Moyenne mensuelle{% endif %}</span></div>
+                <div class="trend-kpi-value">{{ average_monthly|number_format:0 }}</div>
+                <div class="trend-kpi-note">{% if locale == 'en' %}active months{% else %}sur les mois actifs{% endif %}</div>
+            </div>
+        </div>
+    </section>
 
-<!-- Yearly table -->
-<div class="table-card" style="margin-bottom:22px;">
-    <div class="table-header">
-        <div class="table-title">📈 {{ t.yearly_summary }} — {{ t.yearly_sub }}</div>
+    <div class="analytics-grid">
+        <section class="analytics-card">
+            <div class="analytics-card-head">
+                <div><div class="analytics-card-title">{{ t.monthly_progression }}</div><div class="analytics-card-sub">{% if locale == 'en' %}Monthly completed transaction volume{% else %}Volume mensuel des transactions terminées{% endif %}</div></div>
+                <div style="display:flex;align-items:center;gap:13px;"><span class="chart-mode">▥ {% if locale == 'en' %}Monthly bars{% else %}Barres mensuelles{% endif %}</span><div class="chart-legend"><span><i></i>{{ selected_year }}</span><span><i></i>{{ previous_year }}</span></div></div>
+            </div>
+            <div class="chart-shell"><canvas id="evolutionChart"></canvas></div>
+        </section>
+        <aside class="analytics-card insights">
+            <div class="analytics-card-title">{% if locale == 'en' %}Revenue at a glance{% else %}Revenus en un coup d’œil{% endif %}</div>
+            <div class="analytics-card-sub">{{ t.daily_gains_sub_usd }}</div>
+            <div class="insight-list">
+                <div class="insight-item"><div class="insight-icon">☀️</div><div><div class="insight-label">{{ t.today }}</div><div class="insight-value">${{ daily_gains_today|default:0|number_format:2 }}</div></div></div>
+                <div class="insight-item"><div class="insight-icon">📅</div><div><div class="insight-label">{{ t.this_month }}</div><div class="insight-value">${{ daily_gains_month|default:0|number_format:2 }}</div></div></div>
+                <div class="insight-item"><div class="insight-icon">◎</div><div><div class="insight-label">{{ t.total }}</div><div class="insight-value">${{ daily_gains_total|default:0|number_format:2 }}</div></div></div>
+            </div>
+        </aside>
     </div>
-    <div style="overflow-x:auto;">
-        {% if yearly_data %}
-        <table class="bsky-table">
-            <thead>
-                <tr>
-                    <th>{{ t.year }}</th>
-                    <th>{{ t.nb_tx }}</th>
-                    <th>{{ t.volume }}</th>
-                    <th>{{ t.commissions }}</th>
-                    <th>{{ t.growth }}</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for row in yearly_data %}
-                <tr>
-                    <td><strong style="font-size:15px;">{{ row.year }}</strong></td>
-                    <td>{{ row.total }}</td>
-                    <td><strong>{{ row.total_amount|number_format:0 }}</strong></td>
-                    <td style="color:var(--text-muted);">{{ row.total_fees|number_format:0 }}</td>
-                    <td>
-                        {% if row.growth is None %}
-                            <span style="color:var(--text-muted);font-size:12px;">{{ t.first_year }}</span>
-                        {% elif row.growth > 0 %}
-                            <span style="color:#22c55e;font-weight:700;">▲ {{ row.growth }}%</span>
-                        {% elif row.growth < 0 %}
-                            <span style="color:#ef4444;font-weight:700;">▼ {{ row.growth }}%</span>
-                        {% else %}
-                            <span style="color:var(--text-muted);">= 0%</span>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        {% else %}
-            <div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">{{ t.no_data }}</div></div>
-        {% endif %}
+
+    <div class="section-heading"><div><h2>{% if locale == 'en' %}Distribution{% else %}Répartition de l’activité{% endif %}</h2><p>{% if locale == 'en' %}Understand status and geographic mix at a glance.{% else %}Comprenez rapidement les statuts et la provenance de l’activité.{% endif %}</p></div></div>
+    <div class="split-grid">
+        <section class="analytics-card">
+            <div class="analytics-card-head"><div><div class="analytics-card-title">{{ t.status_breakdown_title }}</div><div class="analytics-card-sub">{{ t.status_breakdown_sub }}</div></div></div>
+            <div class="breakdown-body">
+                {% if total_tx_all %}
+                <div class="distribution-bar">{% for row in status_breakdown %}{% if row.pct > 0 %}<span style="width:{{ row.pct }}%;background:{% if row.code == 'completed' %}#22c55e{% elif row.code == 'pending' %}#f59e0b{% else %}#ef4444{% endif %}"></span>{% endif %}{% endfor %}</div>
+                <div class="distribution-list">{% for row in status_breakdown %}<div class="distribution-row"><div class="distribution-name"><i class="dot" style="background:{% if row.code == 'completed' %}#22c55e{% elif row.code == 'pending' %}#f59e0b{% else %}#ef4444{% endif %}"></i><strong>{% if row.code == 'completed' %}{{ t.completed }}{% elif row.code == 'pending' %}{{ t.pending }}{% else %}{{ t.cancelled }}{% endif %}</strong></div><div class="distribution-value">{{ row.count }} tx</div><div class="distribution-pct">{{ row.pct }}%</div></div>{% endfor %}</div>
+                {% else %}<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">{{ t.no_data }}</div></div>{% endif %}
+            </div>
+        </section>
+        <section class="analytics-card">
+            <div class="analytics-card-head"><div><div class="analytics-card-title">{{ t.country_breakdown }}</div><div class="analytics-card-sub">{{ t.country_breakdown_sub }}</div></div></div>
+            <div class="breakdown-body">
+                {% if country_breakdown %}
+                <div class="distribution-bar">{% for row in country_breakdown %}{% if row.pct > 0 %}<span style="width:{{ row.pct }}%;background:{{ row.color }}"></span>{% endif %}{% endfor %}</div>
+                <div class="distribution-list">{% for row in country_breakdown|slice:':6' %}<div class="distribution-row"><div class="distribution-name"><span>{{ row.flag }}</span><strong style="color:{{ row.color }}">{{ row.name|country_name:locale }}</strong></div><div class="distribution-value">{{ row.count }} tx</div><div class="distribution-pct">{{ row.pct }}%</div></div>{% endfor %}</div>
+                {% else %}<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">{{ t.no_data }}</div></div>{% endif %}
+            </div>
+        </section>
     </div>
+
+    <section class="table-card year-table">
+        <div class="table-header"><div><div class="table-title">{{ t.yearly_summary }}</div><div class="analytics-card-sub">{{ t.yearly_sub }}</div></div></div>
+        <div class="table-scroll">{% if yearly_data %}<table class="bsky-table"><thead><tr><th>{{ t.year }}</th><th>{{ t.nb_tx }}</th><th>{{ t.volume }}</th><th>{{ t.commissions }}</th><th>{{ t.growth }}</th></tr></thead><tbody>{% for row in yearly_data reversed %}<tr><td><strong>{{ row.year }}</strong></td><td>{{ row.total }}</td><td><strong>{{ row.total_amount|number_format:0 }}</strong></td><td>{{ row.total_fees|number_format:0 }}</td><td>{% if row.growth is None %}<span class="growth-pill flat">{{ t.first_year }}</span>{% elif row.growth > 0 %}<span class="growth-pill up">↑ {{ row.growth }}%</span>{% elif row.growth < 0 %}<span class="growth-pill down">↓ {{ row.growth }}%</span>{% else %}<span class="growth-pill flat">0%</span>{% endif %}</td></tr>{% endfor %}</tbody></table>{% else %}<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">{{ t.no_data }}</div></div>{% endif %}</div>
+    </section>
 </div>
+{{ monthly_labels|json_script:'stats-labels' }}
+{{ monthly_amounts|json_script:'stats-current' }}
+{{ previous_amounts|json_script:'stats-previous' }}
+{{ monthly_counts|json_script:'stats-counts' }}
+{% endblock %}
 
-<!-- Daily gains summary -->
-<div class="card" style="margin-bottom:22px;">
-    <div class="card-header">
-        <div>
-            <div class="card-title">📆 {{ t.daily_gains }}</div>
-            <div class="card-subtitle">{{ t.daily_gains_sub_usd }}</div>
-        </div>
-    </div>
-    <div class="card-body">
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;">
-            <div style="background:linear-gradient(135deg,rgba(2,132,199,.08),rgba(14,165,233,.04));border:1px solid var(--border);border-radius:14px;padding:16px;">
-                <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;">{{ t.today }}</div>
-                <div style="font-size:24px;font-weight:900;color:var(--sky-primary);margin-top:6px;">${{ daily_gains_today|default:0|number_format:2 }}</div>
-            </div>
-            <div style="background:linear-gradient(135deg,rgba(34,197,94,.08),rgba(22,163,74,.04));border:1px solid var(--border);border-radius:14px;padding:16px;">
-                <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;">{{ t.this_month }}</div>
-                <div style="font-size:24px;font-weight:900;color:#22c55e;margin-top:6px;">${{ daily_gains_month|default:0|number_format:2 }}</div>
-            </div>
-            <div style="background:linear-gradient(135deg,rgba(245,158,11,.08),rgba(217,119,6,.04));border:1px solid var(--border);border-radius:14px;padding:16px;">
-                <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;">{{ t.total }}</div>
-                <div style="font-size:24px;font-weight:900;color:#f59e0b;margin-top:6px;">${{ daily_gains_total|default:0|number_format:2 }}</div>
-            </div>
-        </div>
-        <div style="font-size:11.5px;color:var(--text-muted);margin-top:14px;">
-            💡 {{ t.usd_rate_hint }} <a href="{% url 'admin_countries' %}" style="color:var(--sky-primary);font-weight:700;">{{ t.countries_nav }}</a>.
-        </div>
-    </div>
-</div>
-
-<!-- Status breakdown — surfaces pending money and cancellation rate -->
-<div class="card" style="margin-bottom:22px;">
-    <div class="card-header">
-        <div>
-            <div class="card-title">📊 {{ t.status_breakdown_title }}</div>
-            <div class="card-subtitle">{{ t.status_breakdown_sub }}</div>
-        </div>
-    </div>
-    <div class="card-body">
-        {% if total_tx_all %}
-        <div style="display:flex;height:10px;border-radius:6px;overflow:hidden;margin-bottom:18px;">
-            {% for row in status_breakdown %}
-                {% if row.pct > 0 %}
-                <div style="width:{{ row.pct }}%;background:{% if row.code == 'completed' %}#22c55e{% elif row.code == 'pending' %}#f59e0b{% else %}#ef4444{% endif %};" title="{{ row.pct }}%"></div>
-                {% endif %}
-            {% endfor %}
-        </div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;">
-            {% for row in status_breakdown %}
-            <div style="background:{% if row.code == 'completed' %}rgba(34,197,94,.06){% elif row.code == 'pending' %}rgba(245,158,11,.06){% else %}rgba(239,68,68,.06){% endif %};border:1px solid var(--border);border-radius:14px;padding:16px;">
-                <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;">
-                    {% if row.code == 'completed' %}✅ {{ t.completed }}{% elif row.code == 'pending' %}⏳ {{ t.pending }}{% else %}❌ {{ t.cancelled }}{% endif %}
-                </div>
-                <div style="font-size:24px;font-weight:900;margin-top:6px;color:{% if row.code == 'completed' %}#22c55e{% elif row.code == 'pending' %}#f59e0b{% else %}#ef4444{% endif %};">
-                    {{ row.amount|number_format:0 }}
-                </div>
-                <div style="font-size:12px;color:var(--text-muted);margin-top:3px;">{{ row.count }} tx · {{ row.pct }}%</div>
-                {% if row.code == 'pending' and row.amount > 0 %}
-                <div style="font-size:11px;color:#f59e0b;margin-top:6px;">⚠️ {{ t.pending_stuck_hint }}</div>
-                {% endif %}
-            </div>
-            {% endfor %}
-        </div>
-        {% else %}
-            <div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">{{ t.no_data }}</div></div>
-        {% endif %}
-    </div>
-</div>
-
-<!-- Country breakdown — each country's text colored to match its flag -->
-<div class="card" style="margin-bottom:22px;">
-    <div class="card-header">
-        <div>
-            <div class="card-title">🌍 {{ t.country_breakdown }}</div>
-            <div class="card-subtitle">{{ t.country_breakdown_sub }}</div>
-        </div>
-    </div>
-    <div class="card-body">
-        {% if country_breakdown %}
-        <div style="display:flex;height:10px;border-radius:6px;overflow:hidden;margin-bottom:18px;">
-            {% for row in country_breakdown %}
-                {% if row.pct > 0 %}
-                <div style="width:{{ row.pct }}%;background:{{ row.color }};" title="{{ row.name }} — {{ row.pct }}%"></div>
-                {% endif %}
-            {% endfor %}
-        </div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;">
-            {% for row in country_breakdown %}
-            <div style="background:{{ row.color }}12;border:1px solid {{ row.color }}30;border-radius:14px;padding:16px;">
-                <div style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:800;color:{{ row.color }};">
-                    <span style="font-size:18px;line-height:1;">{{ row.flag }}</span> {{ row.name|country_name:locale }}
-                </div>
-                <div style="font-size:22px;font-weight:900;margin-top:8px;color:{{ row.color }};">
-                    {{ row.amount|number_format:0 }}
-                </div>
-                <div style="font-size:12px;color:var(--text-muted);margin-top:3px;">{{ row.count }} tx · {{ row.pct }}%</div>
-            </div>
-            {% endfor %}
-        </div>
-        {% else %}
-            <div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">{{ t.no_data }}</div></div>
-        {% endif %}
-    </div>
-</div>
-
-<!-- Monthly bars for current year -->
-<div class="card">
-    <div class="card-header">
-        <div class="card-title">📅 {{ t.monthly_progression }} {{ current_year }}</div>
-        <div class="card-subtitle">{{ t.monthly_subtitle }}</div>
-    </div>
-    <div class="card-body">
-        {% if max_amount > 0 %}
-        <div style="display:flex;flex-direction:column;gap:10px;">
-            {% for row in current_year_monthly %}
-            <div class="monthly-row">
-                <span style="font-size:12px;color:var(--text-muted);font-weight:600;">{{ row.month }}</span>
-                <div style="background:var(--bg-secondary);border-radius:6px;height:22px;overflow:hidden;">
-                    {% if row.amount > 0 %}
-                    <div style="height:100%;border-radius:6px;background:linear-gradient(90deg,var(--sky-primary),var(--sky-secondary));width:{% widthratio row.amount max_amount 100 %}%;transition:width .6s;"></div>
-                    {% endif %}
-                </div>
-                <span style="font-size:12px;text-align:right;font-weight:600;">{{ row.amount|number_format:0 }}</span>
-                <span class="monthly-count" style="font-size:11px;color:var(--text-muted);text-align:right;">{{ row.count }} tx</span>
-            </div>
-            {% endfor %}
-        </div>
-        {% else %}
-            <div class="empty-state"><div class="empty-icon">📊</div><div class="empty-text">{{ t.no_data }}</div></div>
-        {% endif %}
-    </div>
-</div>
-
+{% block scripts %}
+<script>
+(function () {
+    var canvas = document.getElementById('evolutionChart');
+    if (!canvas || typeof Chart === 'undefined') return;
+    var css = getComputedStyle(document.documentElement);
+    var textColor = css.getPropertyValue('--text-muted').trim() || '#64748b';
+    var borderColor = css.getPropertyValue('--border').trim() || 'rgba(148,163,184,.18)';
+    var labels = JSON.parse(document.getElementById('stats-labels').textContent);
+    var current = JSON.parse(document.getElementById('stats-current').textContent);
+    var previous = JSON.parse(document.getElementById('stats-previous').textContent);
+    var counts = JSON.parse(document.getElementById('stats-counts').textContent);
+    var gradient = canvas.getContext('2d').createLinearGradient(0, 0, 0, 280);
+    gradient.addColorStop(0, 'rgba(2,132,199,.28)'); gradient.addColorStop(1, 'rgba(2,132,199,0)');
+    new Chart(canvas, { type:'bar', data:{ labels:labels, datasets:[
+        { type:'bar', label:'{{ selected_year }}', data:current, borderColor:'#0284c7', backgroundColor:gradient, borderWidth:1.5, borderRadius:8, borderSkipped:false, maxBarThickness:34, order:2 },
+        { type:'line', label:'{{ previous_year }}', data:previous, borderColor:'#94a3b8', backgroundColor:'transparent', borderWidth:2, borderDash:[6,5], fill:false, tension:.38, pointRadius:2, pointHoverRadius:5, pointBackgroundColor:'#94a3b8', order:1 }
+    ]}, options:{ responsive:true, maintainAspectRatio:false, interaction:{mode:'index',intersect:false}, plugins:{ legend:{display:false}, tooltip:{backgroundColor:'#0f172a',padding:12,cornerRadius:10,displayColors:true,callbacks:{afterLabel:function(ctx){ return ctx.datasetIndex === 0 ? counts[ctx.dataIndex] + ' tx' : ''; }}}}, scales:{ x:{grid:{display:false},ticks:{color:textColor,font:{size:10}}}, y:{beginAtZero:true,border:{display:false},grid:{color:borderColor},ticks:{color:textColor,font:{size:10},callback:function(v){return Intl.NumberFormat(undefined,{notation:'compact',maximumFractionDigits:1}).format(v);}}}} } });
+})();
+</script>
 {% endblock %}
