@@ -54,6 +54,7 @@ urlpatterns = [
     path('agent/dashboard/',              agent_views.dashboard,          name='agent_dashboard'),
     path('agent/team/',                   agent_views.team_index,         name='agent_team'),
     path('agent/rates/',                  agent_views.fx_rates,           name='agent_rates'),
+    path('agent/rates/refresh/',          agent_views.fx_rates_refresh,   name='agent_rates_refresh'),
 
     # ── Agent — Transactions ──────────────────────────────────────────────
     path('agent/transactions/',           agent_views.tx_index,           name='tx_index'),

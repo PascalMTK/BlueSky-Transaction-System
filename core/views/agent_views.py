@@ -351,6 +351,24 @@ def fx_rates(request):
 
 
 @agent_required
+def fx_rates_refresh(request):
+    """Pull fresh USD rates from the external rate service — same action
+    as the admin's 'Refresh rates' button, open to agents too since they
+    rely on these rates day-to-day and shouldn't have to wait on an admin."""
+    if request.method == 'POST':
+        from core.exchange_rates import fetch_and_update_rates
+        updated, skipped, error = fetch_and_update_rates()
+        if error:
+            messages.error(request, error)
+        else:
+            msg = f'{updated} taux de change mis à jour.'
+            if skipped:
+                msg += f" Devises non trouvées : {', '.join(skipped)}."
+            messages.success(request, msg)
+    return redirect('agent_rates')
+
+
+@agent_required
 def tx_index(request):
     user = get_auth_user(request)
     qs   = Transaction.objects.filter(agent=user).select_related('origin_country', 'destination_country').order_by('-created_at')

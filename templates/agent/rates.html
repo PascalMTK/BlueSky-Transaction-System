@@ -39,6 +39,7 @@
 .fxr-name { font-size: 13.5px; font-weight: 800; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .fxr-currency { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
 .fxr-rate { font-size: 15px; font-weight: 900; color: var(--sky-primary); margin-top: 4px; }
+.fxr-updated { font-size: 10px; color: var(--text-muted); margin-top: 3px; }
 
 .fxr-empty { text-align: center; padding: 60px 20px; color: var(--text-muted); }
 .fxr-empty-icon { font-size: 44px; margin-bottom: 10px; opacity: .4; }
@@ -52,8 +53,12 @@
 
 {% block content %}
 
-<div class="fxr-search-wrap">
-    <input type="text" id="fxrSearch" class="fxr-search" placeholder="🔍 {{ t.fx_search_ph }}" oninput="fxrFilter()">
+<div class="fxr-search-wrap" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+    <input type="text" id="fxrSearch" class="fxr-search" placeholder="🔍 {{ t.fx_search_ph }}" oninput="fxrFilter()" style="flex:1;">
+    <form method="POST" action="{% url 'agent_rates_refresh' %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-secondary">🔄 {{ t.refresh_rates }}</button>
+    </form>
 </div>
 
 {% if countries %}
@@ -65,6 +70,7 @@
             <div class="fxr-name">{{ c.name|country_name:locale }}</div>
             <div class="fxr-currency">{{ c.currency_code }} — {{ c.currency_name }}</div>
             <div class="fxr-rate">1 USD = {{ c.usd_exchange_rate|number_format:2 }} {{ c.currency_code }}</div>
+            <div class="fxr-updated">{{ t.fx_rate_updated_on }} {{ c.updated_at|date:"d/m/Y" }}</div>
         </div>
     </div>
     {% endfor %}
