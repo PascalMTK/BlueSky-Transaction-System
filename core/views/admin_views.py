@@ -464,20 +464,20 @@ def agent_permanent_delete(request, agent_id):
 def transactions(request):
     user    = get_auth_user(request)
     base_qs = Transaction.objects.all()
+    locale  = getattr(request, 'locale', 'fr')
+    months  = build_month_archive(base_qs, locale)
 
     month_param = request.GET.get('month', '').strip()
-    if not month_param:
-        months = build_month_archive(base_qs, getattr(request, 'locale', 'fr'))
-        return render(request, 'admin/transactions.html', {
-            'month_view': True,
-            'months':     months,
-            'auth_user':  user,
-        })
-
-    parsed = parse_month_key(month_param)
+    parsed = parse_month_key(month_param) if month_param else None
     if not parsed:
-        return redirect('admin_transactions')
-    sel_year, sel_month = parsed
+        if months:
+            sel_year, sel_month = months[0]['year'], months[0]['month']
+        else:
+            today = date.today()
+            sel_year, sel_month = today.year, today.month
+        month_param = f'{sel_year:04d}-{sel_month:02d}'
+    else:
+        sel_year, sel_month = parsed
 
     qs = base_qs.filter(created_at__year=sel_year, created_at__month=sel_month).select_related('agent', 'origin_country', 'destination_country').order_by('-created_at')
     q           = request.GET.get('q', '')
@@ -487,17 +487,16 @@ def transactions(request):
     if status_f:  qs = qs.filter(status=status_f)
     if country_f: qs = qs.filter(Q(origin_country__code=country_f) | Q(destination_country__code=country_f))
     countries = Country.objects.filter(is_active=True)
-    locale = getattr(request, 'locale', 'fr')
     return render(request, 'admin/transactions.html', {
-        'month_view':           False,
+        'months':               months,
         'selected_month':       month_param,
         'selected_month_label': month_label(sel_year, sel_month, locale),
         'transactions':         qs[:500],
-        'countries':            countries,
-        'q':                    q,
-        'status_filter':        status_f,
-        'country_filter':       country_f,
-        'auth_user':            user,
+        'countries':      countries,
+        'q':              q,
+        'status_filter':  status_f,
+        'country_filter': country_f,
+        'auth_user':      user,
     })
 
 
