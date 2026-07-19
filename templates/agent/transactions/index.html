@@ -3,14 +3,44 @@
 
 {% block title %}{{ t.tx_history_mine }}{% endblock %}
 {% block page_title %}{{ t.tx_history_mine }}{% endblock %}
-{% block page_subtitle %}{{ t.tx_history_sub }}{% endblock %}
+{% block page_subtitle %}{% if month_view %}{{ t.month_archive_sub }}{% else %}{{ selected_month_label }}{% endif %}{% endblock %}
 {% block nav_tx_index %}active{% endblock %}
 {% block mob_tx %}active{% endblock %}
 
 {% block content %}
+
+{% if month_view %}
+<!-- Month archive -->
+{% if months %}
+<div class="month-grid">
+    {% for m in months %}
+    <a href="{% url 'tx_index' %}?month={{ m.key }}" class="month-card{% if m.is_current %} is-current{% endif %}">
+        <div class="month-card-icon">📅</div>
+        <div class="month-card-body">
+            <div class="month-card-name">{{ m.label }}</div>
+            <div class="month-card-count">{{ m.count }} {{ t.month_tx_count }}</div>
+            {% if m.is_current %}<span class="month-card-badge">{{ t.month_current_badge }}</span>{% endif %}
+        </div>
+        <div class="month-card-arrow">›</div>
+    </a>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+    <div class="empty-icon">📭</div>
+    <div class="empty-text">{{ t.month_archive_empty }}</div>
+    <a href="{% url 'tx_create' %}" class="btn btn-primary" style="margin-top:14px;">{{ t.create_first_tx }}</a>
+</div>
+{% endif %}
+
+{% else %}
+
+<a href="{% url 'tx_index' %}" class="month-back-link">← {{ t.back_to_months }}</a>
+
 <!-- Filters -->
 <div class="filters-bar">
     <form method="GET" action="{% url 'tx_index' %}" style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;width:100%;">
+        <input type="hidden" name="month" value="{{ selected_month }}">
         <div class="filter-group filter-group-search">
             <label class="filter-label">🔍 {{ t.search }}</label>
             <input type="text" name="q" class="filter-control" placeholder="{{ t.search_ph }}" value="{{ q }}">
@@ -26,7 +56,7 @@
         </div>
         <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;">
             <button type="submit" class="btn btn-primary btn-sm">🔍 {{ t.filter_btn }}</button>
-            <a href="{% url 'tx_index' %}" class="btn btn-secondary btn-sm">↺</a>
+            <a href="{% url 'tx_index' %}?month={{ selected_month }}" class="btn btn-secondary btn-sm">↺</a>
             <a href="{% url 'tx_create' %}" class="btn btn-primary btn-sm">➕ {{ t.new_tx_btn }}</a>
         </div>
     </form>
@@ -77,7 +107,7 @@
 
 <div class="table-card">
     <div class="table-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
-        <div class="table-title">📋 {{ t.tx_history_mine }} — <span style="color:var(--sky-primary);">{{ transactions|length }}</span> {{ t.results }}</div>
+        <div class="table-title">📋 {{ selected_month_label }} — <span style="color:var(--sky-primary);">{{ transactions|length }}</span> {{ t.results }}</div>
         <a href="{% url 'tx_create' %}" class="btn btn-primary btn-sm">➕ {{ t.new_tx_btn }}</a>
     </div>
     <div class="table-scroll" style="overflow-x:auto;">
@@ -151,6 +181,7 @@
         {% endif %}
     </div>
 </div>
+{% endif %}
 {% endblock %}
 
 {% block scripts %}

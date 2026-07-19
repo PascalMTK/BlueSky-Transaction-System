@@ -13,6 +13,7 @@ from core.models import User, Country, Transaction, AgentReport
 from core.decorators import admin_required, get_auth_user
 from core.views.profile_views import save_profile_photo
 from core.mailer import send_async
+from core.month_archive import build_month_archive, parse_month_key, month_label
 
 # Colors inspired by each country's national flag — used to give every
 # per-country stat (dashboard breakdown, statistics page) a consistent,
@@ -461,32 +462,42 @@ def agent_permanent_delete(request, agent_id):
 
 @admin_required
 def transactions(request):
-    user = get_auth_user(request)
-    qs   = Transaction.objects.select_related('agent', 'origin_country', 'destination_country').order_by('-created_at')
+    user    = get_auth_user(request)
+    base_qs = Transaction.objects.all()
+
+    month_param = request.GET.get('month', '').strip()
+    if not month_param:
+        months = build_month_archive(base_qs, getattr(request, 'locale', 'fr'))
+        return render(request, 'admin/transactions.html', {
+            'month_view': True,
+            'months':     months,
+            'auth_user':  user,
+        })
+
+    parsed = parse_month_key(month_param)
+    if not parsed:
+        return redirect('admin_transactions')
+    sel_year, sel_month = parsed
+
+    qs = base_qs.filter(created_at__year=sel_year, created_at__month=sel_month).select_related('agent', 'origin_country', 'destination_country').order_by('-created_at')
     q           = request.GET.get('q', '')
     status_f    = request.GET.get('status', '')
     country_f   = request.GET.get('country', '')
-    date_from   = request.GET.get('date_from', '')
-    date_to     = request.GET.get('date_to', '')
     if q:         qs = qs.filter(Q(transaction_number__icontains=q) | Q(sender_name__icontains=q) | Q(receiver_name__icontains=q) | Q(sender_phone__icontains=q) | Q(receiver_phone__icontains=q))
     if status_f:  qs = qs.filter(status=status_f)
     if country_f: qs = qs.filter(Q(origin_country__code=country_f) | Q(destination_country__code=country_f))
-    if date_from:
-        try: qs = qs.filter(created_at__date__gte=date_from)
-        except Exception: pass
-    if date_to:
-        try: qs = qs.filter(created_at__date__lte=date_to)
-        except Exception: pass
     countries = Country.objects.filter(is_active=True)
+    locale = getattr(request, 'locale', 'fr')
     return render(request, 'admin/transactions.html', {
-        'transactions':   qs[:500],
-        'countries':      countries,
-        'q':              q,
-        'status_filter':  status_f,
-        'country_filter': country_f,
-        'date_from':      date_from,
-        'date_to':        date_to,
-        'auth_user':      user,
+        'month_view':           False,
+        'selected_month':       month_param,
+        'selected_month_label': month_label(sel_year, sel_month, locale),
+        'transactions':         qs[:500],
+        'countries':            countries,
+        'q':                    q,
+        'status_filter':        status_f,
+        'country_filter':       country_f,
+        'auth_user':            user,
     })
 
 

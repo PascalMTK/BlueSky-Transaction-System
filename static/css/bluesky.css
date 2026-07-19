@@ -2245,3 +2245,41 @@ html, body { overflow-x: hidden; max-width: 100%; }
     .main-wrapper { margin-left: 0 !important; padding-bottom: 0 !important; }
     .content-area { padding: 0 !important; }
 }
+
+/* ── 12. Month archive (transactions grouped by month) ───── */
+.month-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 14px;
+}
+.month-card {
+    display: flex; align-items: center; gap: 14px;
+    background: var(--bg-card); border: 1.5px solid var(--border);
+    border-radius: 14px; padding: 16px 18px;
+    text-decoration: none; transition: box-shadow .2s, transform .2s, border-color .2s;
+}
+.month-card:hover { box-shadow: 0 8px 24px rgba(2,132,199,.14); transform: translateY(-2px); border-color: rgba(2,132,199,.35); }
+.month-card.is-current { border-color: rgba(2,132,199,.45); background: linear-gradient(135deg, rgba(2,132,199,.06), rgba(14,165,233,.03)); }
+.month-card-icon {
+    width: 42px; height: 42px; border-radius: 12px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; background: rgba(2,132,199,.1);
+}
+.month-card-body { flex: 1; min-width: 0; }
+.month-card-name { font-size: 14px; font-weight: 800; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.month-card-count { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.month-card-badge {
+    font-size: 9.5px; font-weight: 800; letter-spacing: .4px; text-transform: uppercase;
+    background: rgba(2,132,199,.12); color: var(--sky-primary);
+    border-radius: 20px; padding: 3px 8px; margin-top: 5px; display: inline-block;
+}
+.month-card-arrow { font-size: 18px; color: var(--text-muted); flex-shrink: 0; }
+.month-back-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12.5px; font-weight: 700; color: var(--sky-primary);
+    text-decoration: none; margin-bottom: 14px;
+}
+.month-back-link:hover { text-decoration: underline; }
+@media (max-width: 480px) {
+    .month-grid { grid-template-columns: 1fr; }
+}
