@@ -1,0 +1,102 @@
+{% extends 'layouts/app.html' %}
+{% load static bluesky_tags %}
+
+{% block title %}{{ t.fx_rates_title }}{% endblock %}
+{% block page_title %}{{ t.fx_rates_title }}{% endblock %}
+{% block page_subtitle %}{{ t.fx_rates_sub }}{% endblock %}
+{% block nav_rates %}active{% endblock %}
+{% block mob_rates %}active{% endblock %}
+
+{% block styles %}
+<style>
+.fxr-search-wrap { margin-bottom: 18px; }
+.fxr-search {
+    width: 100%; max-width: 420px;
+    padding: 11px 16px; border-radius: 12px;
+    border: 1.5px solid var(--border); background: var(--bg-card);
+    color: var(--text-primary); font-size: 14px; font-family: inherit;
+}
+.fxr-search:focus { outline: none; border-color: var(--sky-primary); }
+
+.fxr-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 14px;
+}
+.fxr-card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 14px; padding: 16px 18px;
+    display: flex; align-items: center; gap: 14px;
+    transition: box-shadow .2s, transform .2s;
+}
+.fxr-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,.1); transform: translateY(-2px); }
+.fxr-flag {
+    width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; background: var(--bg-input);
+}
+.fxr-body { flex: 1; min-width: 0; }
+.fxr-name { font-size: 13.5px; font-weight: 800; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fxr-currency { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+.fxr-rate { font-size: 15px; font-weight: 900; color: var(--sky-primary); margin-top: 4px; }
+
+.fxr-empty { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+.fxr-empty-icon { font-size: 44px; margin-bottom: 10px; opacity: .4; }
+
+@media (max-width: 480px) {
+    .fxr-grid { grid-template-columns: 1fr; }
+    .fxr-card { padding: 14px; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="fxr-search-wrap">
+    <input type="text" id="fxrSearch" class="fxr-search" placeholder="🔍 {{ t.fx_search_ph }}" oninput="fxrFilter()">
+</div>
+
+{% if countries %}
+<div class="fxr-grid" id="fxrGrid">
+    {% for c in countries %}
+    <div class="fxr-card" data-search="{{ c.name|lower }} {{ c.currency_code|lower }} {{ c.currency_name|lower }}">
+        <div class="fxr-flag">{{ c.flag_emoji }}</div>
+        <div class="fxr-body">
+            <div class="fxr-name">{{ c.name|country_name:locale }}</div>
+            <div class="fxr-currency">{{ c.currency_code }} — {{ c.currency_name }}</div>
+            <div class="fxr-rate">1 USD = {{ c.usd_exchange_rate|number_format:2 }} {{ c.currency_code }}</div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+<div class="fxr-empty" id="fxrNoMatch" style="display:none;">
+    <div class="fxr-empty-icon">🔍</div>
+    <div>{{ t.fx_rates_no_match }}</div>
+</div>
+{% else %}
+<div class="fxr-empty">
+    <div class="fxr-empty-icon">🌍</div>
+    <div>{{ t.fx_rates_empty }}</div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+function fxrFilter() {
+    var q = (document.getElementById('fxrSearch').value || '').toLowerCase().trim();
+    var grid = document.getElementById('fxrGrid');
+    if (!grid) return;
+    var cards = grid.querySelectorAll('.fxr-card');
+    var visible = 0;
+    cards.forEach(function (card) {
+        var match = !q || card.dataset.search.indexOf(q) !== -1;
+        card.style.display = match ? '' : 'none';
+        if (match) visible++;
+    });
+    var noMatch = document.getElementById('fxrNoMatch');
+    if (noMatch) noMatch.style.display = (visible === 0) ? 'block' : 'none';
+}
+</script>
+{% endblock %}

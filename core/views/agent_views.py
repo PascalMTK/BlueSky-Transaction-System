@@ -342,6 +342,15 @@ def team_index(request):
 
 
 @agent_required
+def fx_rates(request):
+    """Read-only USD exchange rate lookup across every active BlueSky
+    country — lets an agent check any country's rate, not just their own."""
+    user      = get_auth_user(request)
+    countries = Country.objects.filter(is_active=True).order_by('name')
+    return render(request, 'agent/rates.html', {'countries': countries, 'auth_user': user})
+
+
+@agent_required
 def tx_index(request):
     user = get_auth_user(request)
     qs   = Transaction.objects.filter(agent=user).select_related('origin_country', 'destination_country').order_by('-created_at')
