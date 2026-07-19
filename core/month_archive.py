@@ -29,6 +29,7 @@ def build_month_archive(qs, locale='fr'):
         .order_by('-month')
     )
     today = date.today()
+    max_count = max((row['count'] for row in rows), default=0)
     months = []
     for row in rows:
         d = row['month']
@@ -38,6 +39,7 @@ def build_month_archive(qs, locale='fr'):
             'key':        f'{d.year:04d}-{d.month:02d}',
             'label':      month_label(d.year, d.month, locale),
             'count':      row['count'],
+            'pct':        round(row['count'] / max_count * 100) if max_count else 0,
             'is_current': d.year == today.year and d.month == today.month,
         })
     return months

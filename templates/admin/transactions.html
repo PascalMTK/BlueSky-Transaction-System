@@ -11,20 +11,48 @@
 
 {% if month_view %}
 <!-- Month archive -->
+<div class="month-hero">
+    <div class="month-hero-left">
+        <div class="month-hero-icon">🗓️</div>
+        <div>
+            <div class="month-hero-eyebrow">{{ t.month_archive_eyebrow }}</div>
+            <div class="month-hero-title">{{ t.all_transactions }}</div>
+            <div class="month-hero-sub">{{ t.month_archive_sub }}</div>
+        </div>
+    </div>
+    {% if months %}
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <div class="month-hero-stat">
+            <div class="month-hero-stat-value">{{ months_count }}</div>
+            <div class="month-hero-stat-label">{{ t.month_count_label }}</div>
+        </div>
+        <div class="month-hero-stat">
+            <div class="month-hero-stat-value">{{ total_month_tx }}</div>
+            <div class="month-hero-stat-label">{{ t.month_total_label }}</div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
 {% if months %}
+{% regroup months by year as year_groups %}
+{% for group in year_groups %}
+<div class="month-year-heading">{{ group.grouper }}</div>
 <div class="month-grid">
-    {% for m in months %}
+    {% for m in group.list %}
     <a href="{% url 'admin_transactions' %}?month={{ m.key }}" class="month-card{% if m.is_current %} is-current{% endif %}">
         <div class="month-card-icon">📅</div>
         <div class="month-card-body">
             <div class="month-card-name">{{ m.label }}</div>
             <div class="month-card-count">{{ m.count }} {{ t.month_tx_count }}</div>
+            <div class="month-card-bar-track"><div class="month-card-bar-fill" style="width:{{ m.pct }}%;"></div></div>
             {% if m.is_current %}<span class="month-card-badge">{{ t.month_current_badge }}</span>{% endif %}
         </div>
         <div class="month-card-arrow">›</div>
     </a>
     {% endfor %}
 </div>
+{% endfor %}
 {% else %}
 <div class="empty-state">
     <div class="empty-icon">📭</div>
