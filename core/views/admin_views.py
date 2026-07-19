@@ -469,11 +469,9 @@ def transactions(request):
     if not month_param:
         months = build_month_archive(base_qs, getattr(request, 'locale', 'fr'))
         return render(request, 'admin/transactions.html', {
-            'month_view':     True,
-            'months':         months,
-            'months_count':   len(months),
-            'total_month_tx': sum(m['count'] for m in months),
-            'auth_user':      user,
+            'month_view': True,
+            'months':     months,
+            'auth_user':  user,
         })
 
     parsed = parse_month_key(month_param)
