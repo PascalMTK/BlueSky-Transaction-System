@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ t.transfer_receipt }} — {{ transaction.transaction_number }}</title>
+    <title>{{ t.transfer_receipt }} {{ transaction.transaction_number }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
@@ -338,7 +338,7 @@
 
     <!-- STATUS STRIP -->
     <div class="r-strip">
-        <span class="r-strip-agent">{{ t.agent }} : <strong>{{ transaction.agent.name|default:"—" }}</strong></span>
+        <span class="r-strip-agent">{{ t.agent }} : <strong>{{ transaction.agent.name|default:"" }}</strong></span>
         <span class="status-badge s-{{ transaction.status }}">
             <span class="s-dot"></span>
             {% if transaction.status == 'completed' %}{{ t.completed }}
@@ -368,7 +368,7 @@
                         <span class="tag-dot"></span>
                         {{ t.receiver_section }}
                     </div>
-                    <div class="party-name">{{ transaction.receiver_name|default:"—" }}</div>
+                    <div class="party-name">{{ transaction.receiver_name|default:"" }}</div>
                     {% if transaction.receiver_phone %}<div class="party-phone">{{ transaction.receiver_phone }}</div>{% endif %}
                     <div class="party-country">{{ transaction.destination_country.flag_emoji }} {{ transaction.destination_country.name|country_name:locale }}</div>
                 </div>
@@ -412,7 +412,7 @@
                 </div>
                 <div class="d-cell">
                     <div class="d-lbl">{{ t.agent }}</div>
-                    <div class="d-val">{{ transaction.agent.name|default:"—" }}</div>
+                    <div class="d-val">{{ transaction.agent.name|default:"" }}</div>
                 </div>
             </div>
         </div>

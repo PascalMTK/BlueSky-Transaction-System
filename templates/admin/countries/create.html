@@ -197,9 +197,9 @@
                     <div class="preview-flag" id="previewFlag">🌍</div>
                     <div class="preview-name" id="previewName">{{ t.country_name }}</div>
                     <div class="preview-meta">
-                        <span id="previewCode">—</span>
-                        <span id="previewCurrency">—</span>
-                        <span id="previewFee">— %</span>
+                        <span id="previewCode"></span>
+                        <span id="previewCurrency"></span>
+                        <span id="previewFee"> %</span>
                         <span id="previewPhone"></span>
                     </div>
                 </div>
@@ -210,8 +210,8 @@
                     <div style="display:flex;align-items:center;gap:10px;">
                         <span id="prevTableFlag" style="font-size:26px;">🌍</span>
                         <div>
-                            <div style="font-weight:700;" id="prevTableName">—</div>
-                            <div style="font-size:11px;color:var(--text-muted);" id="prevTableCurName">—</div>
+                            <div style="font-weight:700;" id="prevTableName"></div>
+                            <div style="font-size:11px;color:var(--text-muted);" id="prevTableCurName"></div>
                         </div>
                     </div>
                 </div>
@@ -251,12 +251,12 @@ function autoFlag() {
 }
 
 function updatePreview() {
-    const name     = document.getElementById('nameInput').value       || '—';
-    const code     = document.getElementById('codeInput').value       || '—';
+    const name     = document.getElementById('nameInput').value       || '';
+    const code     = document.getElementById('codeInput').value       || '';
     const flag     = document.getElementById('flagInput').value       || codeToFlag(code) || '🌍';
-    const cur      = document.getElementById('currencyCodeInput').value || '—';
-    const curName  = document.getElementById('currencyNameInput').value || '—';
-    const fee      = document.getElementById('feeInput').value        || '—';
+    const cur      = document.getElementById('currencyCodeInput').value || '';
+    const curName  = document.getElementById('currencyNameInput').value || '';
+    const fee      = document.getElementById('feeInput').value        || '';
     const phone    = document.getElementById('phoneInput').value      || '';
 
     document.getElementById('previewFlag').textContent    = flag;

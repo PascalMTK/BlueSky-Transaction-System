@@ -96,11 +96,11 @@
             <div class="trend-kpi kpi-count">
                 <div class="trend-kpi-head"><span class="trend-kpi-icon">📊</span><span class="trend-kpi-label">{{ t.nb_tx }}</span></div>
                 <div class="trend-kpi-value">{{ selected_count }}</div>
-                <div class="trend-kpi-note">{% if count_growth is not None %}<span class="delta">{% if count_growth >= 0 %}↗{% else %}↘{% endif %} {{ count_growth }}%</span> vs {{ previous_year }}{% else %}—{% endif %}</div>
+                <div class="trend-kpi-note">{% if count_growth is not None %}<span class="delta">{% if count_growth >= 0 %}↗{% else %}↘{% endif %} {{ count_growth }}%</span> vs {{ previous_year }}{% else %}{% endif %}</div>
             </div>
             <div class="trend-kpi kpi-best">
                 <div class="trend-kpi-head"><span class="trend-kpi-icon">🏆</span><span class="trend-kpi-label">{% if locale == 'en' %}Best month{% else %}Meilleur mois{% endif %}</span></div>
-                <div class="trend-kpi-value">{% if best_month %}{{ best_month.month }}{% else %}—{% endif %}</div>
+                <div class="trend-kpi-value">{% if best_month %}{{ best_month.month }}{% else %}{% endif %}</div>
                 <div class="trend-kpi-note">{% if best_month %}{{ best_month.amount|number_format:0 }} · {{ best_month.count }} tx{% else %}{{ t.no_data }}{% endif %}</div>
             </div>
             <div class="trend-kpi kpi-average">

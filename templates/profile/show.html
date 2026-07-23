@@ -360,7 +360,7 @@ function showPhotoPreview(file) {
     var reader = new FileReader();
     reader.onload = function(e) {
         document.getElementById('photoPreviewImg').src = e.target.result;
-        document.getElementById('photoPreviewName').textContent = file.name + ' — ' + (file.size / 1024).toFixed(0) + ' Ko';
+        document.getElementById('photoPreviewName').textContent = file.name + ' ' + (file.size / 1024).toFixed(0) + ' Ko';
         document.getElementById('photoOverlay').classList.add('open');
     };
     reader.readAsDataURL(file);

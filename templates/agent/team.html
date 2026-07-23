@@ -146,7 +146,7 @@
             </div>
             <div class="podium-name">{{ row.agent.name }}</div>
             <div class="podium-country">
-                {% if row.agent.country %}{{ row.agent.country.flag_emoji }} {{ row.agent.country.name|country_name:locale }}{% else %}—{% endif %}
+                {% if row.agent.country %}{{ row.agent.country.flag_emoji }} {{ row.agent.country.name|country_name:locale }}{% else %}{% endif %}
             </div>
             <div class="online-label {% if row.agent.is_online %}is-online{% endif %}">
                 {% if row.agent.is_online %}🟢 {{ t.online_now }}{% else %}⚪ {{ t.offline_now }}{% endif %}
@@ -183,7 +183,7 @@
                         {% if row.rank == 1 %}🏆{% endif %}
                     </div>
                     <div class="team-row-sub">
-                        {% if row.agent.country %}{{ row.agent.country.flag_emoji }} {{ row.agent.country.name|country_name:locale }} · {% endif %}{{ row.agent.agent_code|default:"—" }}
+                        {% if row.agent.country %}{{ row.agent.country.flag_emoji }} {{ row.agent.country.name|country_name:locale }} · {% endif %}{{ row.agent.agent_code|default:"" }}
                     </div>
                     <div class="team-row-online {% if row.agent.is_online %}is-online{% endif %}">
                         {% if row.agent.is_online %}🟢 {{ t.online_now }}{% else %}⚪ {{ t.offline_now }}{% endif %}

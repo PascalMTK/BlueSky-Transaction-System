@@ -36,7 +36,7 @@
 
                         {% if r.admin_reply %}
                         <div style="margin-top:14px;padding:12px 14px;background:rgba(0,163,255,.06);border-left:3px solid var(--sky-primary);border-radius:0 8px 8px 0;">
-                            <div style="font-size:11px;font-weight:700;color:var(--sky-primary);margin-bottom:4px;">🛡️ {{ t.admin_reply_label }} — {{ r.replied_at|date:"d/m/Y" }}</div>
+                            <div style="font-size:11px;font-weight:700;color:var(--sky-primary);margin-bottom:4px;">🛡️ {{ t.admin_reply_label }} {{ r.replied_at|date:"d/m/Y" }}</div>
                             <div style="font-size:13px;color:var(--text-secondary);white-space:pre-wrap;">{{ r.admin_reply }}</div>
                         </div>
                         {% endif %}

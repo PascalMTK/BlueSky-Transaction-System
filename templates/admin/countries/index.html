@@ -135,11 +135,11 @@
         <div class="co-stat-lbl">{{ t.countries_configured }}</div>
     </div>
     <div class="co-stat active">
-        <div class="co-stat-num" id="cActive">—</div>
+        <div class="co-stat-num" id="cActive"></div>
         <div class="co-stat-lbl">{{ t.active }}</div>
     </div>
     <div class="co-stat inactive">
-        <div class="co-stat-num" id="cInactive">—</div>
+        <div class="co-stat-num" id="cInactive"></div>
         <div class="co-stat-lbl">{{ t.inactive }}</div>
     </div>
 </div>
@@ -181,7 +181,7 @@
 
         <!-- Info rows -->
         <div class="co-card-info">
-            <div class="co-card-row"><span>💰</span><span>{{ c.currency_code }} — {{ c.currency_name }}</span></div>
+            <div class="co-card-row"><span>💰</span><span>{{ c.currency_code }} {{ c.currency_name }}</span></div>
             <div class="co-card-row"><span>💱</span><span>1 $ = {{ c.usd_exchange_rate }} {{ c.currency_code }}</span></div>
             {% if c.phone_code %}<div class="co-card-row"><span>📞</span><span>{{ c.phone_code }}</span></div>{% endif %}
             <div class="co-card-row"><span>⚙️</span><span>{{ t.default_fee }}</span><span class="co-fee">{{ c.default_fee_percentage }}%</span></div>

@@ -68,7 +68,7 @@
         <div class="fxr-flag">{{ c.flag_emoji }}</div>
         <div class="fxr-body">
             <div class="fxr-name">{{ c.name|country_name:locale }}</div>
-            <div class="fxr-currency">{{ c.currency_code }} — {{ c.currency_name }}</div>
+            <div class="fxr-currency">{{ c.currency_code }} {{ c.currency_name }}</div>
             <div class="fxr-rate">1 USD = {{ c.usd_exchange_rate|number_format:2 }} {{ c.currency_code }}</div>
             <div class="fxr-updated">{{ t.fx_rate_updated_on }} {{ c.updated_at|date:"d/m/Y" }}</div>
         </div>

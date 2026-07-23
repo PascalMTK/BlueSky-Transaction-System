@@ -1,7 +1,7 @@
 {% extends 'layouts/app.html' %}
 {% load static bluesky_tags %}
 
-{% block title %}{{ t.edit_country_title }} — {{ country.name }}{% endblock %}
+{% block title %}{{ t.edit_country_title }} {{ country.name }}{% endblock %}
 {% block page_title %}{{ t.edit_country_title }}{% endblock %}
 {% block page_subtitle %}{{ country.flag_emoji }} {{ country.name }}{% endblock %}
 {% block nav_admin_countries %}active{% endblock %}
@@ -231,10 +231,10 @@
 {% block scripts %}
 <script>
 function updatePreview() {
-    var name = document.getElementById('nameInput').value || '—';
+    var name = document.getElementById('nameInput').value || '';
     var flag = document.getElementById('flagInput').value || '🌍';
-    var cur  = document.getElementById('currencyCodeInput').value || '—';
-    var fee  = document.getElementById('feeInput').value || '—';
+    var cur  = document.getElementById('currencyCodeInput').value || '';
+    var fee  = document.getElementById('feeInput').value || '';
     var ph   = document.getElementById('phoneInput').value || '';
 
     document.getElementById('previewFlag').textContent    = flag;

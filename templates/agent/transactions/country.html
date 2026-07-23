@@ -17,7 +17,7 @@
 <!-- Colleagues strip -->
 <div class="table-card" style="margin-bottom:14px;">
     <div class="table-header">
-        <div class="table-title">{{ auth_user.country.flag_emoji }} {{ t.country_colleagues }} — <span style="color:var(--sky-primary);">{{ colleagues|length }}</span></div>
+        <div class="table-title">{{ auth_user.country.flag_emoji }} {{ t.country_colleagues }} <span style="color:var(--sky-primary);">{{ colleagues|length }}</span></div>
     </div>
     <div style="display:flex;gap:10px;flex-wrap:wrap;padding:14px;">
         {% for c in colleagues %}
@@ -87,21 +87,21 @@
     <div style="display:flex;align-items:center;gap:8px;background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.15);border-radius:10px;padding:10px 16px;flex:1;min-width:120px;">
         <span style="font-size:18px;">✅</span>
         <div>
-            <div style="font-size:18px;font-weight:900;color:#22c55e;" id="sCompleted">—</div>
+            <div style="font-size:18px;font-weight:900;color:#22c55e;" id="sCompleted"></div>
             <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;">{{ t.completed }}</div>
         </div>
     </div>
     <div style="display:flex;align-items:center;gap:8px;background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.15);border-radius:10px;padding:10px 16px;flex:1;min-width:120px;">
         <span style="font-size:18px;">⏳</span>
         <div>
-            <div style="font-size:18px;font-weight:900;color:#f59e0b;" id="sPending">—</div>
+            <div style="font-size:18px;font-weight:900;color:#f59e0b;" id="sPending"></div>
             <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;">{{ t.pending }}</div>
         </div>
     </div>
     <div style="display:flex;align-items:center;gap:8px;background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.12);border-radius:10px;padding:10px 16px;flex:1;min-width:120px;">
         <span style="font-size:18px;">❌</span>
         <div>
-            <div style="font-size:18px;font-weight:900;color:#ef4444;" id="sCancelled">—</div>
+            <div style="font-size:18px;font-weight:900;color:#ef4444;" id="sCancelled"></div>
             <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;">{{ t.cancelled }}</div>
         </div>
     </div>
@@ -120,7 +120,7 @@
 
 <div class="table-card">
     <div class="table-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
-        <div class="table-title">{{ auth_user.country.flag_emoji }} {{ t.country_tx }} — <span style="color:var(--sky-primary);">{{ transactions|length }}</span> {{ t.results }}</div>
+        <div class="table-title">{{ auth_user.country.flag_emoji }} {{ t.country_tx }} <span style="color:var(--sky-primary);">{{ transactions|length }}</span> {{ t.results }}</div>
         <a href="{% url 'tx_create' %}" class="btn btn-primary btn-sm">➕ {{ t.new_tx_btn }}</a>
     </div>
     <div class="table-scroll" style="overflow-x:auto;">
@@ -169,7 +169,7 @@
                         {% if tx.sender_phone %}<div style="font-size:11px;color:var(--text-muted);">{{ tx.sender_phone }}</div>{% endif %}
                     </td>
                     <td class="hide-mobile">
-                        <div style="font-size:13px;">{{ tx.receiver_name|default:"—" }}</div>
+                        <div style="font-size:13px;">{{ tx.receiver_name|default:"" }}</div>
                         {% if tx.receiver_phone %}<div style="font-size:11px;color:var(--text-muted);">{{ tx.receiver_phone }}</div>{% endif %}
                     </td>
                     <td><strong>{{ tx.amount|number_format:0 }}</strong></td>

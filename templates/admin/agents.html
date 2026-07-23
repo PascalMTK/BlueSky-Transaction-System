@@ -219,15 +219,15 @@
         <div class="ag-stat-lbl">Total</div>
     </div>
     <div class="ag-stat active">
-        <div class="ag-stat-num" id="sActive">—</div>
+        <div class="ag-stat-num" id="sActive"></div>
         <div class="ag-stat-lbl">{{ t.active_status }}</div>
     </div>
     <div class="ag-stat pending">
-        <div class="ag-stat-num" id="sPending">—</div>
+        <div class="ag-stat-num" id="sPending"></div>
         <div class="ag-stat-lbl">{{ t.pending_status }}</div>
     </div>
     <div class="ag-stat inactive">
-        <div class="ag-stat-num" id="sInactive">—</div>
+        <div class="ag-stat-num" id="sInactive"></div>
         <div class="ag-stat-lbl">{{ t.inactive_status }}</div>
     </div>
 </div>
@@ -321,7 +321,7 @@
 <div class="ag-archive-section">
     <div class="ag-archive-header" onclick="toggleArchive()">
         <span>🗂</span>
-        <span>{{ t.archived_agents }} — {{ t.archived_agents_hint }} ({{ deleted_agents|length }})</span>
+        <span>{{ t.archived_agents }} {{ t.archived_agents_hint }} ({{ deleted_agents|length }})</span>
         <span id="archiveChevron" style="margin-left:auto;">▼</span>
     </div>
     <div class="ag-archive-body" id="archiveBody">

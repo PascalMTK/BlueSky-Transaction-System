@@ -162,7 +162,7 @@
         <form method="POST" action="{% url 'tx_create' %}" id="txForm">
             {% csrf_token %}
 
-            <!-- Step 1 : Transaction type — obligatoire, en premier -->
+            <!-- Step 1 : Transaction type obligatoire, en premier -->
             <div class="ip-group" style="margin-bottom:20px;">
                 <div class="ip-label">1️⃣ {{ t.tx_type_label }} *</div>
                 <div class="ip-row">
@@ -173,7 +173,7 @@
                 <input type="hidden" name="transaction_type" id="txType" value="{{ default_tx_type }}">
             </div>
 
-            <!-- Step 2 : Détails — masqués tant que le type n'est pas choisi -->
+            <!-- Step 2 : Détails masqués tant que le type n'est pas choisi -->
             <div id="txDetailsWrap" style="display:{% if type_preselected %}block{% else %}none{% endif %};">
 
             <!-- Countries -->
@@ -296,13 +296,13 @@
             <!-- Icon pickers -->
             <div class="icon-pickers">
 
-                <!-- Payment method — optionnel, accordéon -->
+                <!-- Payment method optionnel, accordéon -->
                 <div class="ip-group-opt" id="grpPm">
                     <div class="ip-toggle-header" onclick="toggleIpGroup('grpPm')">
                         <span class="ip-toggle-icon">💳</span>
                         <span class="ip-toggle-title">{{ t.payment_method }}</span>
                         <span class="ip-opt-badge">OPTIONNEL</span>
-                        <span class="ip-toggle-chosen" id="pmChosen">—</span>
+                        <span class="ip-toggle-chosen" id="pmChosen"></span>
                         <span class="ip-toggle-arrow">▼</span>
                     </div>
                     <div class="ip-collapsible">
@@ -381,7 +381,7 @@ function pickIpToggle(hiddenId, val, btn, chosenId, label){
         if(chosenId) document.getElementById(chosenId).textContent = label || val;
     } else {
         document.getElementById(hiddenId).value = '';
-        if(chosenId) document.getElementById(chosenId).textContent = '—';
+        if(chosenId) document.getElementById(chosenId).textContent = '';
     }
     if(hiddenId === 'txType') { calcTotal(); }
 }

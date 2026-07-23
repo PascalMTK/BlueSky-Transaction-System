@@ -3,7 +3,7 @@
 
 {% block title %}{{ t.edit_agent }} {{ agent.name }}{% endblock %}
 {% block page_title %}{{ t.edit_agent }}{% endblock %}
-{% block page_subtitle %}{{ agent.name }} — {{ agent.agent_code }}{% endblock %}
+{% block page_subtitle %}{{ agent.name }} {{ agent.agent_code }}{% endblock %}
 {% block nav_admin_agents %}active{% endblock %}
 {% block mob_adm_agents %}active{% endblock %}
 
@@ -177,7 +177,7 @@
         <div class="form-group">
             <label>{{ t.country_label }}</label>
             <select name="country_id">
-                <option value="">— {{ t.no_country }} —</option>
+                <option value=""> {{ t.no_country }} </option>
                 {% for c in countries %}
                 <option value="{{ c.id }}" {% if agent.country_id == c.id %}selected{% endif %}>{{ c.flag_emoji }} {{ c.name|country_name:locale }}</option>
                 {% endfor %}

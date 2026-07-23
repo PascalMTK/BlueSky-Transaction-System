@@ -398,7 +398,7 @@
                         {% if tx.sender_phone %}<div style="font-size:11px;color:var(--text-muted);">{{ tx.sender_phone }}</div>{% endif %}
                     </td>
                     <td>
-                        <div style="font-size:13px;">{{ tx.receiver_name|default:"—" }}</div>
+                        <div style="font-size:13px;">{{ tx.receiver_name|default:"" }}</div>
                         {% if tx.receiver_phone %}<div style="font-size:11px;color:var(--text-muted);">{{ tx.receiver_phone }}</div>{% endif %}
                     </td>
                     <td>
