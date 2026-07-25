@@ -1468,6 +1468,36 @@ img.emoji {
 [data-theme="dark"] .status-cancelled, [data-theme="dark"] .status-inactive {
     background: rgba(239,68,68,0.15); color: #F87171;
 }
+.status-in_transit {
+    background: #DBEAFE; color: #1E40AF;
+}
+.status-delayed {
+    background: #FFEDD5; color: #9A3412;
+}
+[data-theme="dark"] .status-in_transit {
+    background: rgba(59,130,246,0.15); color: #93C5FD;
+}
+[data-theme="dark"] .status-delayed {
+    background: rgba(249,115,22,0.15); color: #FDBA74;
+}
+
+/* ============================================================
+   LOGISTICS — inline-edit selects, map, client cards
+   ============================================================ */
+.inline-edit-select {
+    border: 1px solid var(--border); background: var(--bg-input);
+    color: var(--text-primary); border-radius: 8px; padding: 3px 6px;
+    font-size: 11.5px; font-weight: 600; cursor: pointer;
+}
+.inline-edit-select:disabled { opacity: .5; cursor: wait; }
+.logi-map { width: 100%; height: 480px; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); }
+.logi-map-sm { width: 100%; height: 340px; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); }
+.confidence-low { border-color: #f59e0b !important; border-style: dashed !important; }
+.client-note-item {
+    padding: 10px 14px; border-bottom: 1px solid var(--border);
+}
+.client-note-item:last-child { border-bottom: none; }
+.client-note-meta { font-size: 11px; color: var(--text-muted); margin-bottom: 4px; }
 
 /* ============================================================
    EMPTY STATE

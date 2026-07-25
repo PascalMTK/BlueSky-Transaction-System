@@ -1,0 +1,45 @@
+{% extends 'layouts/app.html' %}
+{% load static bluesky_tags %}
+
+{% block title %}{{ delivery.client.name }}{% endblock %}
+{% block page_title %}{% if delivery.task_type == 'pickup' %}📤 Collecte{% else %}📥 Livraison{% endif %}{% endblock %}
+{% block page_subtitle %}{{ delivery.client.name }}{% endblock %}
+{% block nav_logistics_tasks %}active{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width:560px;">
+    <div class="form-group">
+        <label class="form-label">Client</label>
+        <div style="font-weight:600;">{{ delivery.client.name }}</div>
+        <div style="font-size:13px;color:var(--text-muted);">{{ delivery.client.phone }}</div>
+    </div>
+    <div class="form-group">
+        <label class="form-label">Adresse</label>
+        <div>{{ delivery.address.address_line|default:"Non spécifiée" }}</div>
+    </div>
+    <div class="form-group">
+        <label class="form-label">Date &amp; heure prévues</label>
+        <div>{{ delivery.scheduled_at|date:"d/m/Y H:i" }}</div>
+    </div>
+    {% if delivery.notes %}
+    <div class="form-group">
+        <label class="form-label">Notes</label>
+        <div>{{ delivery.notes }}</div>
+    </div>
+    {% endif %}
+    <div class="form-group">
+        <label class="form-label">{{ t.status }}</label>
+        <select class="inline-edit-select" data-delivery-id="{{ delivery.id }}" data-field="status"
+                data-endpoint="{% url 'logistics_driver_task_status_update' delivery.id %}" style="width:100%;padding:8px;">
+            {% for key, label in status_choices %}
+                <option value="{{ key }}" {% if delivery.status == key %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <a href="{% url 'logistics_driver_tasks' %}" class="btn btn-secondary">{{ t.back }}</a>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/logistics-dashboard.js' %}"></script>
+{% endblock %}

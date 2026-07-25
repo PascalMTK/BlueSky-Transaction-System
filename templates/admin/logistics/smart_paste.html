@@ -1,0 +1,52 @@
+{% extends 'layouts/app.html' %}
+{% load static bluesky_tags %}
+
+{% block title %}{{ t.logistics_smart_paste_nav }}{% endblock %}
+{% block page_title %}🧠 {{ t.logistics_smart_paste_nav }}{% endblock %}
+{% block page_subtitle %}Collez un message reçu d'un client ou chauffeur pour pré-remplir le formulaire{% endblock %}
+{% block nav_admin_logistics %}active{% endblock %}
+
+{% block content %}
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;" class="form-grid">
+    <div class="card">
+        <div class="table-title" style="margin-bottom:10px;">📋 Texte brut</div>
+        <textarea id="spInput" class="form-control" rows="10" placeholder="Ex: Jean Kabila&#10;+243900000000&#10;12 Avenue de la Paix, Kinshasa&#10;Appeler avant d'arriver"></textarea>
+        <button type="button" id="spParseBtn" class="btn btn-primary" style="margin-top:12px;">🧠 Analyser</button>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:8px;">
+            Analyse par reconnaissance de motifs (regex), pas d'intelligence artificielle — vérifiez toujours les champs avant d'enregistrer.
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="table-title" style="margin-bottom:10px;">✅ Résultat (à vérifier)</div>
+        <form method="POST" action="{% url 'admin_logistics_client_create' %}" id="spForm">
+            {% csrf_token %}
+            <div class="form-group">
+                <label class="form-label">Nom</label>
+                <input type="text" name="name" id="spName" class="form-control">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Téléphone</label>
+                <input type="text" name="phone" id="spPhone" class="form-control">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" name="email" id="spEmail" class="form-control">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Adresse (à ajouter séparément après création du client)</label>
+                <input type="text" id="spAddress" class="form-control" readonly>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Notes restantes</label>
+                <textarea id="spNotes" class="form-control" rows="2" readonly></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">💾 Créer le client</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/logistics-smart-paste.js' %}"></script>
+{% endblock %}

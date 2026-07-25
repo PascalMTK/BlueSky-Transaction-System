@@ -152,6 +152,159 @@ class Transaction(models.Model):
         return self.transaction_number
 
 
+class Client(models.Model):
+    name       = models.CharField(max_length=255)
+    phone      = models.CharField(max_length=25, db_index=True)
+    email      = models.EmailField(null=True, blank=True)
+    country    = models.ForeignKey(Country, null=True, blank=True, on_delete=models.SET_NULL, db_column='country_id')
+    created_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, db_column='created_by_id')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        managed  = True
+        db_table = 'logistics_clients'
+        ordering = ['name']
+        indexes = [
+            models.Index(fields=['phone'], name='client_phone_idx'),
+            models.Index(fields=['name'], name='client_name_idx'),
+        ]
+
+    def __str__(self):
+        return self.name
+
+
+class ClientAddress(models.Model):
+    SOURCE_GEOCODED   = 'geocoded'
+    SOURCE_MANUAL     = 'manual'
+    SOURCE_UNRESOLVED = 'unresolved'
+    SOURCE_CHOICES = [
+        ('geocoded', 'Geocoded'),
+        ('manual', 'Manual'),
+        ('unresolved', 'Unresolved'),
+    ]
+
+    client         = models.ForeignKey(Client, related_name='addresses', on_delete=models.CASCADE, db_column='client_id')
+    label          = models.CharField(max_length=60, default='Autre')
+    address_line   = models.CharField(max_length=255)
+    city           = models.CharField(max_length=120, null=True, blank=True)
+    country        = models.ForeignKey(Country, null=True, blank=True, on_delete=models.SET_NULL, db_column='country_id')
+    latitude       = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    longitude      = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    lat_lng_source = models.CharField(max_length=20, choices=SOURCE_CHOICES, default='unresolved')
+    is_default     = models.BooleanField(default=False)
+    created_at     = models.DateTimeField(auto_now_add=True)
+    updated_at     = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        managed  = True
+        db_table = 'logistics_client_addresses'
+        ordering = ['-is_default', 'label']
+        indexes = [
+            models.Index(fields=['client'], name='client_addr_client_idx'),
+        ]
+
+    def __str__(self):
+        return f"{self.label} — {self.address_line}"
+
+    def has_coordinates(self):
+        return self.latitude is not None and self.longitude is not None
+
+
+class ClientNote(models.Model):
+    client     = models.ForeignKey(Client, related_name='notes', on_delete=models.CASCADE, db_column='client_id')
+    author     = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, db_column='author_id')
+    body       = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        managed  = True
+        db_table = 'logistics_client_notes'
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['client', 'created_at'], name='client_note_client_idx'),
+        ]
+
+    def __str__(self):
+        return f"Note on {self.client_id} ({self.created_at:%Y-%m-%d})"
+
+
+class Delivery(models.Model):
+    TYPE_PICKUP  = 'pickup'
+    TYPE_DROPOFF = 'dropoff'
+    TASK_TYPE_CHOICES = [('pickup', 'Pickup'), ('dropoff', 'Drop-off')]
+
+    STATUS_PENDING    = 'pending'
+    STATUS_IN_TRANSIT = 'in_transit'
+    STATUS_DELAYED    = 'delayed'
+    STATUS_COMPLETED  = 'completed'
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('in_transit', 'In Transit'),
+        ('delayed', 'Delayed'),
+        ('completed', 'Completed'),
+    ]
+
+    client      = models.ForeignKey(Client, on_delete=models.PROTECT, db_column='client_id')
+    address     = models.ForeignKey(ClientAddress, null=True, blank=True, on_delete=models.PROTECT, db_column='address_id')
+    transaction = models.ForeignKey(Transaction, null=True, blank=True, on_delete=models.SET_NULL, related_name='deliveries', db_column='transaction_id')
+    task_type   = models.CharField(max_length=20, choices=TASK_TYPE_CHOICES, default='pickup')
+    scheduled_at = models.DateTimeField()
+    driver      = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name='deliveries_driven', db_column='driver_id')
+    status      = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    notes       = models.TextField(null=True, blank=True)
+    created_by  = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name='+', db_column='created_by_id')
+    created_at  = models.DateTimeField(auto_now_add=True)
+    updated_at  = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        managed  = True
+        db_table = 'logistics_deliveries'
+        ordering = ['scheduled_at']
+        indexes = [
+            models.Index(fields=['status', 'scheduled_at'], name='delivery_status_sched_idx'),
+            models.Index(fields=['driver', 'scheduled_at'], name='delivery_driver_sched_idx'),
+            models.Index(fields=['task_type'], name='delivery_task_type_idx'),
+        ]
+
+    def __str__(self):
+        return f"{self.get_task_type_display()} — {self.client.name}"
+
+
+class LogisticsImportBatch(models.Model):
+    FILE_CSV  = 'csv'
+    FILE_XLSX = 'xlsx'
+    FILE_TYPE_CHOICES = [('csv', 'CSV'), ('xlsx', 'Excel')]
+
+    STATUS_PENDING_MAPPING = 'pending_mapping'
+    STATUS_COMPLETED       = 'completed'
+    STATUS_FAILED          = 'failed'
+    STATUS_CHOICES = [
+        ('pending_mapping', 'Pending Mapping'),
+        ('completed', 'Completed'),
+        ('failed', 'Failed'),
+    ]
+
+    uploaded_by       = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, db_column='uploaded_by_id')
+    original_filename = models.CharField(max_length=255)
+    file_type         = models.CharField(max_length=10, choices=FILE_TYPE_CHOICES)
+    raw_rows          = models.JSONField()
+    column_mapping    = models.JSONField(null=True, blank=True)
+    status            = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending_mapping')
+    created_count     = models.IntegerField(default=0)
+    error_log         = models.TextField(null=True, blank=True)
+    created_at        = models.DateTimeField(auto_now_add=True)
+    updated_at        = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        managed  = True
+        db_table = 'logistics_import_batches'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Import {self.original_filename} ({self.status})"
+
+
 class AgentReport(models.Model):
     STATUS_CHOICES = [('unread', 'Unread'), ('read', 'Read')]
 

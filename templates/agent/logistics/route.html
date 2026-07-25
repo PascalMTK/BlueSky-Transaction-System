@@ -1,0 +1,79 @@
+{% extends 'layouts/app.html' %}
+{% load static bluesky_tags %}
+
+{% block title %}{{ t.logistics_my_route_nav }}{% endblock %}
+{% block page_title %}🗺️ {{ t.logistics_my_route_nav }}{% endblock %}
+{% block page_subtitle %}{{ day|date:"d/m/Y" }}{% endblock %}
+{% block nav_logistics_route %}active{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+{% endblock %}
+
+{% block content %}
+<form method="GET" style="margin-bottom:14px;display:flex;gap:8px;align-items:flex-end;">
+    <div class="filter-group">
+        <label class="filter-label">📅 Date</label>
+        <input type="date" name="date" class="filter-control" value="{{ day|date:'Y-m-d' }}">
+    </div>
+    <button type="submit" class="btn btn-primary btn-sm">🔍 {{ t.filter_btn }}</button>
+</form>
+
+<div class="card" style="margin-bottom:16px;">
+    <div id="logiRouteMap" class="logi-map-sm"></div>
+</div>
+
+<div class="card">
+    <div class="table-title" style="margin-bottom:10px;">📋 Arrêts ordonnés</div>
+    {% if ordered_deliveries %}
+    <div class="table-scroll" style="overflow-x:auto;">
+        <table class="bsky-table">
+            <thead><tr><th>#</th><th>Client</th><th>Adresse</th></tr></thead>
+            <tbody>
+                {% for item in ordered_deliveries %}
+                <tr>
+                    <td><strong>{{ item.sequence }}</strong></td>
+                    <td><a href="{% url 'logistics_driver_task_show' item.delivery.id %}">{{ item.delivery.client.name }}</a></td>
+                    <td style="font-size:12px;">{{ item.delivery.address.address_line|default:"—" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state"><div class="empty-icon">🗺️</div><div class="empty-text">Aucun arrêt géocodé pour cette date</div></div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+(function () {
+    var stops = [
+        {% for item in ordered_deliveries %}
+        { lat: {{ item.lat }}, lng: {{ item.lon }}, seq: {{ item.sequence }}, label: "{{ item.sequence }}. {{ item.delivery.client.name|escapejs }}" }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ];
+
+    var map = L.map('logiRouteMap');
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors',
+        maxZoom: 19,
+    }).addTo(map);
+
+    if (stops.length) {
+        var latlngs = [];
+        stops.forEach(function (s) {
+            var icon = L.divIcon({ html: '<div style="background:#0284C7;color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:10px;">' + s.seq + '</div>', className: '', iconSize: [22, 22] });
+            L.marker([s.lat, s.lng], { icon: icon }).addTo(map).bindPopup(s.label);
+            latlngs.push([s.lat, s.lng]);
+        });
+        L.polyline(latlngs, { color: '#0284C7', weight: 3, dashArray: '6,6' }).addTo(map);
+        map.fitBounds(L.latLngBounds(latlngs).pad(0.2));
+    } else {
+        map.setView([0, 20], 3);
+    }
+})();
+</script>
+{% endblock %}

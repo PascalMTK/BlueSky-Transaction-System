@@ -1,0 +1,46 @@
+{% extends 'layouts/app.html' %}
+{% load static bluesky_tags %}
+
+{% block title %}Résultat de l'import{% endblock %}
+{% block page_title %}✅ Import terminé{% endblock %}
+{% block page_subtitle %}{{ batch.original_filename }}{% endblock %}
+{% block nav_admin_logistics %}active{% endblock %}
+
+{% block content %}
+{% if stats %}
+<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;">
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:12px 18px;">
+        <div style="font-size:22px;font-weight:900;color:#22c55e;">{{ stats.created_clients }}</div>
+        <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;">Clients créés</div>
+    </div>
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:12px 18px;">
+        <div style="font-size:22px;font-weight:900;color:var(--sky-primary);">{{ stats.merged_clients }}</div>
+        <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;">Clients fusionnés</div>
+    </div>
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:12px 18px;">
+        <div style="font-size:22px;font-weight:900;color:var(--sky-primary);">{{ stats.created_addresses }}</div>
+        <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;">Adresses créées</div>
+    </div>
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:12px 18px;">
+        <div style="font-size:22px;font-weight:900;color:var(--sky-primary);">{{ stats.created_deliveries }}</div>
+        <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;">Tâches créées</div>
+    </div>
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:12px 18px;">
+        <div style="font-size:22px;font-weight:900;color:#ef4444;">{{ stats.skipped_count }}</div>
+        <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;">Lignes ignorées</div>
+    </div>
+</div>
+{% endif %}
+
+{% if batch.error_log %}
+<div class="card" style="margin-bottom:16px;">
+    <div class="table-title" style="margin-bottom:10px;">⚠️ Journal des erreurs / lignes ignorées</div>
+    <pre style="white-space:pre-wrap;font-size:12px;max-height:300px;overflow-y:auto;color:var(--text-muted);">{{ batch.error_log }}</pre>
+</div>
+{% endif %}
+
+<div style="display:flex;gap:10px;">
+    <a href="{% url 'admin_logistics_clients' %}" class="btn btn-primary">👥 {{ t.logistics_clients_nav }}</a>
+    <a href="{% url 'admin_logistics_import' %}" class="btn btn-secondary">📥 Nouvel import</a>
+</div>
+{% endblock %}

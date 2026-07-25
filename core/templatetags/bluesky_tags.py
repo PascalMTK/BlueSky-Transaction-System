@@ -71,6 +71,12 @@ def initials(name):
 def limit(value, num):
     return str(value)[:int(num)]
 
+@register.filter
+def get_item(mapping, key):
+    if not isinstance(mapping, dict):
+        return None
+    return mapping.get(key)
+
 
 @register.simple_tag
 def sparkline(values, color='#0284C7', width=72, height=26):

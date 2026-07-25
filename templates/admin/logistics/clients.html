@@ -1,0 +1,62 @@
+{% extends 'layouts/app.html' %}
+{% load static bluesky_tags %}
+
+{% block title %}{{ t.logistics_clients_nav }}{% endblock %}
+{% block page_title %}👥 {{ t.logistics_clients_nav }}{% endblock %}
+{% block page_subtitle %}Profils clients — adresses et notes de livraison{% endblock %}
+{% block nav_admin_logistics_clients %}active{% endblock %}
+
+{% block content %}
+<div class="filters-bar">
+    <form method="GET" action="{% url 'admin_logistics_clients' %}" style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;width:100%;">
+        <div class="filter-group filter-group-search">
+            <label class="filter-label">🔍 {{ t.search }}</label>
+            <input type="text" name="q" class="filter-control" placeholder="Nom, téléphone, email..." value="{{ q }}">
+        </div>
+        <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;">
+            <button type="submit" class="btn btn-primary btn-sm">🔍 {{ t.filter_btn }}</button>
+            <a href="{% url 'admin_logistics_clients' %}" class="btn btn-secondary btn-sm">↺</a>
+        </div>
+    </form>
+</div>
+
+<div style="margin-bottom:14px;display:flex;gap:10px;flex-wrap:wrap;">
+    <a href="{% url 'admin_logistics_client_create' %}" class="btn btn-primary btn-sm">➕ Nouveau client</a>
+    <a href="{% url 'admin_logistics_smart_paste' %}" class="btn btn-secondary btn-sm">🧠 {{ t.logistics_smart_paste_nav }}</a>
+    <a href="{% url 'admin_logistics_import' %}" class="btn btn-secondary btn-sm">📥 {{ t.logistics_import_nav }}</a>
+</div>
+
+<div class="table-card">
+    <div class="table-scroll" style="overflow-x:auto;">
+        {% if clients %}
+        <table class="bsky-table">
+            <thead>
+                <tr>
+                    <th>Nom</th>
+                    <th>Téléphone</th>
+                    <th class="hide-mobile">Email</th>
+                    <th class="hide-mobile">Adresses</th>
+                    <th>{{ t.actions }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in clients %}
+                <tr>
+                    <td><a href="{% url 'admin_logistics_client_show' c.id %}" style="font-weight:600;">{{ c.name }}</a></td>
+                    <td>{{ c.phone }}</td>
+                    <td class="hide-mobile">{{ c.email|default:"—" }}</td>
+                    <td class="hide-mobile">{{ c.addresses.count }}</td>
+                    <td>
+                        <a href="{% url 'admin_logistics_client_show' c.id %}" class="btn btn-secondary btn-sm">👁</a>
+                        <a href="{% url 'admin_delivery_create' %}?client_id={{ c.id }}" class="btn btn-secondary btn-sm">➕ Tâche</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+            <div class="empty-state"><div class="empty-icon">👥</div><div class="empty-text">Aucun client trouvé</div></div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

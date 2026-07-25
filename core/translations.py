@@ -22,6 +22,13 @@ FR = {
     'administration':        'Administration',
     'active_countries':      'Pays actifs',
     'money_transfer':        'Transfert d\'argent',
+    'logistics_nav':         'Logistique',
+    'logistics_clients_nav': 'Clients',
+    'logistics_map_nav':     'Carte',
+    'logistics_import_nav':  'Import',
+    'logistics_smart_paste_nav': 'Collage intelligent',
+    'logistics_my_tasks_nav':    'Mes tâches',
+    'logistics_my_route_nav':    'Mon itinéraire',
 
     # ── Auth - Login
     'login_title':           'Connexion',
@@ -584,6 +591,13 @@ EN = {
     'administration':        'Administration',
     'active_countries':      'Active countries',
     'money_transfer':        'Money transfer',
+    'logistics_nav':         'Logistics',
+    'logistics_clients_nav': 'Clients',
+    'logistics_map_nav':     'Map',
+    'logistics_import_nav':  'Import',
+    'logistics_smart_paste_nav': 'Smart paste',
+    'logistics_my_tasks_nav':    'My tasks',
+    'logistics_my_route_nav':    'My route',
 
     # ── Auth - Login
     'login_title':           'Sign in',

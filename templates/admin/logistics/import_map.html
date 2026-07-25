@@ -1,0 +1,46 @@
+{% extends 'layouts/app.html' %}
+{% load static bluesky_tags %}
+
+{% block title %}Correspondance des colonnes{% endblock %}
+{% block page_title %}🔀 Correspondance des colonnes{% endblock %}
+{% block page_subtitle %}{{ batch.original_filename }}{% endblock %}
+{% block nav_admin_logistics %}active{% endblock %}
+
+{% block content %}
+<div class="card">
+    <form method="POST" action="{% url 'admin_logistics_import_map' batch.id %}">
+        {% csrf_token %}
+        <div class="table-scroll" style="overflow-x:auto;margin-bottom:16px;">
+            <table class="bsky-table">
+                <thead>
+                    <tr>
+                        {% for h in headers %}<th>{{ h }}</th>{% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        {% for h in headers %}
+                        <td>
+                            <select name="map_{{ h }}" class="form-control" style="min-width:150px;">
+                                {% for key, label in target_fields %}
+                                    <option value="{{ key }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    {% for row in sample_rows %}
+                    <tr>
+                        {% for h in headers %}
+                        <td style="font-size:12px;color:var(--text-muted);">{{ row|get_item:h|default:"—" }}</td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <button type="submit" class="btn btn-primary">✅ Importer {{ batch.raw_rows|length }} ligne(s)</button>
+        <a href="{% url 'admin_logistics_import' %}" class="btn btn-secondary">{{ t.cancel }}</a>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,73 @@
+{% extends 'layouts/app.html' %}
+{% load static bluesky_tags %}
+
+{% block title %}Modifier la tâche{% endblock %}
+{% block page_title %}✏️ Modifier la tâche{% endblock %}
+{% block page_subtitle %}{{ delivery.client.name }}{% endblock %}
+{% block nav_admin_logistics %}active{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width:640px;">
+    <form method="POST" action="{% url 'admin_delivery_edit' delivery.id %}">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label class="form-label">Client</label>
+            <input type="text" class="form-control" value="{{ delivery.client.name }} — {{ delivery.client.phone }}" disabled>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Type de tâche</label>
+            <select name="task_type" class="form-control">
+                {% for key, label in task_type_choices %}
+                    <option value="{{ key }}" {% if delivery.task_type == key %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Adresse</label>
+            <select name="address_id" class="form-control">
+                <option value="">-- Aucune adresse spécifique --</option>
+                {% for a in addresses %}
+                    <option value="{{ a.id }}" {% if delivery.address_id == a.id %}selected{% endif %}>{{ a.label }} — {{ a.address_line }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Date &amp; heure prévues</label>
+            <input type="datetime-local" name="scheduled_at" class="form-control" value="{{ delivery.scheduled_at|date:'Y-m-d\TH:i' }}" required>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Chauffeur assigné</label>
+            <select name="driver_id" class="form-control">
+                <option value="">— Non assigné —</option>
+                {% for d in drivers %}
+                    <option value="{{ d.id }}" {% if delivery.driver_id == d.id %}selected{% endif %}>{{ d.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">{{ t.status }}</label>
+            <select name="status" class="form-control">
+                {% for key, label in status_choices %}
+                    <option value="{{ key }}" {% if delivery.status == key %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Notes</label>
+            <textarea name="notes" class="form-control" rows="3">{{ delivery.notes|default:'' }}</textarea>
+        </div>
+
+        <div style="display:flex;gap:10px;">
+            <button type="submit" class="btn btn-primary">💾 {{ t.save_changes }}</button>
+            <a href="{% url 'admin_logistics_dashboard' %}" class="btn btn-secondary">{{ t.cancel }}</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

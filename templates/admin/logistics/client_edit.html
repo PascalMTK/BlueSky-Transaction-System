@@ -1,0 +1,40 @@
+{% extends 'layouts/app.html' %}
+{% load static bluesky_tags %}
+
+{% block title %}Modifier le client{% endblock %}
+{% block page_title %}✏️ Modifier le client{% endblock %}
+{% block page_subtitle %}{{ client.name }}{% endblock %}
+{% block nav_admin_logistics_clients %}active{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width:520px;">
+    <form method="POST" action="{% url 'admin_logistics_client_edit' client.id %}">
+        {% csrf_token %}
+        <div class="form-group">
+            <label class="form-label">Nom complet *</label>
+            <input type="text" name="name" class="form-control" value="{{ client.name }}" required>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Téléphone *</label>
+            <input type="tel" name="phone" class="form-control" value="{{ client.phone }}" required>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" name="email" class="form-control" value="{{ client.email|default:'' }}">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Pays</label>
+            <select name="country_id" class="form-control">
+                <option value="">-- {{ t.select_country }} --</option>
+                {% for c in countries %}
+                    <option value="{{ c.id }}" {% if client.country_id == c.id %}selected{% endif %}>{{ c.flag_emoji }} {{ c.name|country_name:locale }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div style="display:flex;gap:10px;">
+            <button type="submit" class="btn btn-primary">💾 {{ t.save_changes }}</button>
+            <a href="{% url 'admin_logistics_client_show' client.id %}" class="btn btn-secondary">{{ t.cancel }}</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

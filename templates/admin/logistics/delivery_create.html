@@ -1,0 +1,94 @@
+{% extends 'layouts/app.html' %}
+{% load static bluesky_tags %}
+
+{% block title %}Nouvelle tâche{% endblock %}
+{% block page_title %}➕ Nouvelle tâche de livraison{% endblock %}
+{% block page_subtitle %}{{ t.logistics_nav }}{% endblock %}
+{% block nav_admin_logistics %}active{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width:640px;">
+    <form method="POST" action="{% url 'admin_delivery_create' %}">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label class="form-label">Client *</label>
+            <select name="client_id" class="form-control" id="clientSelect" required>
+                <option value="">-- Sélectionner un client --</option>
+                {% for c in clients %}
+                    <option value="{{ c.id }}" {% if preselect_client == c.id|stringformat:"s" %}selected{% endif %}>{{ c.name }} — {{ c.phone }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Type de tâche</label>
+            <select name="task_type" class="form-control">
+                {% for key, label in task_type_choices %}
+                    <option value="{{ key }}">{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Adresse (client)</label>
+            <select name="address_id" class="form-control" id="addressSelect">
+                <option value="">-- Aucune adresse spécifique --</option>
+            </select>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Sélectionnez d'abord un client pour voir ses adresses enregistrées.</div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Date &amp; heure prévues *</label>
+            <input type="datetime-local" name="scheduled_at" class="form-control" required>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Chauffeur assigné</label>
+            <select name="driver_id" class="form-control">
+                <option value="">— Non assigné —</option>
+                {% for d in drivers %}
+                    <option value="{{ d.id }}">{{ d.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Notes</label>
+            <textarea name="notes" class="form-control" rows="3" placeholder="Instructions spécifiques à cette tâche..."></textarea>
+        </div>
+
+        <div style="display:flex;gap:10px;">
+            <button type="submit" class="btn btn-primary">💾 Créer la tâche</button>
+            <a href="{% url 'admin_logistics_dashboard' %}" class="btn btn-secondary">{{ t.cancel }}</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+var CLIENT_ADDRESSES = {
+    {% for c in clients %}
+    "{{ c.id }}": [{% for a in c.addresses.all %}{id: {{ a.id }}, label: "{{ a.label|escapejs }} — {{ a.address_line|escapejs }}"}{% if not forloop.last %}, {% endif %}{% endfor %}]{% if not forloop.last %},{% endif %}
+    {% endfor %}
+};
+var clientSelect = document.getElementById('clientSelect');
+var addressSelect = document.getElementById('addressSelect');
+
+function loadAddressesFor(clientId) {
+    addressSelect.innerHTML = '<option value="">-- Aucune adresse spécifique --</option>';
+    (CLIENT_ADDRESSES[clientId] || []).forEach(function (a) {
+        var opt = document.createElement('option');
+        opt.value = a.id;
+        opt.textContent = a.label;
+        addressSelect.appendChild(opt);
+    });
+}
+
+if (clientSelect) {
+    clientSelect.addEventListener('change', function () { loadAddressesFor(clientSelect.value); });
+    if (clientSelect.value) loadAddressesFor(clientSelect.value);
+}
+</script>
+{% endblock %}

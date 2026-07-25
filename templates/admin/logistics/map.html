@@ -1,0 +1,82 @@
+{% extends 'layouts/app.html' %}
+{% load static bluesky_tags %}
+
+{% block title %}{{ t.logistics_map_nav }}{% endblock %}
+{% block page_title %}🗺️ {{ t.logistics_map_nav }}{% endblock %}
+{% block page_subtitle %}Adresses géocodées des clients{% endblock %}
+{% block nav_admin_logistics %}active{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+{% endblock %}
+
+{% block content %}
+<div class="card" style="margin-bottom:16px;">
+    <div id="logiMap" class="logi-map"></div>
+</div>
+
+<div class="card">
+    <div class="table-title" style="margin-bottom:10px;">📍 Chauffeurs — voir l'itinéraire du jour</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        {% for d in drivers %}
+            <a href="{% url 'admin_logistics_driver_route' d.id %}" class="btn btn-secondary btn-sm">🚚 {{ d.name }}</a>
+        {% endfor %}
+    </div>
+</div>
+
+{% if unresolved_addresses %}
+<div class="card" style="margin-top:16px;">
+    <div class="table-title" style="margin-bottom:10px;">⚪ Adresses non résolues ({{ unresolved_addresses|length }})</div>
+    <div class="table-scroll" style="overflow-x:auto;">
+        <table class="bsky-table">
+            <thead><tr><th>Client</th><th>Adresse</th><th>{{ t.actions }}</th></tr></thead>
+            <tbody>
+                {% for a in unresolved_addresses %}
+                <tr>
+                    <td><a href="{% url 'admin_logistics_client_show' a.client_id %}">{{ a.client.name }}</a></td>
+                    <td style="font-size:12px;">{{ a.address_line }}</td>
+                    <td>
+                        <form method="POST" action="{% url 'admin_logistics_address_geocode' a.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-secondary btn-sm">🌍 Réessayer</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+(function () {
+    var points = [
+        {% for a in geocoded_addresses %}
+        { lat: {{ a.latitude }}, lng: {{ a.longitude }}, label: "{{ a.client.name|escapejs }} — {{ a.label|escapejs }}" }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ];
+
+    var map = L.map('logiMap');
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors',
+        maxZoom: 19,
+    }).addTo(map);
+
+    if (points.length) {
+        var markers = [];
+        points.forEach(function (p) {
+            var m = L.marker([p.lat, p.lng]).addTo(map).bindPopup(p.label);
+            markers.push(m);
+        });
+        var group = L.featureGroup(markers);
+        map.fitBounds(group.getBounds().pad(0.2));
+    } else {
+        map.setView([0, 20], 3);
+    }
+})();
+</script>
+{% endblock %}
