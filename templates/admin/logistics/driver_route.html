@@ -8,9 +8,18 @@
 
 {% block styles %}
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="{% static 'css/logistics.css' %}">
 {% endblock %}
 
 {% block content %}
+<div class="lg-profile-hdr">
+    <div class="lg-avatar">{{ driver.name|initials }}</div>
+    <div>
+        <div class="lg-profile-name">{{ driver.name }}</div>
+        <div class="lg-profile-meta">{{ ordered_deliveries|length }} arrêt(s) prévu(s)</div>
+    </div>
+</div>
+
 <form method="GET" style="margin-bottom:14px;display:flex;gap:8px;align-items:flex-end;">
     <div class="filter-group">
         <label class="filter-label">📅 Date</label>
@@ -19,15 +28,15 @@
     <button type="submit" class="btn btn-primary btn-sm">🔍 {{ t.filter_btn }}</button>
 </form>
 
-<div class="card" style="margin-bottom:16px;">
+<div class="lg-section">
     <div id="logiRouteMap" class="logi-map"></div>
-    <div style="font-size:11px;color:var(--text-muted);margin-top:8px;">
-        Ordre suggéré (ligne droite la plus courte), ce n'est pas un itinéraire routier précis.
+    <div class="lg-hint" style="margin-top:8px;">
+        💡 Ordre suggéré (ligne droite la plus courte), ce n'est pas un itinéraire routier précis
     </div>
 </div>
 
-<div class="card">
-    <div class="table-title" style="margin-bottom:10px;">📋 Arrêts ordonnés</div>
+<div class="lg-section">
+    <div class="lg-section-title">📋 Arrêts ordonnés</div>
     {% if ordered_deliveries %}
     <div class="table-scroll" style="overflow-x:auto;">
         <table class="bsky-table">
@@ -50,8 +59,8 @@
 </div>
 
 {% if not_on_route %}
-<div class="card" style="margin-top:16px;">
-    <div class="table-title" style="margin-bottom:10px;">⚪ Non inclus (adresse non géocodée)</div>
+<div class="lg-section" style="margin-top:16px;">
+    <div class="lg-section-title">⚪ Non inclus (adresse non géocodée)</div>
     {% for d in not_on_route %}
         <div style="font-size:13px;padding:6px 0;border-bottom:1px solid var(--border);">{{ d.client.name }} — {{ d.address.address_line|default:"Aucune adresse" }}</div>
     {% endfor %}

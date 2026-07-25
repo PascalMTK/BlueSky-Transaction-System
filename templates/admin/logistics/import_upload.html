@@ -6,23 +6,38 @@
 {% block page_subtitle %}CSV ou Excel — clients, adresses et tâches de livraison{% endblock %}
 {% block nav_admin_logistics %}active{% endblock %}
 
+{% block styles %}
+<link rel="stylesheet" href="{% static 'css/logistics.css' %}">
+{% endblock %}
+
 {% block content %}
-<div class="card" style="max-width:640px;">
-    <form method="POST" action="{% url 'admin_logistics_import' %}" enctype="multipart/form-data">
+<div class="lg-steps">
+    <div class="lg-step lg-step-active"><span class="num">1</span> Téléverser</div>
+    <span class="lg-step-sep">→</span>
+    <div class="lg-step"><span class="num">2</span> Correspondance</div>
+    <span class="lg-step-sep">→</span>
+    <div class="lg-step"><span class="num">3</span> Résultat</div>
+</div>
+
+<div class="lg-section" style="max-width:640px;">
+    <div class="lg-section-title">📁 Fichier à importer</div>
+    <form method="POST" action="{% url 'admin_logistics_import' %}" enctype="multipart/form-data" id="importForm">
         {% csrf_token %}
-        <div class="form-group">
-            <label class="form-label">Fichier (.csv ou .xlsx) *</label>
-            <input type="file" name="file" class="form-control" accept=".csv,.xlsx" required>
+        <label class="lg-dropzone" id="dropzone" for="fileInput">
+            <div class="ico">📄</div>
+            <div class="lbl">Cliquez ou glissez-déposez un fichier</div>
+            <div class="sub">.csv ou .xlsx — 500 lignes maximum</div>
+            <div class="file-name" id="fileNameDisplay"></div>
+        </label>
+        <input type="file" name="file" id="fileInput" accept=".csv,.xlsx" required style="display:none;">
+        <div style="margin-top:16px;">
+            <button type="submit" class="btn btn-primary">📥 Importer et continuer</button>
         </div>
-        <div style="font-size:12px;color:var(--text-muted);margin-bottom:14px;">
-            Maximum 500 lignes par import. Vous pourrez faire correspondre les colonnes à l'étape suivante.
-        </div>
-        <button type="submit" class="btn btn-primary">📥 Importer et continuer</button>
     </form>
 </div>
 
-<div class="card" style="margin-top:16px;">
-    <div class="table-title" style="margin-bottom:10px;">Imports précédents</div>
+<div class="lg-section">
+    <div class="lg-section-title">🕓 Imports précédents</div>
     {% if past_batches %}
     <div class="table-scroll" style="overflow-x:auto;">
         <table class="bsky-table">
@@ -43,4 +58,35 @@
     <div style="font-size:13px;color:var(--text-muted);">Aucun import précédent.</div>
     {% endif %}
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+var fileInput = document.getElementById('fileInput');
+var dropzone = document.getElementById('dropzone');
+var fileNameDisplay = document.getElementById('fileNameDisplay');
+
+fileInput.addEventListener('change', function () {
+    fileNameDisplay.textContent = fileInput.files.length ? '📎 ' + fileInput.files[0].name : '';
+});
+
+['dragenter', 'dragover'].forEach(function (evt) {
+    dropzone.addEventListener(evt, function (e) {
+        e.preventDefault();
+        dropzone.classList.add('lg-dragover');
+    });
+});
+['dragleave', 'drop'].forEach(function (evt) {
+    dropzone.addEventListener(evt, function (e) {
+        e.preventDefault();
+        dropzone.classList.remove('lg-dragover');
+    });
+});
+dropzone.addEventListener('drop', function (e) {
+    if (e.dataTransfer.files.length) {
+        fileInput.files = e.dataTransfer.files;
+        fileNameDisplay.textContent = '📎 ' + e.dataTransfer.files[0].name;
+    }
+});
+</script>
 {% endblock %}

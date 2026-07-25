@@ -6,8 +6,22 @@
 {% block page_subtitle %}{{ batch.original_filename }}{% endblock %}
 {% block nav_admin_logistics %}active{% endblock %}
 
+{% block styles %}
+<link rel="stylesheet" href="{% static 'css/logistics.css' %}">
+{% endblock %}
+
 {% block content %}
-<div class="card">
+<div class="lg-steps">
+    <div class="lg-step lg-step-done"><span class="num">✓</span> Téléverser</div>
+    <span class="lg-step-sep">→</span>
+    <div class="lg-step lg-step-active"><span class="num">2</span> Correspondance</div>
+    <span class="lg-step-sep">→</span>
+    <div class="lg-step"><span class="num">3</span> Résultat</div>
+</div>
+
+<div class="lg-section">
+    <div class="lg-section-title">🔀 Faites correspondre chaque colonne à un champ</div>
+    <div class="lg-hint" style="margin-bottom:14px;">Les 5 premières lignes du fichier sont affichées ci-dessous pour vérifier votre choix</div>
     <form method="POST" action="{% url 'admin_logistics_import_map' batch.id %}">
         {% csrf_token %}
         <div class="table-scroll" style="overflow-x:auto;margin-bottom:16px;">

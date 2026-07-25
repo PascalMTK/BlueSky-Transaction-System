@@ -6,27 +6,35 @@
 {% block page_subtitle %}{{ delivery.client.name }}{% endblock %}
 {% block nav_admin_logistics %}active{% endblock %}
 
+{% block styles %}
+<link rel="stylesheet" href="{% static 'css/logistics.css' %}">
+{% endblock %}
+
 {% block content %}
-<div class="card" style="max-width:640px;">
-    <form method="POST" action="{% url 'admin_delivery_edit' delivery.id %}">
-        {% csrf_token %}
+<div class="lg-profile-hdr">
+    <div class="lg-avatar">{{ delivery.client.name|initials }}</div>
+    <div>
+        <div class="lg-profile-name">{{ delivery.client.name }}</div>
+        <div class="lg-profile-meta">📞 {{ delivery.client.phone }} · <span class="badge-status status-{{ delivery.status }}">{{ delivery.get_status_display }}</span></div>
+    </div>
+</div>
 
-        <div class="form-group">
-            <label class="form-label">Client</label>
-            <input type="text" class="form-control" value="{{ delivery.client.name }} — {{ delivery.client.phone }}" disabled>
+<form method="POST" action="{% url 'admin_delivery_edit' delivery.id %}" style="max-width:640px;">
+    {% csrf_token %}
+
+    <div class="lg-section">
+        <div class="lg-section-title">📦 Type de tâche</div>
+        <div class="lg-picker-row">
+            <button type="button" class="lg-picker-btn lg-picker-compact{% if delivery.task_type == 'pickup' %} lg-active{% endif %}" data-type="pickup" onclick="pickField('task_type','pickup',this)">📤 Collecte</button>
+            <button type="button" class="lg-picker-btn lg-picker-compact{% if delivery.task_type == 'dropoff' %} lg-active{% endif %}" data-type="dropoff" onclick="pickField('task_type','dropoff',this)">📥 Livraison</button>
         </div>
+        <input type="hidden" name="task_type" id="taskTypeInput" value="{{ delivery.task_type }}">
+    </div>
 
+    <div class="lg-section">
+        <div class="lg-section-title">📍 Adresse &amp; planification</div>
         <div class="form-group">
-            <label class="form-label">Type de tâche</label>
-            <select name="task_type" class="form-control">
-                {% for key, label in task_type_choices %}
-                    <option value="{{ key }}" {% if delivery.task_type == key %}selected{% endif %}>{{ label }}</option>
-                {% endfor %}
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label class="form-label">Adresse</label>
+            <label class="form-label">Adresse enregistrée</label>
             <select name="address_id" class="form-control">
                 <option value="">-- Aucune adresse spécifique --</option>
                 {% for a in addresses %}
@@ -34,65 +42,83 @@
                 {% endfor %}
             </select>
         </div>
-
-        <div class="form-group">
-            <label class="form-label">Date &amp; heure prévues</label>
-            <input type="datetime-local" name="scheduled_at" class="form-control" value="{{ delivery.scheduled_at|date:'Y-m-d\TH:i' }}" required>
-        </div>
-
-        <div class="form-group">
-            <label class="form-label">Chauffeur assigné</label>
-            <select name="driver_id" class="form-control">
-                <option value="">— Non assigné —</option>
-                {% for d in drivers %}
-                    <option value="{{ d.id }}" {% if delivery.driver_id == d.id %}selected{% endif %}>{{ d.name }}</option>
-                {% endfor %}
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label class="form-label">{{ t.status }}</label>
-            <select name="status" class="form-control">
-                {% for key, label in status_choices %}
-                    <option value="{{ key }}" {% if delivery.status == key %}selected{% endif %}>{{ label }}</option>
-                {% endfor %}
-            </select>
-        </div>
-
         <div class="form-group">
             <label class="form-label">Adresse notée sur place</label>
             <textarea name="address_note" class="form-control" rows="2" placeholder="Adresse réelle relevée sur le terrain, si différente">{{ delivery.address_note|default:'' }}</textarea>
         </div>
-
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
-            <div class="form-group">
-                <label class="form-label">Montant</label>
-                <input type="text" name="amount" class="form-control" value="{{ delivery.amount|default:'' }}" placeholder="Ex: 25000">
+        <div class="lg-grid-2">
+            <div class="form-group" style="margin:0;">
+                <label class="form-label">Date &amp; heure prévues</label>
+                <input type="datetime-local" name="scheduled_at" class="form-control" value="{{ delivery.scheduled_at|date:'Y-m-d\TH:i' }}" required>
             </div>
-            <div class="form-group">
-                <label class="form-label">Mode de paiement</label>
-                <select name="payment_method" class="form-control" id="editPmSelect" onchange="document.getElementById('editPmOtherGroup').style.display = this.value==='other' ? 'block' : 'none';">
-                    <option value="">— Non précisé —</option>
-                    {% for key, label in payment_method_choices %}
-                        <option value="{{ key }}" {% if delivery.payment_method == key %}selected{% endif %}>{{ label }}</option>
+            <div class="form-group" style="margin:0;">
+                <label class="form-label">Chauffeur assigné</label>
+                <select name="driver_id" class="form-control">
+                    <option value="">— Non assigné —</option>
+                    {% for d in drivers %}
+                        <option value="{{ d.id }}" {% if delivery.driver_id == d.id %}selected{% endif %}>{{ d.name }}</option>
                     {% endfor %}
                 </select>
             </div>
         </div>
-        <div class="form-group" id="editPmOtherGroup" style="{% if delivery.payment_method != 'other' %}display:none;{% endif %}">
+    </div>
+
+    <div class="lg-section">
+        <div class="lg-section-title">📋 {{ t.status }}</div>
+        <select name="status" class="form-control">
+            {% for key, label in status_choices %}
+                <option value="{{ key }}" {% if delivery.status == key %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="lg-section">
+        <div class="lg-section-title">💰 Paiement</div>
+        <div class="lg-grid-2" style="margin-bottom:12px;">
+            <div class="form-group" style="margin:0;">
+                <label class="form-label">Montant</label>
+                <input type="text" name="amount" class="form-control" value="{{ delivery.amount|default:'' }}" placeholder="Ex: 25000">
+            </div>
+            <div class="form-group" style="margin:0;">
+                <label class="form-label">Mode de paiement</label>
+                <div class="lg-picker-row">
+                    <button type="button" class="lg-picker-btn lg-picker-compact{% if delivery.payment_method == 'cash' %} lg-active{% endif %}" onclick="pickPayment('cash', this)">💵 Cash</button>
+                    <button type="button" class="lg-picker-btn lg-picker-compact{% if delivery.payment_method == 'other' %} lg-active{% endif %}" onclick="pickPayment('other', this)">🔀 Autre</button>
+                </div>
+                <input type="hidden" name="payment_method" id="editPmInput" value="{{ delivery.payment_method|default:'' }}">
+            </div>
+        </div>
+        <div class="form-group" id="editPmOtherGroup" style="margin:0;{% if delivery.payment_method != 'other' %}display:none;{% endif %}">
             <label class="form-label">Préciser le mode de paiement</label>
             <input type="text" name="payment_method_other" class="form-control" value="{{ delivery.payment_method_other|default:'' }}" placeholder="Ex: Mobile Money, Virement...">
         </div>
+    </div>
 
-        <div class="form-group">
-            <label class="form-label">Notes</label>
-            <textarea name="notes" class="form-control" rows="3">{{ delivery.notes|default:'' }}</textarea>
-        </div>
+    <div class="lg-section" style="margin-bottom:0;">
+        <div class="lg-section-title">📝 Notes</div>
+        <textarea name="notes" class="form-control" rows="3">{{ delivery.notes|default:'' }}</textarea>
+    </div>
 
-        <div style="display:flex;gap:10px;">
-            <button type="submit" class="btn btn-primary">💾 {{ t.save_changes }}</button>
-            <a href="{% url 'admin_logistics_dashboard' %}" class="btn btn-secondary">{{ t.cancel }}</a>
-        </div>
-    </form>
-</div>
+    <div class="lg-actions">
+        <button type="submit" class="btn btn-primary">💾 {{ t.save_changes }}</button>
+        <a href="{% url 'admin_logistics_dashboard' %}" class="btn btn-secondary">{{ t.cancel }}</a>
+    </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function pickField(fieldName, value, btn) {
+    document.getElementById(fieldName === 'task_type' ? 'taskTypeInput' : fieldName).value = value;
+    btn.closest('.lg-picker-row').querySelectorAll('.lg-picker-btn').forEach(function (b) { b.classList.remove('lg-active'); });
+    btn.classList.add('lg-active');
+}
+
+function pickPayment(method, btn) {
+    document.getElementById('editPmInput').value = method;
+    btn.closest('.lg-picker-row').querySelectorAll('.lg-picker-btn').forEach(function (b) { b.classList.remove('lg-active'); });
+    btn.classList.add('lg-active');
+    document.getElementById('editPmOtherGroup').style.display = method === 'other' ? 'block' : 'none';
+}
+</script>
 {% endblock %}

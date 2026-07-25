@@ -6,19 +6,23 @@
 {% block page_subtitle %}Collez un message reçu d'un client ou chauffeur pour pré-remplir le formulaire{% endblock %}
 {% block nav_admin_logistics %}active{% endblock %}
 
+{% block styles %}
+<link rel="stylesheet" href="{% static 'css/logistics.css' %}">
+{% endblock %}
+
 {% block content %}
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;" class="form-grid">
-    <div class="card">
-        <div class="table-title" style="margin-bottom:10px;">📋 Texte brut</div>
+<div class="lg-grid-2">
+    <div class="lg-section">
+        <div class="lg-section-title">📋 Texte brut</div>
         <textarea id="spInput" class="form-control" rows="10" placeholder="Ex: Jean Kabila&#10;+243900000000&#10;12 Avenue de la Paix, Kinshasa&#10;Appeler avant d'arriver"></textarea>
         <button type="button" id="spParseBtn" class="btn btn-primary" style="margin-top:12px;">🧠 Analyser</button>
-        <div style="font-size:11px;color:var(--text-muted);margin-top:8px;">
-            Analyse par reconnaissance de motifs (regex), pas d'intelligence artificielle — vérifiez toujours les champs avant d'enregistrer.
+        <div class="lg-hint" style="margin-top:8px;">
+            💡 Analyse par reconnaissance de motifs (regex), pas d'intelligence artificielle — vérifiez toujours les champs avant d'enregistrer
         </div>
     </div>
 
-    <div class="card">
-        <div class="table-title" style="margin-bottom:10px;">✅ Résultat (à vérifier)</div>
+    <div class="lg-section">
+        <div class="lg-section-title">✅ Résultat (à vérifier)</div>
         <form method="POST" action="{% url 'admin_logistics_client_create' %}" id="spForm">
             {% csrf_token %}
             <div class="form-group">

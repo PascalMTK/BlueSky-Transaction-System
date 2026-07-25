@@ -6,7 +6,30 @@
 {% block page_subtitle %}Registre complet de toutes les tâches, quel que soit leur statut{% endblock %}
 {% block nav_admin_logistics %}active{% endblock %}
 
+{% block styles %}
+<link rel="stylesheet" href="{% static 'css/logistics.css' %}">
+{% endblock %}
+
 {% block content %}
+<div class="lg-stats">
+    <div class="lg-stat">
+        <span class="ico">📜</span>
+        <div><div class="lg-stat-num">{{ total_count }}</div><div class="lg-stat-lbl">Enregistrements</div></div>
+    </div>
+    <div class="lg-stat completed">
+        <span class="ico">✅</span>
+        <div><div class="lg-stat-num">{{ status_counts.completed|default:0 }}</div><div class="lg-stat-lbl">Terminé</div></div>
+    </div>
+    <div class="lg-stat pending">
+        <span class="ico">⏳</span>
+        <div><div class="lg-stat-num">{{ status_counts.pending|default:0 }}</div><div class="lg-stat-lbl">En attente</div></div>
+    </div>
+    <div class="lg-stat">
+        <span class="ico">💰</span>
+        <div><div class="lg-stat-num">{{ total_amount|number_format:0 }}</div><div class="lg-stat-lbl">Montant total</div></div>
+    </div>
+</div>
+
 <div class="filters-bar">
     <form method="GET" action="{% url 'admin_logistics_history' %}" style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;width:100%;">
         <div class="filter-group">
@@ -85,8 +108,13 @@
                     <td style="white-space:nowrap;font-size:12px;">{{ d.scheduled_at|date:"d/m/Y H:i" }}</td>
                     <td>{% if d.task_type == 'pickup' %}📤 Collecte{% else %}📥 Livraison{% endif %}</td>
                     <td>
-                        <a href="{% url 'admin_logistics_client_show' d.client_id %}" style="font-weight:600;">{{ d.client.name }}</a>
-                        <div style="font-size:11px;color:var(--text-muted);">{{ d.client.phone }}</div>
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <div class="lg-avatar-sm">{{ d.client.name|initials }}</div>
+                            <div>
+                                <a href="{% url 'admin_logistics_client_show' d.client_id %}" style="font-weight:600;">{{ d.client.name }}</a>
+                                <div style="font-size:11px;color:var(--text-muted);">{{ d.client.phone }}</div>
+                            </div>
+                        </div>
                     </td>
                     <td class="hide-mobile" style="font-size:12px;">{{ d.address_note|default:d.address.address_line|default:"—" }}</td>
                     <td>{{ d.driver.name|default:"—" }}</td>

@@ -6,7 +6,7 @@ from decimal import Decimal, InvalidOperation
 
 import openpyxl
 from django.contrib import messages
-from django.db.models import Q
+from django.db.models import Q, Count, Sum
 from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 
@@ -108,11 +108,15 @@ def dashboard(request):
     qs, filters = _filtered_deliveries(request, task_type_filter=False)
     drivers = User.objects.filter(role='agent', status='active').order_by('name')
 
+    status_counts = dict(qs.values_list('status').annotate(n=Count('id')))
+
     return render(request, 'admin/logistics/dashboard.html', {
         'auth_user':  user,
         'deliveries': qs[:500],
         'drivers':    drivers,
         'status_choices': Delivery.STATUS_CHOICES,
+        'total_count': sum(status_counts.values()),
+        'status_counts': status_counts,
         **filters,
     })
 
@@ -123,12 +127,18 @@ def history(request):
     qs, filters = _filtered_deliveries(request)
     drivers = User.objects.filter(role='agent', status='active').order_by('name')
 
+    agg = qs.aggregate(total_amount=Sum('amount'))
+    status_counts = dict(qs.values_list('status').annotate(n=Count('id')))
+
     return render(request, 'admin/logistics/history.html', {
         'auth_user':  user,
         'deliveries': qs[:500],
         'drivers':    drivers,
         'status_choices': Delivery.STATUS_CHOICES,
         'task_type_choices': Delivery.TASK_TYPE_CHOICES,
+        'total_count': sum(status_counts.values()),
+        'status_counts': status_counts,
+        'total_amount': agg['total_amount'] or 0,
         **filters,
     })
 
@@ -320,10 +330,18 @@ def clients_index(request):
     qs = Client.objects.all().order_by('name')
     if q:
         qs = qs.filter(Q(name__icontains=q) | Q(phone__icontains=q) | Q(email__icontains=q))
+
+    total_count = qs.count()
+    with_email_count = qs.exclude(email__isnull=True).exclude(email='').count()
+    with_address_count = qs.filter(addresses__isnull=False).distinct().count()
+
     return render(request, 'admin/logistics/clients.html', {
         'auth_user': user,
         'clients': qs[:500],
         'q': q,
+        'total_count': total_count,
+        'with_email_count': with_email_count,
+        'with_address_count': with_address_count,
     })
 
 
@@ -782,16 +800,20 @@ def driver_route(request, driver_id):
 @agent_required
 def driver_tasks(request):
     user = get_auth_user(request)
-    qs = Delivery.objects.select_related('client', 'address').filter(driver=user)
+    base_qs = Delivery.objects.select_related('client', 'address').filter(driver=user)
     status_f = request.GET.get('status', '').strip()
-    if status_f:
-        qs = qs.filter(status=status_f)
+    qs = base_qs.filter(status=status_f) if status_f else base_qs
     qs = qs.order_by('scheduled_at')
+
+    status_counts = dict(base_qs.values_list('status').annotate(n=Count('id')))
+
     return render(request, 'agent/logistics/tasks.html', {
         'auth_user': user,
         'deliveries': qs[:200],
         'status_filter': status_f,
         'status_choices': Delivery.STATUS_CHOICES,
+        'total_count': sum(status_counts.values()),
+        'status_counts': status_counts,
     })
 
 

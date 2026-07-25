@@ -6,8 +6,21 @@
 {% block page_subtitle %}{{ client.name }}{% endblock %}
 {% block nav_admin_logistics_clients %}active{% endblock %}
 
+{% block styles %}
+<link rel="stylesheet" href="{% static 'css/logistics.css' %}">
+{% endblock %}
+
 {% block content %}
-<div class="card" style="max-width:520px;">
+<div class="lg-profile-hdr">
+    <div class="lg-avatar">{{ client.name|initials }}</div>
+    <div>
+        <div class="lg-profile-name">{{ client.name }}</div>
+        <div class="lg-profile-meta">{{ client.phone }}</div>
+    </div>
+</div>
+
+<div class="lg-section" style="max-width:520px;">
+    <div class="lg-section-title">👤 Informations du client</div>
     <form method="POST" action="{% url 'admin_logistics_client_edit' client.id %}">
         {% csrf_token %}
         <div class="form-group">
@@ -22,7 +35,7 @@
             <label class="form-label">Email</label>
             <input type="email" name="email" class="form-control" value="{{ client.email|default:'' }}">
         </div>
-        <div class="form-group">
+        <div class="form-group" style="margin-bottom:16px;">
             <label class="form-label">Pays</label>
             <select name="country_id" class="form-control">
                 <option value="">-- {{ t.select_country }} --</option>

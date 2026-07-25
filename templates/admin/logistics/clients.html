@@ -6,7 +6,26 @@
 {% block page_subtitle %}Profils clients — adresses et notes de livraison{% endblock %}
 {% block nav_admin_logistics_clients %}active{% endblock %}
 
+{% block styles %}
+<link rel="stylesheet" href="{% static 'css/logistics.css' %}">
+{% endblock %}
+
 {% block content %}
+<div class="lg-stats">
+    <div class="lg-stat">
+        <span class="ico">👥</span>
+        <div><div class="lg-stat-num">{{ total_count }}</div><div class="lg-stat-lbl">Clients</div></div>
+    </div>
+    <div class="lg-stat">
+        <span class="ico">📧</span>
+        <div><div class="lg-stat-num">{{ with_email_count }}</div><div class="lg-stat-lbl">Avec email</div></div>
+    </div>
+    <div class="lg-stat">
+        <span class="ico">📍</span>
+        <div><div class="lg-stat-num">{{ with_address_count }}</div><div class="lg-stat-lbl">Avec adresse</div></div>
+    </div>
+</div>
+
 <div class="filters-bar">
     <form method="GET" action="{% url 'admin_logistics_clients' %}" style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;width:100%;">
         <div class="filter-group filter-group-search">
@@ -32,7 +51,7 @@
         <table class="bsky-table">
             <thead>
                 <tr>
-                    <th>Nom</th>
+                    <th>Client</th>
                     <th>Téléphone</th>
                     <th class="hide-mobile">Email</th>
                     <th class="hide-mobile">Adresses</th>
@@ -42,7 +61,12 @@
             <tbody>
                 {% for c in clients %}
                 <tr>
-                    <td><a href="{% url 'admin_logistics_client_show' c.id %}" style="font-weight:600;">{{ c.name }}</a></td>
+                    <td>
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <div class="lg-avatar-sm">{{ c.name|initials }}</div>
+                            <a href="{% url 'admin_logistics_client_show' c.id %}" style="font-weight:600;">{{ c.name }}</a>
+                        </div>
+                    </td>
                     <td>{{ c.phone }}</td>
                     <td class="hide-mobile">{{ c.email|default:"—" }}</td>
                     <td class="hide-mobile">{{ c.addresses.count }}</td>

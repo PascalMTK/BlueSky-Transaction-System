@@ -8,9 +8,21 @@
 
 {% block styles %}
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="{% static 'css/logistics.css' %}">
 {% endblock %}
 
 {% block content %}
+<div class="lg-stats">
+    <div class="lg-stat completed">
+        <span class="ico">📋</span>
+        <div><div class="lg-stat-num">{{ ordered_deliveries|length }}</div><div class="lg-stat-lbl">Arrêts prévus</div></div>
+    </div>
+    <div class="lg-stat pending">
+        <span class="ico">⚪</span>
+        <div><div class="lg-stat-num">{{ not_on_route|length }}</div><div class="lg-stat-lbl">Non géocodés</div></div>
+    </div>
+</div>
+
 <form method="GET" style="margin-bottom:14px;display:flex;gap:8px;align-items:flex-end;">
     <div class="filter-group">
         <label class="filter-label">📅 Date</label>
@@ -19,12 +31,12 @@
     <button type="submit" class="btn btn-primary btn-sm">🔍 {{ t.filter_btn }}</button>
 </form>
 
-<div class="card" style="margin-bottom:16px;">
+<div class="lg-section">
     <div id="logiRouteMap" class="logi-map-sm"></div>
 </div>
 
-<div class="card">
-    <div class="table-title" style="margin-bottom:10px;">📋 Arrêts ordonnés</div>
+<div class="lg-section">
+    <div class="lg-section-title">📋 Arrêts ordonnés</div>
     {% if ordered_deliveries %}
     <div class="table-scroll" style="overflow-x:auto;">
         <table class="bsky-table">

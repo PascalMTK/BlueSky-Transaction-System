@@ -8,25 +8,43 @@
 
 {% block styles %}
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="{% static 'css/logistics.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="card" style="margin-bottom:16px;">
+<div class="lg-stats">
+    <div class="lg-stat completed">
+        <span class="ico">🟢</span>
+        <div><div class="lg-stat-num">{{ geocoded_addresses|length }}</div><div class="lg-stat-lbl">Géocodées</div></div>
+    </div>
+    <div class="lg-stat pending">
+        <span class="ico">⚪</span>
+        <div><div class="lg-stat-num">{{ unresolved_addresses|length }}</div><div class="lg-stat-lbl">Non résolues</div></div>
+    </div>
+    <div class="lg-stat">
+        <span class="ico">🚚</span>
+        <div><div class="lg-stat-num">{{ drivers|length }}</div><div class="lg-stat-lbl">Chauffeurs actifs</div></div>
+    </div>
+</div>
+
+<div class="lg-section">
     <div id="logiMap" class="logi-map"></div>
 </div>
 
-<div class="card">
-    <div class="table-title" style="margin-bottom:10px;">📍 Chauffeurs — voir l'itinéraire du jour</div>
+<div class="lg-section">
+    <div class="lg-section-title">📍 Chauffeurs — voir l'itinéraire du jour</div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;">
         {% for d in drivers %}
             <a href="{% url 'admin_logistics_driver_route' d.id %}" class="btn btn-secondary btn-sm">🚚 {{ d.name }}</a>
+        {% empty %}
+            <span style="font-size:13px;color:var(--text-muted);">Aucun chauffeur actif pour le moment.</span>
         {% endfor %}
     </div>
 </div>
 
 {% if unresolved_addresses %}
-<div class="card" style="margin-top:16px;">
-    <div class="table-title" style="margin-bottom:10px;">⚪ Adresses non résolues ({{ unresolved_addresses|length }})</div>
+<div class="lg-section" style="margin-top:16px;">
+    <div class="lg-section-title">⚪ Adresses non résolues ({{ unresolved_addresses|length }})</div>
     <div class="table-scroll" style="overflow-x:auto;">
         <table class="bsky-table">
             <thead><tr><th>Client</th><th>Adresse</th><th>{{ t.actions }}</th></tr></thead>

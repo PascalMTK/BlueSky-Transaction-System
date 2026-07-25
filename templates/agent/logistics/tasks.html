@@ -7,7 +7,30 @@
 {% block nav_logistics_tasks %}active{% endblock %}
 {% block mob_logistics_tasks %}active{% endblock %}
 
+{% block styles %}
+<link rel="stylesheet" href="{% static 'css/logistics.css' %}">
+{% endblock %}
+
 {% block content %}
+<div class="lg-stats">
+    <div class="lg-stat">
+        <span class="ico">📦</span>
+        <div><div class="lg-stat-num">{{ total_count }}</div><div class="lg-stat-lbl">Total</div></div>
+    </div>
+    <div class="lg-stat pending">
+        <span class="ico">⏳</span>
+        <div><div class="lg-stat-num">{{ status_counts.pending|default:0 }}</div><div class="lg-stat-lbl">En attente</div></div>
+    </div>
+    <div class="lg-stat in_transit">
+        <span class="ico">🚚</span>
+        <div><div class="lg-stat-num">{{ status_counts.in_transit|default:0 }}</div><div class="lg-stat-lbl">En transit</div></div>
+    </div>
+    <div class="lg-stat completed">
+        <span class="ico">✅</span>
+        <div><div class="lg-stat-num">{{ status_counts.completed|default:0 }}</div><div class="lg-stat-lbl">Terminé</div></div>
+    </div>
+</div>
+
 <div class="filters-bar">
     <form method="GET" action="{% url 'logistics_driver_tasks' %}" style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;width:100%;">
         <div class="filter-group">
@@ -37,8 +60,13 @@
                 <tr>
                     <td style="font-size:12px;">{{ d.scheduled_at|date:"d/m/Y H:i" }}</td>
                     <td>{% if d.task_type == 'pickup' %}📤 Collecte{% else %}📥 Livraison{% endif %}</td>
-                    <td><a href="{% url 'logistics_driver_task_show' d.id %}" style="font-weight:600;">{{ d.client.name }}</a></td>
-                    <td style="font-size:12px;">{{ d.address.address_line|default:"—" }}</td>
+                    <td>
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <div class="lg-avatar-sm">{{ d.client.name|initials }}</div>
+                            <a href="{% url 'logistics_driver_task_show' d.id %}" style="font-weight:600;">{{ d.client.name }}</a>
+                        </div>
+                    </td>
+                    <td style="font-size:12px;">{{ d.address_note|default:d.address.address_line|default:"—" }}</td>
                     <td>
                         <select class="inline-edit-select" data-delivery-id="{{ d.id }}" data-field="status"
                                 data-endpoint="{% url 'logistics_driver_task_status_update' d.id %}">
