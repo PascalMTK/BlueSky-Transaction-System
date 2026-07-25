@@ -22,7 +22,8 @@
     </form>
 </div>
 
-<div style="margin-bottom:14px;">
+<div style="margin-bottom:14px;display:flex;gap:10px;flex-wrap:wrap;">
+    <a href="{% url 'logistics_driver_task_create' %}" class="btn btn-primary btn-sm">➕ Nouvelle tâche</a>
     <a href="{% url 'logistics_driver_route' %}" class="btn btn-secondary btn-sm">🗺️ {{ t.logistics_my_route_nav }}</a>
 </div>
 

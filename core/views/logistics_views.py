@@ -796,6 +796,88 @@ def driver_tasks(request):
 
 
 @agent_required
+def driver_transaction_search(request):
+    """Live search across every transaction in the system (any agent,
+    any country, any status) so a driver can pick the one their new
+    delivery/pickup task is for. Deliberately unrestricted in scope, per
+    the requirement — narrowed only by the search term and a result cap."""
+    q = request.GET.get('q', '').strip()
+    if len(q) < 2:
+        return JsonResponse({'results': []})
+
+    qs = Transaction.objects.select_related('origin_country', 'destination_country').filter(
+        Q(transaction_number__icontains=q) | Q(sender_name__icontains=q) | Q(receiver_name__icontains=q) |
+        Q(sender_phone__icontains=q) | Q(receiver_phone__icontains=q)
+    ).order_by('-created_at')[:25]
+
+    TYPE_MAP = {'send': 'Envoi', 'receive': 'Réception', 'exchange': 'Échange', 'withdrawal': 'Retrait'}
+    results = [{
+        'id': t.id,
+        'transaction_number': t.transaction_number,
+        'type_display': TYPE_MAP.get(t.transaction_type, t.transaction_type),
+        'sender_name': t.sender_name,
+        'sender_phone': t.sender_phone,
+        'receiver_name': t.receiver_name or '',
+        'receiver_phone': t.receiver_phone or '',
+        'amount': str(t.total_amount),
+        'currency': t.currency or (t.origin_country.currency_code if t.origin_country else ''),
+        'created_at': t.created_at.strftime('%d/%m/%Y %H:%M'),
+        'route': f"{t.origin_country.flag_emoji if t.origin_country else ''} → {t.destination_country.flag_emoji if t.destination_country else ''}",
+    } for t in qs]
+    return JsonResponse({'results': results})
+
+
+@agent_required
+def driver_task_create(request):
+    user = get_auth_user(request)
+
+    if request.method == 'POST':
+        tx_id = request.POST.get('transaction_id', '').strip()
+        party = request.POST.get('party', '').strip()
+        task_type = request.POST.get('task_type', 'pickup')
+        scheduled_at = _parse_scheduled_at(request.POST.get('scheduled_at'))
+
+        if not tx_id or party not in ('sender', 'receiver') or not scheduled_at:
+            messages.error(request, "Transaction, partie concernée et date/heure sont obligatoires.")
+            return redirect('logistics_driver_task_create')
+
+        tx = get_object_or_404(Transaction, pk=tx_id)
+        if party == 'sender':
+            name, phone = tx.sender_name, tx.sender_phone
+        else:
+            name, phone = tx.receiver_name, tx.receiver_phone
+
+        if not name or not phone:
+            messages.error(request, "Cette transaction n'a pas de coordonnées pour cette partie.")
+            return redirect('logistics_driver_task_create')
+
+        normalized_phone = phone.replace(' ', '').replace('-', '')
+        client = Client.objects.filter(phone=normalized_phone).first()
+        if not client:
+            client = Client.objects.create(name=name, phone=normalized_phone, created_by=user)
+
+        delivery = Delivery(
+            client=client,
+            transaction=tx,
+            task_type=task_type,
+            scheduled_at=scheduled_at,
+            driver=user,
+            notes=request.POST.get('notes', '').strip() or None,
+            created_by=user,
+        )
+        _apply_payment_fields(delivery, request.POST)
+        delivery.save()
+        messages.success(request, "Tâche créée à partir de la transaction.")
+        return redirect('logistics_driver_task_show', delivery_id=delivery.id)
+
+    return render(request, 'agent/logistics/task_create.html', {
+        'auth_user': user,
+        'task_type_choices': Delivery.TASK_TYPE_CHOICES,
+        'payment_method_choices': Delivery.PAYMENT_METHOD_CHOICES,
+    })
+
+
+@agent_required
 def driver_task_show(request, delivery_id):
     user = get_auth_user(request)
     delivery = get_object_or_404(

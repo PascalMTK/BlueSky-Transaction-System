@@ -1,0 +1,250 @@
+{% extends 'layouts/app.html' %}
+{% load static bluesky_tags %}
+
+{% block title %}Nouvelle tâche{% endblock %}
+{% block page_title %}➕ Nouvelle tâche depuis une transaction{% endblock %}
+{% block page_subtitle %}Recherchez une transaction du système pour créer votre tâche{% endblock %}
+{% block nav_logistics_tasks %}active{% endblock %}
+
+{% block styles %}
+<style>
+.tkc-search-wrap { position: relative; }
+.tkc-results {
+    margin-top: 8px;
+    border: 1px solid var(--border); border-radius: 12px;
+    max-height: 340px; overflow-y: auto;
+    background: var(--bg-card);
+}
+.tkc-result-item {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer; transition: background .15s;
+}
+.tkc-result-item:last-child { border-bottom: none; }
+.tkc-result-item:hover { background: var(--bg-secondary); }
+.tkc-result-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.tkc-result-num { font-weight: 700; color: var(--sky-primary); font-size: 13px; }
+.tkc-result-amount { font-weight: 800; font-size: 13px; }
+.tkc-result-parties { font-size: 12px; color: var(--text-secondary); margin-top: 3px; }
+.tkc-result-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.tkc-empty { padding: 16px; text-align: center; color: var(--text-muted); font-size: 13px; }
+
+.tkc-selected-card {
+    background: linear-gradient(135deg, var(--sky-deeper), var(--sky-primary));
+    border-radius: 14px; padding: 16px 18px; color: #fff; margin-bottom: 16px;
+    display: none;
+}
+.tkc-selected-card.tkc-active { display: block; }
+.tkc-selected-num { font-size: 15px; font-weight: 900; }
+.tkc-selected-meta { font-size: 12.5px; opacity: .85; margin-top: 4px; }
+
+.tkc-party-row { display: flex; gap: 10px; }
+.tkc-party-btn {
+    flex: 1;
+    display: flex; flex-direction: column; align-items: flex-start; gap: 3px;
+    padding: 12px 14px; min-height: 44px;
+    border: 1.5px solid var(--border); border-radius: 12px;
+    background: var(--bg-secondary); color: var(--text-secondary);
+    cursor: pointer; transition: all .18s; font-family: inherit; text-align: left;
+}
+.tkc-party-btn .lbl { font-size: 12.5px; font-weight: 700; color: var(--text-primary); }
+.tkc-party-btn .sub { font-size: 11.5px; color: var(--text-muted); }
+.tkc-party-btn.tkc-active {
+    border-color: var(--sky-primary); background: rgba(2,132,199,.10);
+    box-shadow: 0 2px 10px rgba(2,132,199,.18);
+}
+
+.tkc-type-row { display: flex; gap: 10px; }
+.tkc-type-btn {
+    flex: 1;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 12px 10px; min-height: 44px;
+    border: 1.5px solid var(--border); border-radius: 12px;
+    background: var(--bg-secondary); color: var(--text-secondary);
+    cursor: pointer; transition: all .18s; font-family: inherit; font-weight: 700; font-size: 13px;
+}
+.tkc-type-btn.tkc-active {
+    border-color: var(--sky-primary); background: rgba(2,132,199,.10); color: var(--sky-primary);
+    box-shadow: 0 2px 10px rgba(2,132,199,.18);
+}
+
+.tkc-details { display: none; }
+.tkc-details.tkc-active { display: block; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width:620px;margin-bottom:16px;">
+    <div class="form-group" style="margin:0;">
+        <label class="form-label">🔍 Rechercher une transaction (n°, nom, téléphone)</label>
+        <div class="tkc-search-wrap">
+            <input type="text" id="tkcSearchInput" class="form-control" placeholder="Ex: BSK-2026..., Jean Kabila, +243...">
+            <div class="tkc-results" id="tkcResults" style="display:none;"></div>
+        </div>
+    </div>
+</div>
+
+<div class="tkc-selected-card" id="tkcSelectedCard">
+    <div class="tkc-selected-num" id="tkcSelNum"></div>
+    <div class="tkc-selected-meta" id="tkcSelMeta"></div>
+</div>
+
+<form method="POST" action="{% url 'logistics_driver_task_create' %}" class="tkc-details" id="tkcDetails">
+    {% csrf_token %}
+    <input type="hidden" name="transaction_id" id="tkcTxId">
+
+    <div class="card" style="max-width:620px;margin-bottom:16px;">
+        <div class="form-group">
+            <label class="form-label">Partie concernée</label>
+            <div class="tkc-party-row">
+                <button type="button" class="tkc-party-btn" data-party="sender" onclick="tkcPickParty('sender', this)">
+                    <span class="lbl" id="tkcSenderLbl">Expéditeur</span>
+                    <span class="sub">Collecter chez cette personne</span>
+                </button>
+                <button type="button" class="tkc-party-btn" data-party="receiver" onclick="tkcPickParty('receiver', this)">
+                    <span class="lbl" id="tkcReceiverLbl">Bénéficiaire</span>
+                    <span class="sub">Livrer à cette personne</span>
+                </button>
+            </div>
+            <input type="hidden" name="party" id="tkcPartyInput" value="">
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Type de tâche</label>
+            <div class="tkc-type-row">
+                <button type="button" class="tkc-type-btn tkc-active" data-type="pickup" onclick="tkcPickType('pickup', this)">📤 Collecte</button>
+                <button type="button" class="tkc-type-btn" data-type="dropoff" onclick="tkcPickType('dropoff', this)">📥 Livraison</button>
+            </div>
+            <input type="hidden" name="task_type" id="tkcTypeInput" value="pickup">
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Date &amp; heure prévues *</label>
+            <input type="datetime-local" name="scheduled_at" id="tkcScheduledInput" class="form-control" required>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Adresse (sur place)</label>
+            <textarea name="address_note" class="form-control" rows="2" placeholder="Adresse indiquée par le client..."></textarea>
+        </div>
+    </div>
+
+    <div class="card" style="max-width:620px;margin-bottom:16px;">
+        <div class="dt-section-title" style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text-muted);margin-bottom:14px;">💰 Paiement</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+            <div class="form-group" style="margin:0;">
+                <label class="form-label">Montant</label>
+                <input type="text" name="amount" id="tkcAmountInput" class="form-control" placeholder="Ex: 25000">
+            </div>
+            <div class="form-group" style="margin:0;">
+                <label class="form-label">Mode de paiement</label>
+                <select name="payment_method" id="tkcPmSelect" class="form-control" onchange="document.getElementById('tkcPmOtherGroup').style.display = this.value==='other' ? 'block' : 'none';">
+                    <option value="">— Non précisé —</option>
+                    {% for key, label in payment_method_choices %}
+                        <option value="{{ key }}">{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="form-group" id="tkcPmOtherGroup" style="display:none;">
+            <label class="form-label">Préciser</label>
+            <input type="text" name="payment_method_other" class="form-control" placeholder="Ex: Mobile Money, Virement...">
+        </div>
+    </div>
+
+    <div class="card" style="max-width:620px;">
+        <div class="form-group" style="margin:0;">
+            <label class="form-label">Notes</label>
+            <textarea name="notes" class="form-control" rows="2" placeholder="Instructions particulières..."></textarea>
+        </div>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-top:16px;">
+        <button type="submit" class="btn btn-primary">💾 Créer ma tâche</button>
+        <a href="{% url 'logistics_driver_tasks' %}" class="btn btn-secondary">{{ t.cancel }}</a>
+    </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+var searchInput = document.getElementById('tkcSearchInput');
+var resultsBox = document.getElementById('tkcResults');
+var selectedCard = document.getElementById('tkcSelectedCard');
+var detailsForm = document.getElementById('tkcDetails');
+var debounceTimer = null;
+var selectedTx = null;
+
+function renderResults(results) {
+    if (!results.length) {
+        resultsBox.innerHTML = '<div class="tkc-empty">Aucune transaction trouvée</div>';
+        resultsBox.style.display = 'block';
+        return;
+    }
+    resultsBox.innerHTML = '';
+    results.forEach(function (t) {
+        var item = document.createElement('div');
+        item.className = 'tkc-result-item';
+        item.innerHTML =
+            '<div class="tkc-result-top">' +
+                '<span class="tkc-result-num">' + t.transaction_number + '</span>' +
+                '<span class="tkc-result-amount">' + t.amount + ' ' + t.currency + '</span>' +
+            '</div>' +
+            '<div class="tkc-result-parties">' + t.sender_name + ' → ' + (t.receiver_name || '—') + '</div>' +
+            '<div class="tkc-result-meta">' + t.type_display + ' · ' + t.route + ' · ' + t.created_at + '</div>';
+        item.addEventListener('click', function () { selectTransaction(t); });
+        resultsBox.appendChild(item);
+    });
+    resultsBox.style.display = 'block';
+}
+
+function selectTransaction(t) {
+    selectedTx = t;
+    document.getElementById('tkcTxId').value = t.id;
+    document.getElementById('tkcSelNum').textContent = t.transaction_number;
+    document.getElementById('tkcSelMeta').textContent = t.sender_name + ' → ' + (t.receiver_name || '—') + ' · ' + t.amount + ' ' + t.currency + ' · ' + t.route;
+    document.getElementById('tkcSenderLbl').textContent = '📤 ' + t.sender_name + (t.sender_phone ? ' (' + t.sender_phone + ')' : '');
+    document.getElementById('tkcReceiverLbl').textContent = t.receiver_name ? ('📥 ' + t.receiver_name + (t.receiver_phone ? ' (' + t.receiver_phone + ')' : '')) : '📥 Aucun bénéficiaire';
+
+    selectedCard.classList.add('tkc-active');
+    detailsForm.classList.add('tkc-active');
+    resultsBox.style.display = 'none';
+    searchInput.value = t.transaction_number;
+
+    if (!document.getElementById('tkcAmountInput').value) {
+        document.getElementById('tkcAmountInput').value = t.amount;
+    }
+}
+
+function tkcPickParty(party, btn) {
+    document.getElementById('tkcPartyInput').value = party;
+    btn.closest('.tkc-party-row').querySelectorAll('.tkc-party-btn').forEach(function (b) { b.classList.remove('tkc-active'); });
+    btn.classList.add('tkc-active');
+}
+
+function tkcPickType(type, btn) {
+    document.getElementById('tkcTypeInput').value = type;
+    btn.closest('.tkc-type-row').querySelectorAll('.tkc-type-btn').forEach(function (b) { b.classList.remove('tkc-active'); });
+    btn.classList.add('tkc-active');
+}
+
+searchInput.addEventListener('input', function () {
+    var q = searchInput.value.trim();
+    clearTimeout(debounceTimer);
+    if (q.length < 2) {
+        resultsBox.style.display = 'none';
+        return;
+    }
+    debounceTimer = setTimeout(function () {
+        fetch('{% url "logistics_driver_transaction_search" %}?q=' + encodeURIComponent(q))
+            .then(function (r) { return r.json(); })
+            .then(function (data) { renderResults(data.results || []); })
+            .catch(function () { resultsBox.style.display = 'none'; });
+    }, 300);
+});
+
+document.addEventListener('click', function (e) {
+    if (!e.target.closest('.tkc-search-wrap')) resultsBox.style.display = 'none';
+});
+</script>
+{% endblock %}
