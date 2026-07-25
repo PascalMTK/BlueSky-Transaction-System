@@ -60,6 +60,31 @@
         </div>
 
         <div class="form-group">
+            <label class="form-label">Adresse notée sur place</label>
+            <textarea name="address_note" class="form-control" rows="2" placeholder="Adresse réelle relevée sur le terrain, si différente">{{ delivery.address_note|default:'' }}</textarea>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+            <div class="form-group">
+                <label class="form-label">Montant</label>
+                <input type="text" name="amount" class="form-control" value="{{ delivery.amount|default:'' }}" placeholder="Ex: 25000">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Mode de paiement</label>
+                <select name="payment_method" class="form-control" id="editPmSelect" onchange="document.getElementById('editPmOtherGroup').style.display = this.value==='other' ? 'block' : 'none';">
+                    <option value="">— Non précisé —</option>
+                    {% for key, label in payment_method_choices %}
+                        <option value="{{ key }}" {% if delivery.payment_method == key %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="form-group" id="editPmOtherGroup" style="{% if delivery.payment_method != 'other' %}display:none;{% endif %}">
+            <label class="form-label">Préciser le mode de paiement</label>
+            <input type="text" name="payment_method_other" class="form-control" value="{{ delivery.payment_method_other|default:'' }}" placeholder="Ex: Mobile Money, Virement...">
+        </div>
+
+        <div class="form-group">
             <label class="form-label">Notes</label>
             <textarea name="notes" class="form-control" rows="3">{{ delivery.notes|default:'' }}</textarea>
         </div>

@@ -107,13 +107,14 @@
     {% if deliveries %}
     <div class="table-scroll" style="overflow-x:auto;">
         <table class="bsky-table">
-            <thead><tr><th>Date</th><th>Type</th><th>Chauffeur</th><th>{{ t.status }}</th></tr></thead>
+            <thead><tr><th>Date</th><th>Type</th><th>Chauffeur</th><th>Montant</th><th>{{ t.status }}</th></tr></thead>
             <tbody>
                 {% for d in deliveries %}
                 <tr>
                     <td style="font-size:12px;">{{ d.scheduled_at|date:"d/m/Y H:i" }}</td>
                     <td>{% if d.task_type == 'pickup' %}📤 Collecte{% else %}📥 Livraison{% endif %}</td>
                     <td>{{ d.driver.name|default:"—" }}</td>
+                    <td>{% if d.amount %}{{ d.amount|number_format:0 }}{% else %}—{% endif %}</td>
                     <td><span class="badge-status status-{{ d.status }}">{{ d.get_status_display }}</span></td>
                 </tr>
                 {% endfor %}

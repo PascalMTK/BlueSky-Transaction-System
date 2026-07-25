@@ -2,6 +2,7 @@ import csv
 import io
 import json
 from datetime import datetime, date
+from decimal import Decimal, InvalidOperation
 
 import openpyxl
 from django.contrib import messages
@@ -29,6 +30,27 @@ def _parse_scheduled_at(value):
         except ValueError:
             continue
     return None
+
+
+def _parse_amount(raw):
+    raw = (raw or '').strip().replace(',', '.')
+    if not raw:
+        return None
+    try:
+        return Decimal(raw)
+    except InvalidOperation:
+        return None
+
+
+def _apply_payment_fields(delivery, post):
+    """Shared amount/payment-method/address-note handling for the admin
+    create/edit forms and the driver's own task-update form."""
+    delivery.amount = _parse_amount(post.get('amount'))
+    payment_method = post.get('payment_method', '').strip()
+    delivery.payment_method = payment_method or None
+    other = post.get('payment_method_other', '').strip()
+    delivery.payment_method_other = other if payment_method == 'other' else None
+    delivery.address_note = post.get('address_note', '').strip() or None
 
 
 def _status_badge(status):
@@ -115,10 +137,10 @@ def history(request):
 def export_xlsx(request):
     qs, _filters = _filtered_deliveries(request)
 
-    headers = ['Date/Heure', 'Type', 'Client', 'Téléphone', 'Adresse', 'Chauffeur', 'Statut', 'Notes']
-    col_widths = [18, 12, 24, 16, 32, 20, 14, 30]
-    money_cols = set()
-    text_cols = {2, 4, 5, 7}
+    headers = ['Date/Heure', 'Type', 'Client', 'Téléphone', 'Adresse', 'Chauffeur', 'Montant', 'Paiement', 'Statut', 'Notes']
+    col_widths = [18, 12, 24, 16, 32, 20, 12, 16, 14, 30]
+    money_cols = {7}
+    text_cols = {3, 4, 5, 6, 10}
 
     wb = openpyxl.Workbook()
     ws = wb.active
@@ -128,15 +150,23 @@ def export_xlsx(request):
 
     TYPE_MAP = {'pickup': 'Collecte', 'dropoff': 'Livraison'}
     STATUS_MAP = dict(Delivery.STATUS_CHOICES)
+    PAYMENT_MAP = {'cash': 'Espèces'}
 
     for row_idx, d in enumerate(qs, 2):
+        address_display = d.address_note or (d.address.address_line if d.address else '')
+        if d.payment_method == 'other':
+            payment_display = d.payment_method_other or 'Autre'
+        else:
+            payment_display = PAYMENT_MAP.get(d.payment_method, '') if d.payment_method else ''
         row = [
             d.scheduled_at.strftime('%d/%m/%Y %H:%M'),
             TYPE_MAP.get(d.task_type, d.task_type),
             d.client.name,
             d.client.phone,
-            d.address.address_line if d.address else '',
+            address_display,
             d.driver.name if d.driver else '—',
+            float(d.amount) if d.amount is not None else '',
+            payment_display,
             STATUS_MAP.get(d.status, d.status),
             d.notes or '',
         ]
@@ -144,6 +174,9 @@ def export_xlsx(request):
             ws.cell(row=row_idx, column=col_idx, value=val)
         _apply_row_style(ws, row_idx, len(headers), even_fill, odd_fill,
                          money_fill, money_cols, border, center, left, text_cols)
+
+    for row_idx in range(2, ws.max_row + 1):
+        ws.cell(row=row_idx, column=7).number_format = '#,##0.00'
 
     ws.auto_filter.ref = ws.dimensions
 
@@ -169,7 +202,7 @@ def delivery_create(request):
             return redirect('admin_delivery_create')
 
         client = get_object_or_404(Client, pk=client_id)
-        Delivery.objects.create(
+        delivery = Delivery(
             client=client,
             address_id=address_id or None,
             task_type=task_type,
@@ -178,6 +211,8 @@ def delivery_create(request):
             notes=notes or None,
             created_by=user,
         )
+        _apply_payment_fields(delivery, request.POST)
+        delivery.save()
         messages.success(request, "Tâche de livraison créée.")
         return redirect('admin_logistics_dashboard')
 
@@ -190,6 +225,7 @@ def delivery_create(request):
         'drivers': drivers,
         'preselect_client': preselect_client,
         'task_type_choices': Delivery.TASK_TYPE_CHOICES,
+        'payment_method_choices': Delivery.PAYMENT_METHOD_CHOICES,
     })
 
 
@@ -211,6 +247,7 @@ def delivery_edit(request, delivery_id):
         delivery.driver_id = request.POST.get('driver_id') or None
         delivery.status = request.POST.get('status', delivery.status)
         delivery.notes = request.POST.get('notes', '').strip() or None
+        _apply_payment_fields(delivery, request.POST)
         delivery.save()
         messages.success(request, "Tâche mise à jour.")
         return redirect('admin_logistics_dashboard')
@@ -224,6 +261,7 @@ def delivery_edit(request, delivery_id):
         'addresses': addresses,
         'task_type_choices': Delivery.TASK_TYPE_CHOICES,
         'status_choices': Delivery.STATUS_CHOICES,
+        'payment_method_choices': Delivery.PAYMENT_METHOD_CHOICES,
     })
 
 
@@ -763,7 +801,16 @@ def driver_task_show(request, delivery_id):
     delivery = get_object_or_404(
         Delivery.objects.select_related('client', 'address'), pk=delivery_id, driver=user,
     )
-    return render(request, 'agent/logistics/task_show.html', {'auth_user': user, 'delivery': delivery, 'status_choices': Delivery.STATUS_CHOICES})
+    if request.method == 'POST':
+        _apply_payment_fields(delivery, request.POST)
+        delivery.save(update_fields=['address_note', 'amount', 'payment_method', 'payment_method_other', 'updated_at'])
+        messages.success(request, "Informations enregistrées.")
+        return redirect('logistics_driver_task_show', delivery_id=delivery.id)
+
+    return render(request, 'agent/logistics/task_show.html', {
+        'auth_user': user, 'delivery': delivery, 'status_choices': Delivery.STATUS_CHOICES,
+        'payment_method_choices': Delivery.PAYMENT_METHOD_CHOICES,
+    })
 
 
 @agent_required

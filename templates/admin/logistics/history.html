@@ -74,6 +74,7 @@
                     <th>Client</th>
                     <th class="hide-mobile">Adresse</th>
                     <th>Chauffeur</th>
+                    <th class="hide-mobile">Montant</th>
                     <th>{{ t.status }}</th>
                     <th class="hide-mobile">Notes</th>
                 </tr>
@@ -87,8 +88,14 @@
                         <a href="{% url 'admin_logistics_client_show' d.client_id %}" style="font-weight:600;">{{ d.client.name }}</a>
                         <div style="font-size:11px;color:var(--text-muted);">{{ d.client.phone }}</div>
                     </td>
-                    <td class="hide-mobile" style="font-size:12px;">{{ d.address.address_line|default:"—" }}</td>
+                    <td class="hide-mobile" style="font-size:12px;">{{ d.address_note|default:d.address.address_line|default:"—" }}</td>
                     <td>{{ d.driver.name|default:"—" }}</td>
+                    <td class="hide-mobile">
+                        {% if d.amount %}
+                            <strong>{{ d.amount|number_format:0 }}</strong>
+                            <div style="font-size:11px;color:var(--text-muted);">{% if d.payment_method == 'other' %}{{ d.payment_method_other|default:"Autre" }}{% elif d.payment_method == 'cash' %}Cash{% endif %}</div>
+                        {% else %}—{% endif %}
+                    </td>
                     <td><span class="badge-status status-{{ d.status }}">{{ d.get_status_display }}</span></td>
                     <td class="hide-mobile" style="font-size:12px;color:var(--text-muted);">{{ d.notes|default:"—"|limit:40 }}</td>
                 </tr>

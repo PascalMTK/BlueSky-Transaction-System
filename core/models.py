@@ -245,6 +245,10 @@ class Delivery(models.Model):
         ('completed', 'Completed'),
     ]
 
+    PAYMENT_CASH  = 'cash'
+    PAYMENT_OTHER = 'other'
+    PAYMENT_METHOD_CHOICES = [('cash', 'Cash'), ('other', 'Autre')]
+
     client      = models.ForeignKey(Client, on_delete=models.PROTECT, db_column='client_id')
     address     = models.ForeignKey(ClientAddress, null=True, blank=True, on_delete=models.PROTECT, db_column='address_id')
     transaction = models.ForeignKey(Transaction, null=True, blank=True, on_delete=models.SET_NULL, related_name='deliveries', db_column='transaction_id')
@@ -253,6 +257,13 @@ class Delivery(models.Model):
     driver      = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name='deliveries_driven', db_column='driver_id')
     status      = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     notes       = models.TextField(null=True, blank=True)
+    # Free-text address as reported/corrected on the ground (by the driver or
+    # the dispatcher) — kept separate from the client's saved ClientAddress
+    # so correcting it here never silently rewrites the client's profile.
+    address_note          = models.TextField(null=True, blank=True)
+    amount                = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    payment_method        = models.CharField(max_length=10, choices=PAYMENT_METHOD_CHOICES, null=True, blank=True)
+    payment_method_other  = models.CharField(max_length=100, null=True, blank=True)
     created_by  = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name='+', db_column='created_by_id')
     created_at  = models.DateTimeField(auto_now_add=True)
     updated_at  = models.DateTimeField(auto_now=True)

@@ -5,16 +5,37 @@
 {% block page_title %}{% if delivery.task_type == 'pickup' %}📤 Collecte{% else %}📥 Livraison{% endif %}{% endblock %}
 {% block page_subtitle %}{{ delivery.client.name }}{% endblock %}
 {% block nav_logistics_tasks %}active{% endblock %}
+{% block mob_logistics_tasks %}active{% endblock %}
+
+{% block styles %}
+<style>
+.tk-pm-row { display: flex; gap: 10px; }
+.tk-pm-btn {
+    flex: 1;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 14px 10px; min-height: 44px;
+    border: 1.5px solid var(--border); border-radius: 12px;
+    background: var(--bg-secondary); color: var(--text-secondary);
+    cursor: pointer; transition: all .18s; font-family: inherit; font-weight: 700; font-size: 13.5px;
+}
+.tk-pm-btn.tk-active {
+    border-color: var(--sky-primary);
+    background: rgba(2,132,199,.10);
+    color: var(--sky-primary);
+    box-shadow: 0 2px 10px rgba(2,132,199,.18);
+}
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="card" style="max-width:560px;">
+<div class="card" style="max-width:560px;margin-bottom:16px;">
     <div class="form-group">
         <label class="form-label">Client</label>
         <div style="font-weight:600;">{{ delivery.client.name }}</div>
         <div style="font-size:13px;color:var(--text-muted);">{{ delivery.client.phone }}</div>
     </div>
     <div class="form-group">
-        <label class="form-label">Adresse</label>
+        <label class="form-label">Adresse enregistrée</label>
         <div>{{ delivery.address.address_line|default:"Non spécifiée" }}</div>
     </div>
     <div class="form-group">
@@ -22,12 +43,15 @@
         <div>{{ delivery.scheduled_at|date:"d/m/Y H:i" }}</div>
     </div>
     {% if delivery.notes %}
-    <div class="form-group">
+    <div class="form-group" style="margin:0;">
         <label class="form-label">Notes</label>
         <div>{{ delivery.notes }}</div>
     </div>
     {% endif %}
-    <div class="form-group">
+</div>
+
+<div class="card" style="max-width:560px;margin-bottom:16px;">
+    <div class="form-group" style="margin:0;">
         <label class="form-label">{{ t.status }}</label>
         <select class="inline-edit-select" data-delivery-id="{{ delivery.id }}" data-field="status"
                 data-endpoint="{% url 'logistics_driver_task_status_update' delivery.id %}" style="width:100%;padding:8px;">
@@ -36,10 +60,49 @@
             {% endfor %}
         </select>
     </div>
+</div>
+
+<div class="card" style="max-width:560px;">
+    <div class="table-title" style="margin-bottom:12px;">📝 Informations sur le terrain</div>
+    <form method="POST" action="{% url 'logistics_driver_task_show' delivery.id %}">
+        {% csrf_token %}
+        <div class="form-group">
+            <label class="form-label">Adresse relevée sur place</label>
+            <textarea name="address_note" class="form-control" rows="2" placeholder="Écrivez ici l'adresse réelle si elle diffère de celle enregistrée">{{ delivery.address_note|default:'' }}</textarea>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Montant {% if delivery.task_type == 'pickup' %}collecté{% else %}remis{% endif %}</label>
+            <input type="text" name="amount" class="form-control" value="{{ delivery.amount|default:'' }}" placeholder="Ex: 25000" inputmode="decimal">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Mode de paiement</label>
+            <div class="tk-pm-row">
+                <button type="button" class="tk-pm-btn{% if delivery.payment_method == 'cash' %} tk-active{% endif %}" data-pm="cash" onclick="tkPickPm('cash', this)">💵 Cash</button>
+                <button type="button" class="tk-pm-btn{% if delivery.payment_method == 'other' %} tk-active{% endif %}" data-pm="other" onclick="tkPickPm('other', this)">🔀 Autre</button>
+            </div>
+            <input type="hidden" name="payment_method" id="tkPmInput" value="{{ delivery.payment_method|default:'' }}">
+        </div>
+        <div class="form-group" id="tkPmOtherGroup" style="{% if delivery.payment_method != 'other' %}display:none;{% endif %}">
+            <label class="form-label">Préciser</label>
+            <input type="text" name="payment_method_other" class="form-control" value="{{ delivery.payment_method_other|default:'' }}" placeholder="Ex: Mobile Money, Virement...">
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">💾 Enregistrer</button>
+    </form>
+</div>
+
+<div style="margin-top:16px;">
     <a href="{% url 'logistics_driver_tasks' %}" class="btn btn-secondary">{{ t.back }}</a>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script src="{% static 'js/logistics-dashboard.js' %}"></script>
+<script>
+function tkPickPm(method, btn) {
+    document.getElementById('tkPmInput').value = method;
+    btn.closest('.tk-pm-row').querySelectorAll('.tk-pm-btn').forEach(function (b) { b.classList.remove('tk-active'); });
+    btn.classList.add('tk-active');
+    document.getElementById('tkPmOtherGroup').style.display = method === 'other' ? 'block' : 'none';
+}
+</script>
 {% endblock %}

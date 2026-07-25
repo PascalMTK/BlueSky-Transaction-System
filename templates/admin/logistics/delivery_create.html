@@ -149,12 +149,16 @@
                         {% endfor %}
                     </select>
                 </div>
-                <div class="form-group" style="margin:0;">
+                <div class="form-group">
                     <label class="form-label">Adresse</label>
                     <select name="address_id" class="form-control" id="addressSelect">
                         <option value="">-- Aucune adresse spécifique --</option>
                     </select>
                     <div class="dt-addr-hint" id="addrHint">💡 Sélectionnez d'abord un client pour voir ses adresses enregistrées</div>
+                </div>
+                <div class="form-group" style="margin:0;">
+                    <label class="form-label">Adresse notée sur place (optionnel)</label>
+                    <textarea name="address_note" id="addressNoteInput" class="form-control" rows="2" placeholder="À remplir si l'adresse réelle diffère de celle enregistrée, ou si le chauffeur la précise sur le terrain"></textarea>
                 </div>
             </div>
 
@@ -175,6 +179,35 @@
                             {% endfor %}
                         </select>
                     </div>
+                </div>
+            </div>
+
+            <!-- Payment -->
+            <div class="dt-section">
+                <div class="dt-section-title">💰 Paiement (optionnel)</div>
+                <div class="dt-grid-2" style="margin-bottom:12px;">
+                    <div class="form-group" style="margin:0;">
+                        <label class="form-label">Montant</label>
+                        <input type="text" name="amount" id="amountInput" class="form-control" placeholder="Ex: 25000" inputmode="decimal">
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                        <label class="form-label">Mode de paiement</label>
+                        <div class="dt-type-row">
+                            <button type="button" class="dt-type-btn" data-pm="cash" onclick="pickPaymentMethod('cash', this)">
+                                <span class="ico">💵</span>
+                                <span><div class="lbl">Cash</div></span>
+                            </button>
+                            <button type="button" class="dt-type-btn" data-pm="other" onclick="pickPaymentMethod('other', this)">
+                                <span class="ico">🔀</span>
+                                <span><div class="lbl">Autre</div></span>
+                            </button>
+                        </div>
+                        <input type="hidden" name="payment_method" id="paymentMethodInput" value="">
+                    </div>
+                </div>
+                <div class="form-group" id="paymentOtherGroup" style="margin:0;display:none;">
+                    <label class="form-label">Préciser le mode de paiement</label>
+                    <input type="text" name="payment_method_other" id="paymentOtherInput" class="form-control" placeholder="Ex: Mobile Money, Virement...">
                 </div>
             </div>
 
@@ -204,6 +237,10 @@
             <div class="dt-preview-row">
                 <span class="ico">🚚</span>
                 <span class="val placeholder" id="pvDriver">Non assigné</span>
+            </div>
+            <div class="dt-preview-row">
+                <span class="ico">💰</span>
+                <span class="val placeholder" id="pvAmount">Aucun montant</span>
             </div>
             <div class="dt-preview-row" style="align-items:flex-start;margin-bottom:0;">
                 <span class="ico">📍</span>
@@ -241,8 +278,16 @@ function loadAddressesFor(clientId) {
 
 function pickTaskType(type, btn) {
     document.getElementById('dtTaskType').value = type;
-    document.querySelectorAll('.dt-type-btn').forEach(function (b) { b.classList.remove('dt-active'); });
+    btn.closest('.dt-type-row').querySelectorAll('.dt-type-btn').forEach(function (b) { b.classList.remove('dt-active'); });
     btn.classList.add('dt-active');
+    updatePreview();
+}
+
+function pickPaymentMethod(method, btn) {
+    document.getElementById('paymentMethodInput').value = method;
+    btn.closest('.dt-type-row').querySelectorAll('.dt-type-btn').forEach(function (b) { b.classList.remove('dt-active'); });
+    btn.classList.add('dt-active');
+    document.getElementById('paymentOtherGroup').style.display = method === 'other' ? 'block' : 'none';
     updatePreview();
 }
 
@@ -287,6 +332,19 @@ function updatePreview() {
         pvDriver.textContent = 'Non assigné';
         pvDriver.classList.add('placeholder');
     }
+
+    var pvAmount = document.getElementById('pvAmount');
+    var amountVal = document.getElementById('amountInput').value.trim();
+    var pmVal = document.getElementById('paymentMethodInput').value;
+    var pmOther = document.getElementById('paymentOtherInput').value.trim();
+    if (amountVal) {
+        var pmLabel = pmVal === 'cash' ? 'Cash' : (pmVal === 'other' ? (pmOther || 'Autre') : '');
+        pvAmount.textContent = amountVal + (pmLabel ? ' — ' + pmLabel : '');
+        pvAmount.classList.remove('placeholder');
+    } else {
+        pvAmount.textContent = 'Aucun montant';
+        pvAmount.classList.add('placeholder');
+    }
 }
 
 if (clientSelect) {
@@ -296,6 +354,8 @@ if (clientSelect) {
 addressSelect.addEventListener('change', updatePreview);
 document.getElementById('scheduledInput').addEventListener('change', updatePreview);
 document.getElementById('driverSelect').addEventListener('change', updatePreview);
+document.getElementById('amountInput').addEventListener('input', updatePreview);
+document.getElementById('paymentOtherInput').addEventListener('input', updatePreview);
 
 updatePreview();
 </script>
