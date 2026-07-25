@@ -79,6 +79,8 @@ urlpatterns = [
 
     # ── Admin — Logistics ─────────────────────────────────────────────────
     path('admin/logistics/',                       logistics_views.dashboard,           name='admin_logistics_dashboard'),
+    path('admin/logistics/history/',                logistics_views.history,             name='admin_logistics_history'),
+    path('admin/logistics/export/',                 logistics_views.export_xlsx,         name='admin_logistics_export'),
     path('admin/logistics/deliveries/create/',      logistics_views.delivery_create,     name='admin_delivery_create'),
     path('admin/logistics/deliveries/<int:delivery_id>/edit/',   logistics_views.delivery_edit,          name='admin_delivery_edit'),
     path('admin/logistics/deliveries/<int:delivery_id>/update/', logistics_views.delivery_inline_update, name='admin_delivery_inline_update'),

@@ -14,6 +14,7 @@ from core.geocoding import geocode_address
 from core.logistics_parser import parse_smart_paste
 from core.models import Client, ClientAddress, ClientNote, Country, Delivery, LogisticsImportBatch, Transaction, User
 from core.routing import nearest_neighbor_order
+from core.views.admin_views import _make_xlsx_response, _style_xlsx, _apply_row_style
 
 INLINE_EDITABLE_FIELDS = {'status', 'driver_id'}
 
@@ -42,15 +43,17 @@ def _status_badge(status):
 
 # ── Admin — Logistics Dashboard ─────────────────────────────────────────────
 
-@admin_required
-def dashboard(request):
-    user = get_auth_user(request)
+def _filtered_deliveries(request, task_type_filter=True):
+    """Shared date/driver/status/search filtering for the dashboard, the
+    history page, and the Excel export — keeps the three views in sync
+    so "what you see is what you export"."""
     base_qs = Delivery.objects.select_related('client', 'driver', 'address')
 
     date_from = request.GET.get('date_from', '').strip()
     date_to   = request.GET.get('date_to', '').strip()
     driver_f  = request.GET.get('driver', '').strip()
     status_f  = request.GET.get('status', '').strip()
+    type_f    = request.GET.get('task_type', '').strip() if task_type_filter else ''
     q         = request.GET.get('q', '').strip()
     sort      = request.GET.get('sort', 'asc')
 
@@ -63,25 +66,91 @@ def dashboard(request):
         qs = qs.filter(driver_id=driver_f)
     if status_f:
         qs = qs.filter(status=status_f)
+    if type_f:
+        qs = qs.filter(task_type=type_f)
     if q:
         qs = qs.filter(Q(client__name__icontains=q) | Q(client__phone__icontains=q))
 
     qs = qs.order_by('scheduled_at' if sort == 'asc' else '-scheduled_at')
 
+    filters = {
+        'date_from': date_from, 'date_to': date_to, 'driver_filter': driver_f,
+        'status_filter': status_f, 'task_type_filter': type_f, 'q': q, 'sort': sort,
+    }
+    return qs, filters
+
+
+@admin_required
+def dashboard(request):
+    user = get_auth_user(request)
+    qs, filters = _filtered_deliveries(request, task_type_filter=False)
     drivers = User.objects.filter(role='agent', status='active').order_by('name')
 
     return render(request, 'admin/logistics/dashboard.html', {
         'auth_user':  user,
         'deliveries': qs[:500],
         'drivers':    drivers,
-        'date_from':  date_from,
-        'date_to':    date_to,
-        'driver_filter': driver_f,
-        'status_filter': status_f,
-        'q': q,
-        'sort': sort,
         'status_choices': Delivery.STATUS_CHOICES,
+        **filters,
     })
+
+
+@admin_required
+def history(request):
+    user = get_auth_user(request)
+    qs, filters = _filtered_deliveries(request)
+    drivers = User.objects.filter(role='agent', status='active').order_by('name')
+
+    return render(request, 'admin/logistics/history.html', {
+        'auth_user':  user,
+        'deliveries': qs[:500],
+        'drivers':    drivers,
+        'status_choices': Delivery.STATUS_CHOICES,
+        'task_type_choices': Delivery.TASK_TYPE_CHOICES,
+        **filters,
+    })
+
+
+@admin_required
+def export_xlsx(request):
+    qs, _filters = _filtered_deliveries(request)
+
+    headers = ['Date/Heure', 'Type', 'Client', 'Téléphone', 'Adresse', 'Chauffeur', 'Statut', 'Notes']
+    col_widths = [18, 12, 24, 16, 32, 20, 14, 30]
+    money_cols = set()
+    text_cols = {2, 4, 5, 7}
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = 'Logistique BLUESKY'
+
+    even_fill, odd_fill, money_fill, border, center, left = _style_xlsx(ws, headers, col_widths)
+
+    TYPE_MAP = {'pickup': 'Collecte', 'dropoff': 'Livraison'}
+    STATUS_MAP = dict(Delivery.STATUS_CHOICES)
+
+    for row_idx, d in enumerate(qs, 2):
+        row = [
+            d.scheduled_at.strftime('%d/%m/%Y %H:%M'),
+            TYPE_MAP.get(d.task_type, d.task_type),
+            d.client.name,
+            d.client.phone,
+            d.address.address_line if d.address else '',
+            d.driver.name if d.driver else '—',
+            STATUS_MAP.get(d.status, d.status),
+            d.notes or '',
+        ]
+        for col_idx, val in enumerate(row, 1):
+            ws.cell(row=row_idx, column=col_idx, value=val)
+        _apply_row_style(ws, row_idx, len(headers), even_fill, odd_fill,
+                         money_fill, money_cols, border, center, left, text_cols)
+
+    ws.auto_filter.ref = ws.dimensions
+
+    filename = f"BLUESKY_Logistique_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+    response = _make_xlsx_response(filename)
+    wb.save(response)
+    return response
 
 
 @admin_required

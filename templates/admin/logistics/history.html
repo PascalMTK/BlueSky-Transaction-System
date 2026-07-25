@@ -1,0 +1,103 @@
+{% extends 'layouts/app.html' %}
+{% load static bluesky_tags %}
+
+{% block title %}Historique logistique{% endblock %}
+{% block page_title %}📜 Historique — Collectes &amp; livraisons{% endblock %}
+{% block page_subtitle %}Registre complet de toutes les tâches, quel que soit leur statut{% endblock %}
+{% block nav_admin_logistics %}active{% endblock %}
+
+{% block content %}
+<div class="filters-bar">
+    <form method="GET" action="{% url 'admin_logistics_history' %}" style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;width:100%;">
+        <div class="filter-group">
+            <label class="filter-label">📅 Du</label>
+            <input type="date" name="date_from" class="filter-control" value="{{ date_from }}">
+        </div>
+        <div class="filter-group">
+            <label class="filter-label">📅 Au</label>
+            <input type="date" name="date_to" class="filter-control" value="{{ date_to }}">
+        </div>
+        <div class="filter-group filter-group-search">
+            <label class="filter-label">🔍 {{ t.search }}</label>
+            <input type="text" name="q" class="filter-control" placeholder="Nom ou téléphone du client..." value="{{ q }}">
+        </div>
+        <div class="filter-group">
+            <label class="filter-label">🚚 Chauffeur</label>
+            <select name="driver" class="filter-control">
+                <option value="">Tous les chauffeurs</option>
+                {% for d in drivers %}
+                    <option value="{{ d.id }}" {% if driver_filter == d.id|stringformat:"s" %}selected{% endif %}>{{ d.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="filter-group">
+            <label class="filter-label">📦 Type</label>
+            <select name="task_type" class="filter-control">
+                <option value="">Tous les types</option>
+                {% for key, label in task_type_choices %}
+                    <option value="{{ key }}" {% if task_type_filter == key %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="filter-group">
+            <label class="filter-label">📋 {{ t.status }}</label>
+            <select name="status" class="filter-control">
+                <option value="">{{ t.all_statuses }}</option>
+                {% for key, label in status_choices %}
+                    <option value="{{ key }}" {% if status_filter == key %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;">
+            <button type="submit" class="btn btn-primary btn-sm">🔍 {{ t.filter_btn }}</button>
+            <a href="{% url 'admin_logistics_history' %}" class="btn btn-secondary btn-sm">↺</a>
+        </div>
+    </form>
+</div>
+
+<div style="margin-bottom:14px;">
+    <a href="{% url 'admin_logistics_export' %}?date_from={{ date_from }}&date_to={{ date_to }}&driver={{ driver_filter }}&task_type={{ task_type_filter }}&status={{ status_filter }}&q={{ q }}" class="btn btn-primary btn-sm">📥 Exporter en Excel</a>
+    <a href="{% url 'admin_logistics_dashboard' %}" class="btn btn-secondary btn-sm">🚚 {{ t.logistics_nav }}</a>
+</div>
+
+<div class="table-card">
+    <div class="table-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+        <div class="table-title">📜 <span style="color:var(--sky-primary);">{{ deliveries|length }}</span> enregistrement(s)</div>
+    </div>
+    <div class="table-scroll" style="overflow-x:auto;">
+        {% if deliveries %}
+        <table class="bsky-table">
+            <thead>
+                <tr>
+                    <th>Date / Heure</th>
+                    <th>Type</th>
+                    <th>Client</th>
+                    <th class="hide-mobile">Adresse</th>
+                    <th>Chauffeur</th>
+                    <th>{{ t.status }}</th>
+                    <th class="hide-mobile">Notes</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for d in deliveries %}
+                <tr>
+                    <td style="white-space:nowrap;font-size:12px;">{{ d.scheduled_at|date:"d/m/Y H:i" }}</td>
+                    <td>{% if d.task_type == 'pickup' %}📤 Collecte{% else %}📥 Livraison{% endif %}</td>
+                    <td>
+                        <a href="{% url 'admin_logistics_client_show' d.client_id %}" style="font-weight:600;">{{ d.client.name }}</a>
+                        <div style="font-size:11px;color:var(--text-muted);">{{ d.client.phone }}</div>
+                    </td>
+                    <td class="hide-mobile" style="font-size:12px;">{{ d.address.address_line|default:"—" }}</td>
+                    <td>{{ d.driver.name|default:"—" }}</td>
+                    <td><span class="badge-status status-{{ d.status }}">{{ d.get_status_display }}</span></td>
+                    <td class="hide-mobile" style="font-size:12px;color:var(--text-muted);">{{ d.notes|default:"—"|limit:40 }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+            <div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">Aucun enregistrement trouvé</div></div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
