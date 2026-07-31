@@ -15,9 +15,18 @@ from core.geocoding import geocode_address
 from core.logistics_parser import parse_smart_paste
 from core.models import Client, ClientAddress, ClientNote, Country, Delivery, LogisticsImportBatch, Transaction, User
 from core.routing import nearest_neighbor_order
+from core.translations import get_translations
 from core.views.admin_views import _make_xlsx_response, _style_xlsx, _apply_row_style
 
 INLINE_EDITABLE_FIELDS = {'status', 'driver_id'}
+
+
+def _delivery_status_choices(request):
+    """Delivery.STATUS_CHOICES labels translated into the current locale —
+    the raw model choices are English-only, which looked out of place next
+    to the rest of the (localized) logistics UI."""
+    t = get_translations(getattr(request, 'locale', 'fr'))
+    return [(key, t.get(key, label)) for key, label in Delivery.STATUS_CHOICES]
 
 
 def _parse_scheduled_at(value):
@@ -114,7 +123,7 @@ def dashboard(request):
         'auth_user':  user,
         'deliveries': qs[:500],
         'drivers':    drivers,
-        'status_choices': Delivery.STATUS_CHOICES,
+        'status_choices': _delivery_status_choices(request),
         'total_count': sum(status_counts.values()),
         'status_counts': status_counts,
         **filters,
@@ -134,7 +143,7 @@ def history(request):
         'auth_user':  user,
         'deliveries': qs[:500],
         'drivers':    drivers,
-        'status_choices': Delivery.STATUS_CHOICES,
+        'status_choices': _delivery_status_choices(request),
         'task_type_choices': Delivery.TASK_TYPE_CHOICES,
         'total_count': sum(status_counts.values()),
         'status_counts': status_counts,
@@ -159,7 +168,7 @@ def export_xlsx(request):
     even_fill, odd_fill, money_fill, border, center, left = _style_xlsx(ws, headers, col_widths)
 
     TYPE_MAP = {'pickup': 'Collecte', 'dropoff': 'Livraison'}
-    STATUS_MAP = dict(Delivery.STATUS_CHOICES)
+    STATUS_MAP = {'pending': 'En attente', 'in_transit': 'En transit', 'delayed': 'Retardé', 'completed': 'Complété'}
     PAYMENT_MAP = {'cash': 'Espèces'}
 
     for row_idx, d in enumerate(qs, 2):
@@ -270,7 +279,7 @@ def delivery_edit(request, delivery_id):
         'drivers': drivers,
         'addresses': addresses,
         'task_type_choices': Delivery.TASK_TYPE_CHOICES,
-        'status_choices': Delivery.STATUS_CHOICES,
+        'status_choices': _delivery_status_choices(request),
         'payment_method_choices': Delivery.PAYMENT_METHOD_CHOICES,
     })
 
@@ -811,7 +820,7 @@ def driver_tasks(request):
         'auth_user': user,
         'deliveries': qs[:200],
         'status_filter': status_f,
-        'status_choices': Delivery.STATUS_CHOICES,
+        'status_choices': _delivery_status_choices(request),
         'total_count': sum(status_counts.values()),
         'status_counts': status_counts,
     })
@@ -912,7 +921,7 @@ def driver_task_show(request, delivery_id):
         return redirect('logistics_driver_task_show', delivery_id=delivery.id)
 
     return render(request, 'agent/logistics/task_show.html', {
-        'auth_user': user, 'delivery': delivery, 'status_choices': Delivery.STATUS_CHOICES,
+        'auth_user': user, 'delivery': delivery, 'status_choices': _delivery_status_choices(request),
         'payment_method_choices': Delivery.PAYMENT_METHOD_CHOICES,
     })
 

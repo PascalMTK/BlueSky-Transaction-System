@@ -64,7 +64,7 @@
                     <td>
                         <div style="display:flex;align-items:center;gap:8px;">
                             <div class="lg-avatar-sm">{{ c.name|initials }}</div>
-                            <a href="{% url 'admin_logistics_client_show' c.id %}" style="font-weight:600;">{{ c.name }}</a>
+                            <a href="{% url 'admin_logistics_client_show' c.id %}" class="lg-cell-name" style="font-weight:600;">{{ c.name }}</a>
                         </div>
                     </td>
                     <td>{{ c.phone }}</td>

@@ -128,6 +128,10 @@ class Transaction(models.Model):
     total_amount        = models.DecimalField(max_digits=15, decimal_places=2)
     currency            = models.CharField(max_length=10, null=True, blank=True)
     origin_country      = models.ForeignKey(Country, related_name='outgoing', on_delete=models.PROTECT, db_column='origin_country_id')
+    # Set when the agent picks "Other / not listed" for the origin country —
+    # origin_country then points at a generic placeholder Country row and
+    # this field carries the name the agent actually typed in.
+    origin_country_manual_name = models.CharField(max_length=100, null=True, blank=True)
     destination_country = models.ForeignKey(Country, related_name='incoming', on_delete=models.PROTECT, db_column='destination_country_id', null=True, blank=True)
     agent               = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, db_column='agent_id')
     status              = models.CharField(max_length=20, choices=STATUS_CHOICES, default='completed')

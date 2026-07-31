@@ -269,6 +269,36 @@ def _resolve_fee_amount(post, amount, fallback_fee):
     return round(_parse_decimal(fee_value, fallback_fee), 2)
 
 
+OTHER_COUNTRY_CODE = 'XX'
+
+
+def _other_country():
+    """Placeholder Country row used when an agent picks 'Other / not listed'
+    for the origin country — kept inactive so it never appears in the normal
+    country pickers. The real name the agent typed lives on the transaction
+    (origin_country_manual_name), not here."""
+    country, _ = Country.objects.get_or_create(
+        code=OTHER_COUNTRY_CODE,
+        defaults=dict(
+            name='Autre / Pays non listé', currency_code='USD', currency_name='US Dollar',
+            flag_emoji='🌍', phone_code='', default_fee_percentage=3.00,
+            usd_exchange_rate=1, is_active=False,
+        ),
+    )
+    return country
+
+
+def _resolve_origin_country(post):
+    """Reads origin_country_id from POST. Returns (country, manual_name).
+    When the agent picked the 'Autre' option, country is the shared
+    placeholder row and manual_name is whatever they typed."""
+    origin_id = post.get('origin_country_id')
+    if origin_id == 'other':
+        manual_name = (post.get('origin_country_name') or '').strip()
+        return _other_country(), manual_name
+    return Country.objects.get(pk=origin_id), None
+
+
 @agent_required
 def dashboard(request):
     user  = get_auth_user(request)
@@ -451,10 +481,12 @@ def tx_create(request):
     countries = Country.objects.filter(is_active=True)
     if request.method == 'POST':
         tx_type   = request.POST.get('transaction_type') or request.GET.get('type', 'send')
-        origin_id = request.POST.get('origin_country_id')
         dest_id   = request.POST.get('destination_country_id')
         try:
-            origin  = Country.objects.get(pk=origin_id)
+            if request.POST.get('origin_country_id') == 'other' and not (request.POST.get('origin_country_name') or '').strip():
+                messages.error(request, "Merci de préciser le nom du pays d'origine.")
+                raise ValueError('origin_country_name required')
+            origin, origin_manual_name = _resolve_origin_country(request.POST)
             dest    = Country.objects.get(pk=dest_id) if dest_id else None
 
             amount_raw = (request.POST.get('amount') or '').strip()
@@ -525,6 +557,7 @@ def tx_create(request):
                 total_amount         = total,
                 currency             = currency,
                 origin_country       = origin,
+                origin_country_manual_name = origin_manual_name or None,
                 destination_country  = dest,
                 agent                = user,
                 status               = request.POST.get('status', 'completed'),
@@ -633,7 +666,16 @@ def tx_edit(request, tx_id):
         tx.notes             = request.POST.get('notes', tx.notes)
         origin_id  = request.POST.get('origin_country_id')
         dest_id    = request.POST.get('destination_country_id')
-        if origin_id:  tx.origin_country_id = origin_id
+        if origin_id == 'other':
+            manual_name = (request.POST.get('origin_country_name') or '').strip()
+            if not manual_name:
+                messages.error(request, "Merci de préciser le nom du pays d'origine.")
+                return render(request, 'agent/transactions/edit.html', ctx)
+            tx.origin_country = _other_country()
+            tx.origin_country_manual_name = manual_name
+        elif origin_id:
+            tx.origin_country_id = origin_id
+            tx.origin_country_manual_name = None
         tx.destination_country_id = dest_id or None
         tx.save()
         locale = request.session.get('locale', 'fr')

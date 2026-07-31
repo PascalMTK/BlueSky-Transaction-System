@@ -174,7 +174,7 @@
                     </td>
                     <td><strong>{{ tx.amount|number_format:0 }}</strong></td>
                     <td class="hide-mobile"><strong style="color:var(--sky-primary);">{{ tx.total_amount|number_format:0 }}</strong></td>
-                    <td><span class="route-pill">{{ tx.origin_country.flag_emoji }} → {{ tx.destination_country.flag_emoji }}</span></td>
+                    <td><span class="route-pill" title="{{ tx.origin_country_manual_name|default:tx.origin_country.name }} → {{ tx.destination_country.name }}">{{ tx.origin_country.flag_emoji }} → {{ tx.destination_country.flag_emoji }}</span></td>
                     <td>
                         <span class="badge-status status-{{ tx.status }}">
                             {% if tx.status == 'completed' %}✅ {{ t.completed }}{% elif tx.status == 'pending' %}⏳ {{ t.pending }}{% else %}❌ {{ t.cancelled }}{% endif %}

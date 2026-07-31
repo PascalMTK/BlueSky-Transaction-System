@@ -185,8 +185,13 @@
                         {% for c in countries %}
                             <option value="{{ c.id }}" data-currency="{{ c.currency_code }}" data-fee-pct="{{ c.default_fee_percentage|unlocalize }}" data-rate="{{ c.usd_exchange_rate|unlocalize }}">{{ c.flag_emoji }} {{ c.name|country_name:locale }} ({{ c.currency_code }})</option>
                         {% endfor %}
+                        <option value="other">{{ t.other_country_opt }}</option>
                     </select>
                     <div class="fx-hint" id="originRateHint" style="display:none;"></div>
+                    <div id="originOtherWrap" style="display:none;margin-top:8px;">
+                        <input type="text" name="origin_country_name" id="originOtherName" class="form-control" placeholder="{{ t.other_country_ph }}">
+                        <div style="font-size:11.5px;color:var(--text-muted);margin-top:4px;">💡 {{ t.other_country_hint }}</div>
+                    </div>
                 </div>
                 <div class="form-group" style="margin:0;">
                     <label class="form-label">{{ t.dest_country }}</label>
@@ -398,9 +403,23 @@ function updateFlag(selId, flagId) {
     setTimeout(function(){ el.style.transform = 'scale(1)'; }, 200);
 }
 function loadFee() {
+    toggleOriginOther();
     applyDefaultFee();
     updateRateHint('originCountry', 'originRateHint');
     calcTotal();
+}
+
+/* "Autre / Pays non listé" — reveal the free-text name field and make it
+   required only while that option is selected. */
+function toggleOriginOther() {
+    var sel  = document.getElementById('originCountry');
+    var wrap = document.getElementById('originOtherWrap');
+    var name = document.getElementById('originOtherName');
+    if (!sel || !wrap || !name) return;
+    var isOther = sel.value === 'other';
+    wrap.style.display = isOther ? 'block' : 'none';
+    name.required = isOther;
+    if (!isOther) name.value = '';
 }
 
 /* Affiche le taux USD ⇄ devise locale du pays choisi, à titre indicatif —

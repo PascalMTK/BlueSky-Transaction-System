@@ -111,7 +111,7 @@
                         <div style="display:flex;align-items:center;gap:8px;">
                             <div class="lg-avatar-sm">{{ d.client.name|initials }}</div>
                             <div>
-                                <a href="{% url 'admin_logistics_client_show' d.client_id %}" style="font-weight:600;">{{ d.client.name }}</a>
+                                <a href="{% url 'admin_logistics_client_show' d.client_id %}" class="lg-cell-name" style="font-weight:600;">{{ d.client.name }}</a>
                                 <div style="font-size:11px;color:var(--text-muted);">{{ d.client.phone }}</div>
                             </div>
                         </div>

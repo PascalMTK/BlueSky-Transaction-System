@@ -48,12 +48,17 @@
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:4px;" class="form-grid">
                 <div class="form-group">
                     <label class="form-label">🌍 {{ t.origin_country }} *</label>
-                    <select name="origin_country_id" class="form-control" id="originCountry" required onchange="updateRateHint('originCountry','originRateHint')">
+                    <select name="origin_country_id" class="form-control" id="originCountry" required onchange="toggleOriginOther(); updateRateHint('originCountry','originRateHint')">
                         {% for c in countries %}
-                            <option value="{{ c.id }}" data-currency="{{ c.currency_code }}" data-rate="{{ c.usd_exchange_rate|unlocalize }}" {% if transaction.origin_country_id == c.id %}selected{% endif %}>{{ c.flag_emoji }} {{ c.name|country_name:locale }} ({{ c.currency_code }})</option>
+                            <option value="{{ c.id }}" data-currency="{{ c.currency_code }}" data-rate="{{ c.usd_exchange_rate|unlocalize }}" {% if transaction.origin_country_id == c.id and not transaction.origin_country_manual_name %}selected{% endif %}>{{ c.flag_emoji }} {{ c.name|country_name:locale }} ({{ c.currency_code }})</option>
                         {% endfor %}
+                        <option value="other" {% if transaction.origin_country_manual_name %}selected{% endif %}>{{ t.other_country_opt }}</option>
                     </select>
                     <div class="fx-hint" id="originRateHint" style="display:none;font-size:11.5px;font-weight:600;color:var(--sky-primary);background:rgba(2,132,199,.08);border-radius:6px;padding:4px 8px;margin-top:6px;"></div>
+                    <div id="originOtherWrap" style="display:{% if transaction.origin_country_manual_name %}block{% else %}none{% endif %};margin-top:8px;">
+                        <input type="text" name="origin_country_name" id="originOtherName" class="form-control" placeholder="{{ t.other_country_ph }}" value="{{ transaction.origin_country_manual_name|default:'' }}">
+                        <div style="font-size:11.5px;color:var(--text-muted);margin-top:4px;">💡 {{ t.other_country_hint }}</div>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label class="form-label">🌍 {{ t.dest_country }}</label>
@@ -244,6 +249,17 @@ function updateRateHint(selId, hintId) {
         hint.style.display = 'none';
     }
 }
+function toggleOriginOther() {
+    var sel  = document.getElementById('originCountry');
+    var wrap = document.getElementById('originOtherWrap');
+    var name = document.getElementById('originOtherName');
+    if (!sel || !wrap || !name) return;
+    var isOther = sel.value === 'other';
+    wrap.style.display = isOther ? 'block' : 'none';
+    name.required = isOther;
+    if (!isOther) name.value = '';
+}
+
 (function(){
     updateRateHint('originCountry', 'originRateHint');
     updateRateHint('destCountry', 'destRateHint');

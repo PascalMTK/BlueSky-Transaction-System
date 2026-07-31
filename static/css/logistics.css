@@ -37,6 +37,20 @@
     color: #fff; display: flex; align-items: center; justify-content: center;
     font-weight: 800; font-size: 11.5px; flex-shrink: 0;
 }
+
+/* ── Client-name table cell (dashboard, history, clients list) ──
+   Without this, a long name inside a narrow table column gets crushed
+   by the global mobile word-break rule and wraps one character per line.
+   Keep it on one line and truncate instead — the table already scrolls
+   horizontally (.table-scroll) if the full name is needed. */
+.lg-cell-name {
+    display: inline-block;
+    max-width: 150px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+}
 .lg-profile-name { font-size: 19px; font-weight: 900; color: var(--text-heading); line-height: 1.2; }
 .lg-profile-meta { font-size: 12.5px; color: var(--text-muted); margin-top: 2px; }
 
