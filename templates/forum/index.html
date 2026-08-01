@@ -1,0 +1,57 @@
+{% extends 'layouts/app.html' %}
+{% load static bluesky_tags %}
+
+{% block title %}{{ t.forum_nav }}{% endblock %}
+{% block page_title %}💬 {{ t.forum_nav }}{% endblock %}
+{% block page_subtitle %}{% if locale == 'en' %}Open space for every agent and admin to post messages{% else %}Espace ouvert où chaque agent et administrateur peut publier un message{% endif %}{% endblock %}
+{% block nav_forum %}active{% endblock %}
+
+{% block styles %}
+<style>
+.forum-page { max-width:760px; margin:0 auto; }
+.forum-composer { background:var(--bg-card); border:1px solid var(--border); border-radius:16px; padding:16px 18px; box-shadow:var(--shadow-sm); margin-bottom:18px; }
+.forum-composer textarea { width:100%; resize:vertical; min-height:70px; border:1px solid var(--border); border-radius:10px; padding:10px 12px; font-family:inherit; font-size:13.5px; background:var(--bg-secondary); color:var(--text-heading); }
+.forum-composer-foot { display:flex; justify-content:flex-end; margin-top:10px; }
+.forum-feed { display:flex; flex-direction:column; gap:12px; }
+.forum-post { background:var(--bg-card); border:1px solid var(--border); border-radius:14px; padding:14px 16px; box-shadow:var(--shadow-sm); }
+.forum-post-head { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+.forum-avatar { width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:800; font-size:12.5px; flex-shrink:0; background:linear-gradient(135deg,var(--sky-primary),var(--sky-secondary)); }
+.forum-post-name { font-size:13px; font-weight:750; color:var(--text-heading); }
+.forum-post-role { font-size:10px; padding:2px 7px; border-radius:99px; font-weight:700; }
+.forum-post-role.admin { background:rgba(2,132,199,.12); color:var(--sky-primary); }
+.forum-post-role.agent { background:var(--bg-secondary); color:var(--text-muted); }
+.forum-post-time { font-size:11px; color:var(--text-muted); margin-left:auto; white-space:nowrap; }
+.forum-post-body { font-size:13.5px; color:var(--text-heading); line-height:1.55; white-space:pre-wrap; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="forum-page">
+    <form method="POST" action="{% url 'forum_index' %}" class="forum-composer">
+        {% csrf_token %}
+        <textarea name="body" maxlength="2000" placeholder="{% if locale == 'en' %}Write a message to the whole team...{% else %}Écrivez un message pour toute l'équipe...{% endif %}" required></textarea>
+        <div class="forum-composer-foot">
+            <button type="submit" class="btn btn-primary btn-sm">📤 {% if locale == 'en' %}Post{% else %}Publier{% endif %}</button>
+        </div>
+    </form>
+
+    <div class="forum-feed">
+        {% for m in forum_messages %}
+        <div class="forum-post">
+            <div class="forum-post-head">
+                <div class="forum-avatar">{{ m.author.name|default:"?"|initials }}</div>
+                <div>
+                    <div class="forum-post-name">{{ m.author.name|default:"—" }}
+                        {% if m.author.role == 'admin' %}<span class="forum-post-role admin">🛡️ {{ t.role_admin }}</span>{% elif m.author %}<span class="forum-post-role agent">🏢 {{ t.role_agent }}</span>{% endif %}
+                    </div>
+                </div>
+                <div class="forum-post-time">{{ m.created_at|date:"d/m/Y H:i" }}</div>
+            </div>
+            <div class="forum-post-body">{{ m.body }}</div>
+        </div>
+        {% empty %}
+        <div class="empty-state"><div class="empty-icon">💬</div><div class="empty-text">{% if locale == 'en' %}No messages yet — be the first to write one.{% else %}Aucun message pour le moment — soyez le premier à écrire.{% endif %}</div></div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

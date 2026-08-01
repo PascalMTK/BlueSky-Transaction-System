@@ -343,3 +343,23 @@ class AgentReport(models.Model):
 
     def __str__(self):
         return self.subject
+
+
+class ForumMessage(models.Model):
+    """A flat, company-wide message wall — every active user (admin or
+    agent) can post and everyone sees the same feed. No threading, no
+    per-conversation scoping; deliberately simple."""
+    author     = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, db_column='author_id')
+    body       = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        managed  = True
+        db_table = 'forum_messages'
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['created_at'], name='forum_msg_created_idx'),
+        ]
+
+    def __str__(self):
+        return f'{self.author}: {self.body[:40]}'

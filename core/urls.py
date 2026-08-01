@@ -1,5 +1,5 @@
 from django.urls import path
-from core.views import auth_views, admin_views, agent_views, profile_views, logistics_views
+from core.views import auth_views, admin_views, agent_views, profile_views, logistics_views, forum_views
 
 urlpatterns = [
     # ── Welcome & Auth ────────────────────────────────────────────────────
@@ -110,6 +110,9 @@ urlpatterns = [
     path('agent/logistics/tasks/<int:delivery_id>/',  logistics_views.driver_task_show,           name='logistics_driver_task_show'),
     path('agent/logistics/tasks/<int:delivery_id>/status/', logistics_views.driver_task_status_update, name='logistics_driver_task_status_update'),
     path('agent/logistics/route/',                    logistics_views.driver_route_self,         name='logistics_driver_route'),
+
+    # ── Forum (all active users — admin & agents) ───────────────────────────
+    path('forum/',                        forum_views.forum_index,       name='forum_index'),
 
     # ── API ───────────────────────────────────────────────────────────────
     path('api/countries/<int:country_id>/fee/', agent_views.fee_for_country, name='api_country_fee'),

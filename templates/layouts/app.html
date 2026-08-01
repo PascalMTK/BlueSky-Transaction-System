@@ -146,6 +146,11 @@
             </a>
         </div>
         <div class="nav-item">
+            <a href="{% url 'forum_index' %}" class="nav-link {% block nav_forum %}{% endblock %}">
+                <span class="nav-icon">💬</span> {{ t.forum_nav }}
+            </a>
+        </div>
+        <div class="nav-item">
             <a href="{% url 'agent_rates' %}" class="nav-link {% block nav_rates %}{% endblock %}">
                 <span class="nav-icon">💱</span> {{ t.fx_rates_nav }}
             </a>
