@@ -52,6 +52,7 @@ class User(models.Model):
     id_number     = models.CharField(max_length=50, null=True, blank=True)
     profile_photo = models.CharField(max_length=255, null=True, blank=True)
     last_seen     = models.DateTimeField(null=True, blank=True)
+    forum_last_read_at = models.DateTimeField(null=True, blank=True)
     created_at    = models.DateTimeField(auto_now_add=True)
     updated_at    = models.DateTimeField(auto_now=True)
 

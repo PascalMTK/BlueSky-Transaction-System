@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect
+from django.utils import timezone
 from core.decorators import agent_required, get_auth_user
 from core.models import ForumMessage
 
@@ -19,6 +20,11 @@ def forum_index(request):
         return redirect('forum_index')
 
     forum_messages = ForumMessage.objects.select_related('author').order_by('-created_at')[:200]
+    # Visiting the page is what clears the sidebar's unread badge (see
+    # core.context_processors.global_context) — every other page keeps
+    # comparing against this timestamp.
+    user.forum_last_read_at = timezone.now()
+    user.save(update_fields=['forum_last_read_at'])
     return render(request, 'forum/index.html', {
         'auth_user':      user,
         'forum_messages': forum_messages,
