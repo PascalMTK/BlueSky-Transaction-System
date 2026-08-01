@@ -2,7 +2,7 @@ import bcrypt
 from django.core.management.base import BaseCommand
 from core.models import Country, User
 
-ACTIVE_CODES = {'ZM', 'CD', 'TZ', 'MW', 'KE', 'ZW', 'ZA', 'NA'}
+ACTIVE_CODES = {'ZM', 'CD', 'TZ', 'MW', 'KE', 'ZW', 'ZA', 'NA', 'UG'}
 
 COUNTRIES = [
     # (name, code, currency_code, currency_name, flag_emoji, phone_code, fee)
