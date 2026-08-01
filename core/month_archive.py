@@ -1,5 +1,5 @@
 from datetime import date
-from django.db.models import Count
+from django.db.models import Count, Sum, Max
 from django.db.models.functions import TruncMonth
 
 MONTH_NAMES_FR = [
@@ -53,3 +53,50 @@ def parse_month_key(value):
         return year, month
     except (ValueError, AttributeError):
         return None
+
+
+def build_month_totals(qs):
+    """Closing-summary totals for a Transaction queryset already filtered to
+    one month: USD-equivalent grand totals, a per-currency raw breakdown,
+    and a status breakdown. Amounts are converted to USD via each origin
+    country's admin-set exchange rate before summing across countries —
+    summing raw amounts directly would mix CDF/ZMW/KES/etc into one
+    meaningless number (see build_month_archive)."""
+    total_count = qs.count()
+
+    country_rows = qs.values('origin_country_id').annotate(
+        amount=Sum('amount'), fee=Sum('fee_amount'), total=Sum('total_amount'),
+        rate=Max('origin_country__usd_exchange_rate'),
+    )
+    total_amount_usd = total_fee_usd = total_sum_usd = 0.0
+    for r in country_rows:
+        rate = float(r['rate'] or 1) or 1
+        total_amount_usd += float(r['amount'] or 0) / rate
+        total_fee_usd    += float(r['fee'] or 0) / rate
+        total_sum_usd    += float(r['total'] or 0) / rate
+
+    currency_breakdown = list(
+        qs.exclude(currency__isnull=True).exclude(currency='')
+        .values('currency')
+        .annotate(count=Count('id'), amount=Sum('amount'), fee=Sum('fee_amount'), total=Sum('total_amount'))
+        .order_by('-total')
+    )
+
+    status_counts = {r['status']: r['count'] for r in qs.values('status').annotate(count=Count('id'))}
+    status_breakdown = [
+        {
+            'code':  code,
+            'count': status_counts.get(code, 0),
+            'pct':   round(status_counts.get(code, 0) / total_count * 100, 1) if total_count else 0,
+        }
+        for code in ('completed', 'pending', 'cancelled')
+    ]
+
+    return {
+        'total_count':      total_count,
+        'total_amount_usd': total_amount_usd,
+        'total_fee_usd':    total_fee_usd,
+        'total_sum_usd':    total_sum_usd,
+        'currency_breakdown': currency_breakdown,
+        'status_breakdown':   status_breakdown,
+    }

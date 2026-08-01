@@ -31,6 +31,7 @@ urlpatterns = [
 
     # ── Admin — Transactions ──────────────────────────────────────────────
     path('admin/transactions/',           admin_views.transactions,       name='admin_transactions'),
+    path('admin/transactions/summary/',   admin_views.month_summary,      name='admin_month_summary'),
 
     # ── Admin — Reports ───────────────────────────────────────────────────
     path('admin/reports/',                admin_views.reports,            name='admin_reports'),
@@ -58,6 +59,7 @@ urlpatterns = [
 
     # ── Agent — Transactions ──────────────────────────────────────────────
     path('agent/transactions/',           agent_views.tx_index,           name='tx_index'),
+    path('agent/transactions/summary/',   agent_views.tx_month_summary,   name='tx_month_summary'),
     path('agent/transactions/create/',    agent_views.tx_create,          name='tx_create'),
     path('agent/transactions/<int:tx_id>/',        agent_views.tx_show,    name='tx_show'),
     path('agent/transactions/<int:tx_id>/edit/',   agent_views.tx_edit,    name='tx_edit'),

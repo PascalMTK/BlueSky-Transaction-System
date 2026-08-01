@@ -38,6 +38,7 @@
         <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;">
             <button type="submit" class="btn btn-primary btn-sm">🔍 {{ t.filter_btn }}</button>
             <a href="{% url 'tx_index' %}?month={{ selected_month }}" class="btn btn-secondary btn-sm">↺</a>
+            <a href="{% url 'tx_month_summary' %}?month={{ selected_month }}" class="btn btn-secondary btn-sm">📁 {{ t.month_summary_nav }}</a>
             <a href="{% url 'tx_create' %}" class="btn btn-primary btn-sm">➕ {{ t.new_tx_btn }}</a>
         </div>
     </form>

@@ -13,7 +13,7 @@ from core.models import User, Country, Transaction, AgentReport
 from core.decorators import admin_required, get_auth_user
 from core.views.profile_views import save_profile_photo
 from core.mailer import send_async
-from core.month_archive import build_month_archive, parse_month_key, month_label
+from core.month_archive import build_month_archive, build_month_totals, parse_month_key, month_label
 
 # Colors inspired by each country's national flag — used to give every
 # per-country stat (dashboard breakdown, statistics page) a consistent,
@@ -497,6 +497,75 @@ def transactions(request):
         'status_filter':  status_f,
         'country_filter': country_f,
         'auth_user':      user,
+    })
+
+
+@admin_required
+def month_summary(request):
+    """Closing summary for one calendar month: grand totals, per-currency
+    breakdown, status split, and per-agent / per-country breakdowns. The
+    month itself is just a filter on Transaction.created_at (see
+    build_month_archive) — there is no separate archive table, so a new
+    "page" for the next month appears automatically the moment it has its
+    first transaction."""
+    user    = get_auth_user(request)
+    base_qs = Transaction.objects.all()
+    locale  = getattr(request, 'locale', 'fr')
+    months  = build_month_archive(base_qs, locale)
+
+    month_param = request.GET.get('month', '').strip()
+    parsed = parse_month_key(month_param) if month_param else None
+    if not parsed:
+        if months:
+            sel_year, sel_month = months[0]['year'], months[0]['month']
+        else:
+            today = date.today()
+            sel_year, sel_month = today.year, today.month
+        month_param = f'{sel_year:04d}-{sel_month:02d}'
+    else:
+        sel_year, sel_month = parsed
+
+    qs = base_qs.filter(created_at__year=sel_year, created_at__month=sel_month)
+    totals = build_month_totals(qs)
+    total_count = totals['total_count']
+
+    agent_country_rows = qs.values('agent_id', 'agent__name', 'origin_country_id').annotate(
+        count=Count('id'), total=Sum('total_amount'), rate=Max('origin_country__usd_exchange_rate'),
+    )
+    agent_map = {}
+    for r in agent_country_rows:
+        rate = float(r['rate'] or 1) or 1
+        bucket = agent_map.setdefault(r['agent_id'], {'name': r['agent__name'] or '—', 'count': 0, 'amount': 0.0})
+        bucket['count']  += r['count']
+        bucket['amount'] += float(r['total'] or 0) / rate
+    agent_breakdown = sorted(agent_map.values(), key=lambda b: b['amount'], reverse=True)
+
+    country_qs = (
+        qs.values('origin_country__name', 'origin_country__flag_emoji', 'origin_country__code')
+        .annotate(count=Count('id'), amount=Sum('total_amount'))
+        .order_by('-count')
+    )
+    country_breakdown = [
+        {
+            'name':   r['origin_country__name'] or '?',
+            'flag':   r['origin_country__flag_emoji'] or '🌍',
+            'code':   (r['origin_country__code'] or '').upper(),
+            'count':  r['count'],
+            'amount': float(r['amount'] or 0),
+            'pct':    round(r['count'] / total_count * 100, 1) if total_count else 0,
+            'color':  _country_color(r['origin_country__code'], i),
+        }
+        for i, r in enumerate(country_qs)
+    ]
+
+    return render(request, 'admin/month_summary.html', {
+        'months':               months,
+        'selected_month':       month_param,
+        'selected_month_label': month_label(sel_year, sel_month, locale),
+        'agent_breakdown':      agent_breakdown,
+        'country_breakdown':    country_breakdown,
+        'auth_user':            user,
+        **totals,
     })
 
 

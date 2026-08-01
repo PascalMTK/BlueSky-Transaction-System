@@ -7,13 +7,14 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.http import HttpResponse, JsonResponse
 from decimal import Decimal, InvalidOperation
-from django.db.models import Sum, Count, Q
+from django.db.models import Sum, Count, Q, Max
 from django.conf import settings
 from django.core.mail import send_mail
 from core.models import User, Country, Transaction, AgentReport
 from core.decorators import agent_required, get_auth_user
 from core.mailer import send_async
-from core.month_archive import build_month_archive, parse_month_key, month_label
+from core.month_archive import build_month_archive, build_month_totals, parse_month_key, month_label
+from core.views.admin_views import _country_color
 
 
 def _can_access_tx(user, tx):
@@ -439,6 +440,61 @@ def tx_index(request):
         'type_filter':         type_f,
         'country_filter':      country_f,
         'auth_user':           user,
+    })
+
+
+@agent_required
+def tx_month_summary(request):
+    """Closing summary for one calendar month, scoped to this agent's own
+    transactions — same totals/status/currency breakdown as the admin-wide
+    version (build_month_totals), plus a per-country split of their own
+    activity."""
+    user    = get_auth_user(request)
+    base_qs = Transaction.objects.filter(agent=user)
+    locale  = getattr(request, 'locale', 'fr')
+    months  = build_month_archive(base_qs, locale)
+
+    month_param = request.GET.get('month', '').strip()
+    parsed = parse_month_key(month_param) if month_param else None
+    if not parsed:
+        if months:
+            sel_year, sel_month = months[0]['year'], months[0]['month']
+        else:
+            today = date.today()
+            sel_year, sel_month = today.year, today.month
+        month_param = f'{sel_year:04d}-{sel_month:02d}'
+    else:
+        sel_year, sel_month = parsed
+
+    qs = base_qs.filter(created_at__year=sel_year, created_at__month=sel_month)
+    totals = build_month_totals(qs)
+    total_count = totals['total_count']
+
+    country_qs = (
+        qs.values('origin_country__name', 'origin_country__flag_emoji', 'origin_country__code')
+        .annotate(count=Count('id'), amount=Sum('total_amount'))
+        .order_by('-count')
+    )
+    country_breakdown = [
+        {
+            'name':   r['origin_country__name'] or '?',
+            'flag':   r['origin_country__flag_emoji'] or '🌍',
+            'code':   (r['origin_country__code'] or '').upper(),
+            'count':  r['count'],
+            'amount': float(r['amount'] or 0),
+            'pct':    round(r['count'] / total_count * 100, 1) if total_count else 0,
+            'color':  _country_color(r['origin_country__code'], i),
+        }
+        for i, r in enumerate(country_qs)
+    ]
+
+    return render(request, 'agent/transactions/month_summary.html', {
+        'months':               months,
+        'selected_month':       month_param,
+        'selected_month_label': month_label(sel_year, sel_month, locale),
+        'country_breakdown':    country_breakdown,
+        'auth_user':            user,
+        **totals,
     })
 
 
