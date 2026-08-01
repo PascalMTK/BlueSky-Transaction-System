@@ -90,7 +90,7 @@
         <div class="trend-kpis">
             <div class="trend-kpi kpi-volume">
                 <div class="trend-kpi-head"><span class="trend-kpi-icon">💰</span><span class="trend-kpi-label">{{ t.volume }}</span></div>
-                <div class="trend-kpi-value">{{ selected_total|number_format:0 }}</div>
+                <div class="trend-kpi-value">{{ selected_total|number_format:2 }}</div>
                 <div class="trend-kpi-note">{% if selected_growth is not None %}<span class="delta">{% if selected_growth >= 0 %}↗{% else %}↘{% endif %} {{ selected_growth }}%</span> {% if locale == 'en' %}vs {{ previous_year }}{% else %}vs {{ previous_year }}{% endif %}{% else %}{% if locale == 'en' %}No previous comparison{% else %}Pas de comparaison antérieure{% endif %}{% endif %}</div>
             </div>
             <div class="trend-kpi kpi-count">
@@ -101,11 +101,11 @@
             <div class="trend-kpi kpi-best">
                 <div class="trend-kpi-head"><span class="trend-kpi-icon">🏆</span><span class="trend-kpi-label">{% if locale == 'en' %}Best month{% else %}Meilleur mois{% endif %}</span></div>
                 <div class="trend-kpi-value">{% if best_month %}{{ best_month.month }}{% else %}{% endif %}</div>
-                <div class="trend-kpi-note">{% if best_month %}{{ best_month.amount|number_format:0 }} · {{ best_month.count }} tx{% else %}{{ t.no_data }}{% endif %}</div>
+                <div class="trend-kpi-note">{% if best_month %}{{ best_month.amount|number_format:2 }} · {{ best_month.count }} tx{% else %}{{ t.no_data }}{% endif %}</div>
             </div>
             <div class="trend-kpi kpi-average">
                 <div class="trend-kpi-head"><span class="trend-kpi-icon">📈</span><span class="trend-kpi-label">{% if locale == 'en' %}Monthly average{% else %}Moyenne mensuelle{% endif %}</span></div>
-                <div class="trend-kpi-value">{{ average_monthly|number_format:0 }}</div>
+                <div class="trend-kpi-value">{{ average_monthly|number_format:2 }}</div>
                 <div class="trend-kpi-note">{% if locale == 'en' %}active months{% else %}sur les mois actifs{% endif %}</div>
             </div>
         </div>
@@ -154,7 +154,7 @@
 
     <section class="table-card year-table">
         <div class="table-header"><div><div class="table-title">{{ t.yearly_summary }}</div><div class="analytics-card-sub">{{ t.yearly_sub }}</div></div></div>
-        <div class="table-scroll">{% if yearly_data %}<table class="bsky-table"><thead><tr><th>{{ t.year }}</th><th>{{ t.nb_tx }}</th><th>{{ t.volume }}</th><th>{{ t.commissions }}</th><th>{{ t.growth }}</th></tr></thead><tbody>{% for row in yearly_data reversed %}<tr><td><strong>{{ row.year }}</strong></td><td>{{ row.total }}</td><td><strong>{{ row.total_amount|number_format:0 }}</strong></td><td>{{ row.total_fees|number_format:0 }}</td><td>{% if row.growth is None %}<span class="growth-pill flat">{{ t.first_year }}</span>{% elif row.growth > 0 %}<span class="growth-pill up">↑ {{ row.growth }}%</span>{% elif row.growth < 0 %}<span class="growth-pill down">↓ {{ row.growth }}%</span>{% else %}<span class="growth-pill flat">0%</span>{% endif %}</td></tr>{% endfor %}</tbody></table>{% else %}<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">{{ t.no_data }}</div></div>{% endif %}</div>
+        <div class="table-scroll">{% if yearly_data %}<table class="bsky-table"><thead><tr><th>{{ t.year }}</th><th>{{ t.nb_tx }}</th><th>{{ t.volume }}</th><th>{{ t.commissions }}</th><th>{{ t.growth }}</th></tr></thead><tbody>{% for row in yearly_data reversed %}<tr><td><strong>{{ row.year }}</strong></td><td>{{ row.total }}</td><td><strong>{{ row.total_amount|number_format:2 }}</strong></td><td>{{ row.total_fees|number_format:2 }}</td><td>{% if row.growth is None %}<span class="growth-pill flat">{{ t.first_year }}</span>{% elif row.growth > 0 %}<span class="growth-pill up">↑ {{ row.growth }}%</span>{% elif row.growth < 0 %}<span class="growth-pill down">↓ {{ row.growth }}%</span>{% else %}<span class="growth-pill flat">0%</span>{% endif %}</td></tr>{% endfor %}</tbody></table>{% else %}<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">{{ t.no_data }}</div></div>{% endif %}</div>
     </section>
 </div>
 {{ monthly_labels|json_script:'stats-labels' }}
