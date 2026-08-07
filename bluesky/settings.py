@@ -37,11 +37,20 @@ _raw_hosts = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1')
 ALLOWED_HOSTS = [h.strip() for h in _raw_hosts.split(',') if h.strip()]
 
 _raw_origins = os.environ.get('CSRF_TRUSTED_ORIGINS', '')
-CSRF_TRUSTED_ORIGINS = (
-    [o.strip() for o in _raw_origins.split(',') if o.strip()]
-    if _raw_origins else
-    ['https://*.ngrok-free.dev', 'https://*.ngrok-free.app', 'https://*.ngrok.io']
-)
+CSRF_TRUSTED_ORIGINS = [o.strip() for o in _raw_origins.split(',') if o.strip()]
+if not CSRF_TRUSTED_ORIGINS:
+    CSRF_TRUSTED_ORIGINS = ['https://*.ngrok-free.dev', 'https://*.ngrok-free.app', 'https://*.ngrok.io']
+
+# Safety net: always trust HTTPS for every configured ALLOWED_HOSTS entry, even if
+# CSRF_TRUSTED_ORIGINS was left unset/misconfigured in the server's .env — a missing
+# entry here is what causes "La vérification CSRF a échoué" (403) on real domains
+# such as pascal02.pythonanywhere.com.
+for _host in ALLOWED_HOSTS:
+    if _host in ('localhost', '127.0.0.1', '*'):
+        continue
+    _origin = f'https://{_host}'
+    if _origin not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(_origin)
 
 INSTALLED_APPS = [
     'django.contrib.contenttypes',
