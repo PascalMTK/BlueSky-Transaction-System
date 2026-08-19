@@ -2,7 +2,7 @@
 {% load static bluesky_tags %}
 
 {% block title %}{{ t.logistics_my_tasks_nav }}{% endblock %}
-{% block page_title %}🚚 {{ t.logistics_my_tasks_nav }}{% endblock %}
+{% block page_title %}<i class="bi bi-truck" aria-hidden="true"></i> {{ t.logistics_my_tasks_nav }}{% endblock %}
 {% block page_subtitle %}Mes tâches de livraison{% endblock %}
 {% block nav_logistics_tasks %}active{% endblock %}
 {% block mob_logistics_tasks %}active{% endblock %}
@@ -14,19 +14,19 @@
 {% block content %}
 <div class="lg-stats">
     <div class="lg-stat">
-        <span class="ico">📦</span>
+        <span class="ico"><i class="bi bi-box-seam-fill" aria-hidden="true"></i></span>
         <div><div class="lg-stat-num">{{ total_count }}</div><div class="lg-stat-lbl">Total</div></div>
     </div>
     <div class="lg-stat pending">
-        <span class="ico">⏳</span>
+        <span class="ico"><i class="bi bi-hourglass-split" style="color:#f59e0b" aria-hidden="true"></i></span>
         <div><div class="lg-stat-num">{{ status_counts.pending|default:0 }}</div><div class="lg-stat-lbl">En attente</div></div>
     </div>
     <div class="lg-stat in_transit">
-        <span class="ico">🚚</span>
+        <span class="ico"><i class="bi bi-truck" aria-hidden="true"></i></span>
         <div><div class="lg-stat-num">{{ status_counts.in_transit|default:0 }}</div><div class="lg-stat-lbl">En transit</div></div>
     </div>
     <div class="lg-stat completed">
-        <span class="ico">✅</span>
+        <span class="ico"><i class="bi bi-check-circle-fill" style="color:#22c55e" aria-hidden="true"></i></span>
         <div><div class="lg-stat-num">{{ status_counts.completed|default:0 }}</div><div class="lg-stat-lbl">Terminé</div></div>
     </div>
 </div>
@@ -34,7 +34,7 @@
 <div class="filters-bar">
     <form method="GET" action="{% url 'logistics_driver_tasks' %}" style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;width:100%;">
         <div class="filter-group">
-            <label class="filter-label">📋 {{ t.status }}</label>
+            <label class="filter-label"><i class="bi bi-clipboard-fill" aria-hidden="true"></i> {{ t.status }}</label>
             <select name="status" class="filter-control" onchange="this.form.submit()">
                 <option value="">{{ t.all_statuses }}</option>
                 {% for key, label in status_choices %}
@@ -46,8 +46,8 @@
 </div>
 
 <div style="margin-bottom:14px;display:flex;gap:10px;flex-wrap:wrap;">
-    <a href="{% url 'logistics_driver_task_create' %}" class="btn btn-primary btn-sm">➕ Nouvelle tâche</a>
-    <a href="{% url 'logistics_driver_route' %}" class="btn btn-secondary btn-sm">🗺️ {{ t.logistics_my_route_nav }}</a>
+    <a href="{% url 'logistics_driver_task_create' %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg" aria-hidden="true"></i> Nouvelle tâche</a>
+    <a href="{% url 'logistics_driver_route' %}" class="btn btn-secondary btn-sm"><i class="bi bi-map-fill" aria-hidden="true"></i> {{ t.logistics_my_route_nav }}</a>
 </div>
 
 <div class="table-card">
@@ -59,7 +59,7 @@
                 {% for d in deliveries %}
                 <tr>
                     <td style="font-size:12px;">{{ d.scheduled_at|date:"d/m/Y H:i" }}</td>
-                    <td>{% if d.task_type == 'pickup' %}📤 Collecte{% else %}📥 Livraison{% endif %}</td>
+                    <td>{% if d.task_type == 'pickup' %}<i class="bi bi-send-fill" aria-hidden="true"></i> Collecte{% else %}<i class="bi bi-inbox-fill" aria-hidden="true"></i> Livraison{% endif %}</td>
                     <td>
                         <div style="display:flex;align-items:center;gap:8px;">
                             <div class="lg-avatar-sm">{{ d.client.name|initials }}</div>
@@ -80,7 +80,7 @@
             </tbody>
         </table>
         {% else %}
-            <div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">Aucune tâche assignée</div></div>
+            <div class="empty-state"><div class="empty-icon"><i class="bi bi-inbox" aria-hidden="true"></i></div><div class="empty-text">Aucune tâche assignée</div></div>
         {% endif %}
     </div>
 </div>

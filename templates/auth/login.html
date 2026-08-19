@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
     <title>{{ t.login_title }} BLUESKY</title>
     <link rel="icon" href="{% static 'images/WhatsApp_Image_2026-01-27_at_11.11.59_PM__1_-removebg-preview.png' %}" type="image/png">
+    <link href="{% static 'vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
     <link href="{% static 'css/bluesky.css' %}" rel="stylesheet">
     <script>(function(){var t=localStorage.getItem('bluesky-theme')||'light';document.documentElement.setAttribute('data-theme',t);})();</script>
     <style>
@@ -149,7 +150,7 @@
 
     {% for message in messages %}
         <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %}" style="margin-bottom:12px;">
-            {% if message.tags == 'error' %}❌{% elif message.tags == 'success' %}✅{% else %}⚠️{% endif %}
+            {% if message.tags == 'error' %}<i class="bi bi-x-circle-fill" style="color:#ef4444" aria-hidden="true"></i>{% elif message.tags == 'success' %}<i class="bi bi-check-circle-fill" style="color:#22c55e" aria-hidden="true"></i>{% else %}<i class="bi bi-exclamation-triangle-fill" style="color:#f59e0b" aria-hidden="true"></i>{% endif %}
             {{ message }}
         </div>
     {% endfor %}
@@ -157,21 +158,21 @@
     <form method="POST" action="{% url 'login' %}">
         {% csrf_token %}
         <div class="form-group">
-            <label class="form-label">📧 {{ t.email }}</label>
+            <label class="form-label"><i class="bi bi-envelope-fill" aria-hidden="true"></i> {{ t.email }}</label>
             <input type="email" name="email" class="form-control" placeholder="{{ t.email_placeholder }}" required autofocus>
         </div>
         <div class="form-group">
-            <label class="form-label">🔒 {{ t.password }}</label>
+            <label class="form-label"><i class="bi bi-lock-fill" aria-hidden="true"></i> {{ t.password }}</label>
             <div class="pw-wrap">
                 <input type="password" name="password" id="loginPw" class="form-control" placeholder="••••••••" required>
-                <button type="button" class="pw-toggle" onclick="togglePw('loginPw','loginEye')" aria-label="{{ t.pw_toggle_label }}"><span id="loginEye">👁️</span></button>
+                <button type="button" class="pw-toggle" onclick="togglePw('loginPw','loginEye')" aria-label="{{ t.pw_toggle_label }}"><span id="loginEye"><i class="bi bi-eye-fill" aria-hidden="true"></i></span></button>
             </div>
         </div>
-        <button type="submit" class="btn-main">🔑 {{ t.login_btn }}</button>
+        <button type="submit" class="btn-main"><i class="bi bi-key-fill" aria-hidden="true"></i> {{ t.login_btn }}</button>
     </form>
 
     <div class="divider">{{ t.no_account }}</div>
-    <a href="{% url 'register' %}" class="btn-sec">🚀 {{ t.create_agent }}</a>
+    <a href="{% url 'register' %}" class="btn-sec"><i class="bi bi-rocket-takeoff-fill" aria-hidden="true"></i> {{ t.create_agent }}</a>
 
     <div class="card-foot">
         <a href="{% url 'welcome' %}">← {{ t.back_home }}</a>
@@ -184,8 +185,8 @@
 function togglePw(inputId, eyeId){
     var inp = document.getElementById(inputId);
     var eye = document.getElementById(eyeId);
-    if(inp.type === 'password'){ inp.type = 'text'; eye.textContent = '🙈'; }
-    else { inp.type = 'password'; eye.textContent = '👁️'; }
+    if(inp.type === 'password'){ inp.type = 'text'; eye.innerHTML = '<i class="bi bi-eye-slash-fill" aria-hidden="true"></i>'; }
+    else { inp.type = 'password'; eye.innerHTML = '<i class="bi bi-eye-fill" aria-hidden="true"></i>'; }
 }
 /* Logo switching on theme change */
 (function(){
@@ -198,15 +199,15 @@ function togglePw(inputId, eyeId){
     <!-- Mobile bottom nav (auth pages) -->
     <nav class="auth-mob-nav">
         <a href="{% url 'welcome' %}">
-            <span class="amn-icon">🏠</span>
+            <span class="amn-icon"><i class="bi bi-house-door-fill" aria-hidden="true"></i></span>
             <span>{{ t.home|default:"Home" }}</span>
         </a>
         <a href="{% url 'login' %}" class="active">
-            <span class="amn-icon">🔑</span>
+            <span class="amn-icon"><i class="bi bi-key-fill" aria-hidden="true"></i></span>
             <span>{{ t.login_title|default:"Login" }}</span>
         </a>
         <a href="{% url 'register' %}">
-            <span class="amn-icon">📝</span>
+            <span class="amn-icon"><i class="bi bi-journal-text" aria-hidden="true"></i></span>
             <span>{{ t.register_title|default:"Register" }}</span>
         </a>
     </nav>

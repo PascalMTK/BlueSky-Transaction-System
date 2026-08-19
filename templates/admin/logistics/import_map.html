@@ -2,7 +2,7 @@
 {% load static bluesky_tags %}
 
 {% block title %}Correspondance des colonnes{% endblock %}
-{% block page_title %}🔀 Correspondance des colonnes{% endblock %}
+{% block page_title %}<i class="bi bi-shuffle" aria-hidden="true"></i> Correspondance des colonnes{% endblock %}
 {% block page_subtitle %}{{ batch.original_filename }}{% endblock %}
 {% block nav_admin_logistics %}active{% endblock %}
 
@@ -12,7 +12,7 @@
 
 {% block content %}
 <div class="lg-steps">
-    <div class="lg-step lg-step-done"><span class="num">✓</span> Téléverser</div>
+    <div class="lg-step lg-step-done"><span class="num"><i class="bi bi-check-lg" aria-hidden="true"></i></span> Téléverser</div>
     <span class="lg-step-sep">→</span>
     <div class="lg-step lg-step-active"><span class="num">2</span> Correspondance</div>
     <span class="lg-step-sep">→</span>
@@ -20,7 +20,7 @@
 </div>
 
 <div class="lg-section">
-    <div class="lg-section-title">🔀 Faites correspondre chaque colonne à un champ</div>
+    <div class="lg-section-title"><i class="bi bi-shuffle" aria-hidden="true"></i> Faites correspondre chaque colonne à un champ</div>
     <div class="lg-hint" style="margin-bottom:14px;">Les 5 premières lignes du fichier sont affichées ci-dessous pour vérifier votre choix</div>
     <form method="POST" action="{% url 'admin_logistics_import_map' batch.id %}">
         {% csrf_token %}
@@ -53,7 +53,7 @@
                 </tbody>
             </table>
         </div>
-        <button type="submit" class="btn btn-primary">✅ Importer {{ batch.raw_rows|length }} ligne(s)</button>
+        <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle-fill" style="color:#22c55e" aria-hidden="true"></i> Importer {{ batch.raw_rows|length }} ligne(s)</button>
         <a href="{% url 'admin_logistics_import' %}" class="btn btn-secondary">{{ t.cancel }}</a>
     </form>
 </div>

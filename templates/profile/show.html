@@ -150,8 +150,8 @@
         <img src="" alt="{{ t.preview_alt }}" class="photo-preview-img" id="photoPreviewImg">
         <div class="photo-preview-name" id="photoPreviewName"></div>
         <div class="photo-preview-actions">
-            <button type="button" class="btn btn-secondary" onclick="cancelPhoto()">✕ {{ t.cancel }}</button>
-            <button type="button" class="btn btn-primary" onclick="confirmPhoto()">✅ {{ t.save_info }}</button>
+            <button type="button" class="btn btn-secondary" onclick="cancelPhoto()"><i class="bi bi-x-lg" aria-hidden="true"></i> {{ t.cancel }}</button>
+            <button type="button" class="btn btn-primary" onclick="confirmPhoto()"><i class="bi bi-check-circle-fill" style="color:#22c55e" aria-hidden="true"></i> {{ t.save_info }}</button>
         </div>
     </div>
 </div>
@@ -198,10 +198,10 @@
 
                 <div style="display:flex;align-items:center;justify-content:center;gap:7px;flex-wrap:wrap;">
                     <span class="badge-status {% if auth_user.status == 'active' %}status-completed{% elif auth_user.status == 'pending' %}status-pending{% else %}status-cancelled{% endif %}" style="font-size:11.5px;">
-                        {% if auth_user.status == 'active' %}✅ {{ t.status_active }}{% elif auth_user.status == 'pending' %}⏳ {{ t.status_pending }}{% else %}❌ {{ t.status_inactive }}{% endif %}
+                        {% if auth_user.status == 'active' %}<i class="bi bi-check-circle-fill" style="color:#22c55e" aria-hidden="true"></i> {{ t.status_active }}{% elif auth_user.status == 'pending' %}<i class="bi bi-hourglass-split" style="color:#f59e0b" aria-hidden="true"></i> {{ t.status_pending }}{% else %}<i class="bi bi-x-circle-fill" style="color:#ef4444" aria-hidden="true"></i> {{ t.status_inactive }}{% endif %}
                     </span>
                     <span style="background:linear-gradient(135deg,rgba(2,132,199,.1),rgba(14,165,233,.06));border:1px solid rgba(2,132,199,.2);border-radius:7px;padding:3px 10px;font-size:11.5px;font-weight:700;color:var(--sky-primary);">
-                        {% if auth_user.role == 'admin' %}🛡️ {{ t.role_admin }}{% else %}🏢 {{ t.role_agent }}{% endif %}
+                        {% if auth_user.role == 'admin' %}<i class="bi bi-shield-fill-check" aria-hidden="true"></i> {{ t.role_admin }}{% else %}<i class="bi bi-building-fill" aria-hidden="true"></i> {{ t.role_agent }}{% endif %}
                     </span>
                 </div>
             </div>
@@ -242,7 +242,7 @@
 
             <!-- Photo tip -->
             <div style="padding:12px 18px;text-align:center;font-size:11.5px;color:var(--text-muted);border-top:1px solid var(--divider);">
-                💡 {{ t.photo_tip }}
+                <i class="bi bi-lightbulb-fill" aria-hidden="true"></i> {{ t.photo_tip }}
             </div>
         </div>
 
@@ -253,19 +253,19 @@
             </div>
             <div style="padding:8px;">
                 <a href="{% url 'tx_create' %}" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;text-decoration:none;color:var(--text-primary);transition:background .15s;" onmouseover="this.style.background='var(--bg-input)'" onmouseout="this.style.background='transparent'">
-                    <span style="font-size:18px;">➕</span>
+                    <span style="font-size:18px;"><i class="bi bi-plus-lg" aria-hidden="true"></i></span>
                     <span style="font-size:13px;font-weight:600;">{{ t.new_transaction }}</span>
                 </a>
                 <a href="{% url 'tx_index' %}" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;text-decoration:none;color:var(--text-primary);transition:background .15s;" onmouseover="this.style.background='var(--bg-input)'" onmouseout="this.style.background='transparent'">
-                    <span style="font-size:18px;">📋</span>
+                    <span style="font-size:18px;"><i class="bi bi-clipboard-fill" aria-hidden="true"></i></span>
                     <span style="font-size:13px;font-weight:600;">{{ t.my_transactions }}</span>
                 </a>
                 <a href="{% url 'agent_dashboard' %}" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;text-decoration:none;color:var(--text-primary);transition:background .15s;" onmouseover="this.style.background='var(--bg-input)'" onmouseout="this.style.background='transparent'">
-                    <span style="font-size:18px;">🏠</span>
+                    <span style="font-size:18px;"><i class="bi bi-house-door-fill" aria-hidden="true"></i></span>
                     <span style="font-size:13px;font-weight:600;">{{ t.my_space }}</span>
                 </a>
                 <a href="{% url 'agent_export_csv' %}" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;text-decoration:none;color:var(--text-primary);transition:background .15s;" onmouseover="this.style.background='var(--bg-input)'" onmouseout="this.style.background='transparent'">
-                    <span style="font-size:18px;">📥</span>
+                    <span style="font-size:18px;"><i class="bi bi-inbox-fill" aria-hidden="true"></i></span>
                     <span style="font-size:13px;font-weight:600;">{{ t.export_my_data }}</span>
                 </a>
             </div>
@@ -277,13 +277,13 @@
         <!-- Messages -->
         {% for message in messages %}
             <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %}" style="margin-bottom:14px;">
-                {% if message.tags == 'error' %}❌{% else %}✅{% endif %} {{ message }}
+                {% if message.tags == 'error' %}<i class="bi bi-x-circle-fill" style="color:#ef4444" aria-hidden="true"></i>{% else %}<i class="bi bi-check-circle-fill" style="color:#22c55e" aria-hidden="true"></i>{% endif %} {{ message }}
             </div>
         {% endfor %}
 
         <!-- Info form -->
         <div class="card" style="margin-bottom:16px;">
-            <div class="card-header"><div class="card-title">👤 {{ t.personal_info }}</div></div>
+            <div class="card-header"><div class="card-title"><i class="bi bi-person-fill" aria-hidden="true"></i> {{ t.personal_info }}</div></div>
             <div class="card-body">
                 <form method="POST" action="{% url 'profile_update' %}">
                     {% csrf_token %}
@@ -306,14 +306,14 @@
                             <input type="text" name="address" class="form-control" value="{{ auth_user.address|default:'' }}" placeholder="{% if locale == 'en' %}Abidjan, Ivory Coast{% else %}Abidjan, Côte d'Ivoire{% endif %}">
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-primary">💾 {{ t.save_info }}</button>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-floppy-fill" aria-hidden="true"></i> {{ t.save_info }}</button>
                 </form>
             </div>
         </div>
 
         <!-- Password form -->
         <div class="card">
-            <div class="card-header"><div class="card-title">🔒 {{ t.change_password }}</div></div>
+            <div class="card-header"><div class="card-title"><i class="bi bi-lock-fill" aria-hidden="true"></i> {{ t.change_password }}</div></div>
             <div class="card-body">
                 <form method="POST" action="{% url 'profile_password' %}">
                     {% csrf_token %}
@@ -322,25 +322,25 @@
                             <label class="form-label">{{ t.current_password }}</label>
                             <div class="pw-wrap">
                                 <input type="password" name="current_password" id="profPw0" class="form-control" placeholder="••••••••" required>
-                                <button type="button" class="pw-toggle" onclick="togglePw('profPw0','profEye0')" aria-label="Voir"><span id="profEye0">👁️</span></button>
+                                <button type="button" class="pw-toggle" onclick="togglePw('profPw0','profEye0')" aria-label="Voir"><span id="profEye0"><i class="bi bi-eye-fill" aria-hidden="true"></i></span></button>
                             </div>
                         </div>
                         <div class="form-group">
                             <label class="form-label">{{ t.new_password }}</label>
                             <div class="pw-wrap">
                                 <input type="password" name="password" id="profPw1" class="form-control" placeholder="Min. 8" required minlength="8">
-                                <button type="button" class="pw-toggle" onclick="togglePw('profPw1','profEye1')" aria-label="Voir"><span id="profEye1">👁️</span></button>
+                                <button type="button" class="pw-toggle" onclick="togglePw('profPw1','profEye1')" aria-label="Voir"><span id="profEye1"><i class="bi bi-eye-fill" aria-hidden="true"></i></span></button>
                             </div>
                         </div>
                         <div class="form-group">
                             <label class="form-label">{{ t.confirm_new_password }}</label>
                             <div class="pw-wrap">
                                 <input type="password" name="password_confirmation" id="profPw2" class="form-control" placeholder="..." required>
-                                <button type="button" class="pw-toggle" onclick="togglePw('profPw2','profEye2')" aria-label="Voir"><span id="profEye2">👁️</span></button>
+                                <button type="button" class="pw-toggle" onclick="togglePw('profPw2','profEye2')" aria-label="Voir"><span id="profEye2"><i class="bi bi-eye-fill" aria-hidden="true"></i></span></button>
                             </div>
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-primary">🔑 {{ t.update_password }}</button>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-key-fill" aria-hidden="true"></i> {{ t.update_password }}</button>
                 </form>
             </div>
         </div>
@@ -351,8 +351,8 @@
 function togglePw(inputId, eyeId){
     var inp = document.getElementById(inputId);
     var eye = document.getElementById(eyeId);
-    if(inp.type === 'password'){ inp.type = 'text'; eye.textContent = '🙈'; }
-    else { inp.type = 'password'; eye.textContent = '👁️'; }
+    if(inp.type === 'password'){ inp.type = 'text'; eye.innerHTML = '<i class="bi bi-eye-slash-fill" aria-hidden="true"></i>'; }
+    else { inp.type = 'password'; eye.innerHTML = '<i class="bi bi-eye-fill" aria-hidden="true"></i>'; }
 }
 
 /* ── Photo preview ─────────────────────────────────── */

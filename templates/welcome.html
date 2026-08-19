@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
     <title>BLUESKY {{ t.welcome_tagline }}</title>
     <link rel="icon" href="{% static 'images/WhatsApp_Image_2026-01-27_at_11.11.59_PM__1_-removebg-preview.png' %}" type="image/png">
+    <link href="{% static 'vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
     <link href="{% static 'css/bluesky.css' %}" rel="stylesheet">
     <script>(function(){var t=localStorage.getItem('bluesky-theme')||'light';document.documentElement.setAttribute('data-theme',t);})();</script>
     <style>
@@ -245,8 +246,8 @@
             <s>|</s>
             <a href="{% url 'lang_switch' 'en' %}" class="{% if locale == 'en' %}on{% endif %}"><span class="lang-flag">🇬🇧</span> EN</a>
         </div>
-        <button class="theme-btn" id="wThemeBtn" onclick="wToggleTheme()" aria-label="{{ t.theme_toggle_label }}">🌙</button>
-        <a href="{% url 'login' %}" class="btn-f">🔑 {{ t.login_btn }}</a>
+        <button class="theme-btn" id="wThemeBtn" onclick="wToggleTheme()" aria-label="{{ t.theme_toggle_label }}"><i class="bi bi-moon-stars-fill" aria-hidden="true"></i></button>
+        <a href="{% url 'login' %}" class="btn-f"><i class="bi bi-key-fill" aria-hidden="true"></i> {{ t.login_btn }}</a>
     </div>
 </nav>
 
@@ -263,15 +264,15 @@
     <p class="sub">{{ t.welcome_desc }}</p>
 
     <div class="cta">
-        <a href="{% url 'register' %}" class="cta-a">🚀 {{ t.create_agent }} <span class="arr">→</span></a>
-        <a href="{% url 'login' %}" class="cta-b">🔑 {{ t.welcome_login_btn }}</a>
+        <a href="{% url 'register' %}" class="cta-a"><i class="bi bi-rocket-takeoff-fill" aria-hidden="true"></i> {{ t.create_agent }} <span class="arr">→</span></a>
+        <a href="{% url 'login' %}" class="cta-b"><i class="bi bi-key-fill" aria-hidden="true"></i> {{ t.welcome_login_btn }}</a>
     </div>
 
     <div class="chips">
-        <div class="chip"><em>⚡</em>{{ t.feat_fast }}</div>
-        <div class="chip"><em>🌍</em>{{ t.feat_multi }}</div>
-        <div class="chip"><em>🔒</em>{{ t.feat_secure }}</div>
-        <div class="chip"><em>📊</em>{{ t.feat_reports }}</div>
+        <div class="chip"><em><i class="bi bi-lightning-charge-fill" aria-hidden="true"></i></em>{{ t.feat_fast }}</div>
+        <div class="chip"><em><i class="bi bi-globe-americas" aria-hidden="true"></i></em>{{ t.feat_multi }}</div>
+        <div class="chip"><em><i class="bi bi-lock-fill" aria-hidden="true"></i></em>{{ t.feat_secure }}</div>
+        <div class="chip"><em><i class="bi bi-bar-chart-fill" aria-hidden="true"></i></em>{{ t.feat_reports }}</div>
     </div>
 
     {% if active_countries %}
@@ -303,7 +304,7 @@ function wApplyTheme(t){
     document.documentElement.setAttribute('data-theme', t);
     localStorage.setItem('bluesky-theme', t);
     var btn = document.getElementById('wThemeBtn');
-    if(btn) btn.textContent = t === 'dark' ? '☀️' : '🌙';
+    if(btn) btn.innerHTML = t === 'dark' ? '<i class="bi bi-sun-fill" aria-hidden="true"></i>' : '<i class="bi bi-moon-stars-fill" aria-hidden="true"></i>';
     var logo = document.getElementById('welcomeLogo');
     if(logo) logo.src = t === 'dark' ? LOGO_DARK : LOGO_LIGHT;
 }

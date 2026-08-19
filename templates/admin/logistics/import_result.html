@@ -2,7 +2,7 @@
 {% load static bluesky_tags %}
 
 {% block title %}Résultat de l'import{% endblock %}
-{% block page_title %}✅ Import terminé{% endblock %}
+{% block page_title %}<i class="bi bi-check-circle-fill" style="color:#22c55e" aria-hidden="true"></i> Import terminé{% endblock %}
 {% block page_subtitle %}{{ batch.original_filename }}{% endblock %}
 {% block nav_admin_logistics %}active{% endblock %}
 
@@ -12,9 +12,9 @@
 
 {% block content %}
 <div class="lg-steps">
-    <div class="lg-step lg-step-done"><span class="num">✓</span> Téléverser</div>
+    <div class="lg-step lg-step-done"><span class="num"><i class="bi bi-check-lg" aria-hidden="true"></i></span> Téléverser</div>
     <span class="lg-step-sep">→</span>
-    <div class="lg-step lg-step-done"><span class="num">✓</span> Correspondance</div>
+    <div class="lg-step lg-step-done"><span class="num"><i class="bi bi-check-lg" aria-hidden="true"></i></span> Correspondance</div>
     <span class="lg-step-sep">→</span>
     <div class="lg-step lg-step-active"><span class="num">3</span> Résultat</div>
 </div>
@@ -22,23 +22,23 @@
 {% if stats %}
 <div class="lg-stats">
     <div class="lg-stat completed">
-        <span class="ico">👤</span>
+        <span class="ico"><i class="bi bi-person-fill" aria-hidden="true"></i></span>
         <div><div class="lg-stat-num">{{ stats.created_clients }}</div><div class="lg-stat-lbl">Clients créés</div></div>
     </div>
     <div class="lg-stat">
-        <span class="ico">🔗</span>
+        <span class="ico"><i class="bi bi-link-45deg" aria-hidden="true"></i></span>
         <div><div class="lg-stat-num">{{ stats.merged_clients }}</div><div class="lg-stat-lbl">Fusionnés</div></div>
     </div>
     <div class="lg-stat">
-        <span class="ico">📍</span>
+        <span class="ico"><i class="bi bi-geo-alt-fill" aria-hidden="true"></i></span>
         <div><div class="lg-stat-num">{{ stats.created_addresses }}</div><div class="lg-stat-lbl">Adresses créées</div></div>
     </div>
     <div class="lg-stat">
-        <span class="ico">🚚</span>
+        <span class="ico"><i class="bi bi-truck" aria-hidden="true"></i></span>
         <div><div class="lg-stat-num">{{ stats.created_deliveries }}</div><div class="lg-stat-lbl">Tâches créées</div></div>
     </div>
     <div class="lg-stat delayed">
-        <span class="ico">⚠️</span>
+        <span class="ico"><i class="bi bi-exclamation-triangle-fill" style="color:#f59e0b" aria-hidden="true"></i></span>
         <div><div class="lg-stat-num">{{ stats.skipped_count }}</div><div class="lg-stat-lbl">Lignes ignorées</div></div>
     </div>
 </div>
@@ -46,13 +46,13 @@
 
 {% if batch.error_log %}
 <div class="lg-section">
-    <div class="lg-section-title">⚠️ Journal des erreurs / lignes ignorées</div>
+    <div class="lg-section-title"><i class="bi bi-exclamation-triangle-fill" style="color:#f59e0b" aria-hidden="true"></i> Journal des erreurs / lignes ignorées</div>
     <pre style="white-space:pre-wrap;font-size:12px;max-height:300px;overflow-y:auto;color:var(--text-muted);margin:0;">{{ batch.error_log }}</pre>
 </div>
 {% endif %}
 
 <div style="display:flex;gap:10px;">
-    <a href="{% url 'admin_logistics_clients' %}" class="btn btn-primary">👥 {{ t.logistics_clients_nav }}</a>
-    <a href="{% url 'admin_logistics_import' %}" class="btn btn-secondary">📥 Nouvel import</a>
+    <a href="{% url 'admin_logistics_clients' %}" class="btn btn-primary"><i class="bi bi-people-fill" aria-hidden="true"></i> {{ t.logistics_clients_nav }}</a>
+    <a href="{% url 'admin_logistics_import' %}" class="btn btn-secondary"><i class="bi bi-inbox-fill" aria-hidden="true"></i> Nouvel import</a>
 </div>
 {% endblock %}

@@ -6,6 +6,22 @@
 'use strict';
 
 /* ============================================================
+   0. ICON HELPER
+   Safely renders "<icon> <dynamic text>" without ever parsing the
+   dynamic text as HTML (avoids XSS from server/user-supplied strings).
+   ============================================================ */
+function setIconText(el, iconClass, text, color) {
+    if (!el) return;
+    el.textContent = '';
+    const icon = document.createElement('i');
+    icon.className = 'bi ' + iconClass;
+    icon.setAttribute('aria-hidden', 'true');
+    if (color) icon.style.color = color;
+    el.appendChild(icon);
+    el.appendChild(document.createTextNode(' ' + text));
+}
+
+/* ============================================================
    1. DARK MODE
    ============================================================ */
 const ThemeManager = {
@@ -22,7 +38,7 @@ const ThemeManager = {
 
         const btn = document.getElementById('themeToggle');
         if (btn) {
-            btn.innerHTML = theme === 'dark' ? '☀️' : '🌙';
+            btn.innerHTML = theme === 'dark' ? '<i class="bi bi-sun-fill" aria-hidden="true"></i>' : '<i class="bi bi-moon-stars-fill" aria-hidden="true"></i>';
             btn.title = theme === 'dark' ? 'Mode clair' : 'Mode sombre';
         }
 
@@ -156,7 +172,7 @@ document.addEventListener('click', () => {
 function initAlerts() {
     document.querySelectorAll('.alert').forEach(alert => {
         const close = document.createElement('button');
-        close.innerHTML = '✕';
+        close.innerHTML = '<i class="bi bi-x-lg" aria-hidden="true"></i>';
         close.style.cssText = 'background:none;border:none;cursor:pointer;font-size:14px;margin-left:auto;opacity:0.6;flex-shrink:0;padding:0;line-height:1;';
         close.onclick = () => dismissAlert(alert);
         alert.appendChild(close);
@@ -261,7 +277,7 @@ function bskyConfirm(message) {
 
         overlay.innerHTML = `
             <div style="background:${bg};color:${txt};border:1px solid ${brd};border-radius:16px;padding:28px 32px;max-width:400px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.4);animation:scaleIn 0.3s ease;text-align:center;">
-                <div style="font-size:36px;margin-bottom:12px;">⚠️</div>
+                <div style="font-size:36px;margin-bottom:12px;color:#f59e0b;"><i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i></div>
                 <div style="font-size:16px;font-weight:700;margin-bottom:8px;color:${txt}">Confirmation</div>
                 <div style="font-size:14px;color:#64748B;margin-bottom:24px;">${message}</div>
                 <div style="display:flex;gap:10px;justify-content:center;">
@@ -297,7 +313,7 @@ function bskyDangerConfirm(opts) {
 
         overlay.innerHTML = `
             <div style="background:${bg};color:${txt};border:2px solid #EF4444;border-radius:18px;padding:32px 32px 28px;max-width:440px;width:92%;box-shadow:0 24px 80px rgba(239,68,68,0.25);animation:scaleIn 0.3s ease;text-align:center;">
-                <div style="width:60px;height:60px;background:rgba(239,68,68,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:28px;border:2px solid rgba(239,68,68,0.25);">🗑️</div>
+                <div style="width:60px;height:60px;background:rgba(239,68,68,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:28px;color:#EF4444;border:2px solid rgba(239,68,68,0.25);"><i class="bi bi-trash3-fill" aria-hidden="true"></i></div>
                 <div style="font-size:18px;font-weight:800;margin-bottom:10px;color:#EF4444;">${title}</div>
                 <div style="font-size:13.5px;color:#64748B;margin-bottom:22px;line-height:1.6;">${message}</div>
                 <label style="display:flex;align-items:flex-start;gap:10px;background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.2);border-radius:10px;padding:12px 14px;margin-bottom:22px;cursor:pointer;text-align:left;">

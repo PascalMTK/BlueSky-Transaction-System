@@ -2,7 +2,7 @@
 {% load static bluesky_tags %}
 
 {% block title %}Nouvelle tâche{% endblock %}
-{% block page_title %}🚚 Nouvelle tâche de livraison{% endblock %}
+{% block page_title %}<i class="bi bi-truck" aria-hidden="true"></i> Nouvelle tâche de livraison{% endblock %}
 {% block page_subtitle %}{{ t.logistics_nav }}{% endblock %}
 {% block nav_admin_logistics %}active{% endblock %}
 {% block mob_adm_logistics %}active{% endblock %}
@@ -18,17 +18,17 @@
         <div>
             <!-- Task type -->
             <div class="lg-section">
-                <div class="lg-section-title">📦 Type de tâche</div>
+                <div class="lg-section-title"><i class="bi bi-box-seam-fill" aria-hidden="true"></i> Type de tâche</div>
                 <div class="lg-picker-row">
                     <button type="button" class="lg-picker-btn lg-active" data-type="pickup" onclick="pickTaskType('pickup', this)">
-                        <span class="ico">📤</span>
+                        <span class="ico"><i class="bi bi-send-fill" aria-hidden="true"></i></span>
                         <span>
                             <div class="lbl">Collecte</div>
                             <div class="sub">Récupérer chez le client</div>
                         </span>
                     </button>
                     <button type="button" class="lg-picker-btn" data-type="dropoff" onclick="pickTaskType('dropoff', this)">
-                        <span class="ico">📥</span>
+                        <span class="ico"><i class="bi bi-inbox-fill" aria-hidden="true"></i></span>
                         <span>
                             <div class="lbl">Livraison</div>
                             <div class="sub">Déposer chez le client</div>
@@ -40,7 +40,7 @@
 
             <!-- Client & address -->
             <div class="lg-section">
-                <div class="lg-section-title">👤 Client &amp; adresse</div>
+                <div class="lg-section-title"><i class="bi bi-person-fill" aria-hidden="true"></i> Client &amp; adresse</div>
                 <div class="form-group">
                     <label class="form-label">Client *</label>
                     <select name="client_id" class="form-control" id="clientSelect" required>
@@ -55,7 +55,7 @@
                     <select name="address_id" class="form-control" id="addressSelect">
                         <option value="">-- Aucune adresse spécifique --</option>
                     </select>
-                    <div class="lg-hint" id="addrHint">💡 Sélectionnez d'abord un client pour voir ses adresses enregistrées</div>
+                    <div class="lg-hint" id="addrHint"><i class="bi bi-lightbulb-fill" aria-hidden="true"></i> Sélectionnez d'abord un client pour voir ses adresses enregistrées</div>
                 </div>
                 <div class="form-group" style="margin:0;">
                     <label class="form-label">Adresse notée sur place (optionnel)</label>
@@ -65,7 +65,7 @@
 
             <!-- Scheduling -->
             <div class="lg-section">
-                <div class="lg-section-title">📅 Planification</div>
+                <div class="lg-section-title"><i class="bi bi-calendar-event-fill" aria-hidden="true"></i> Planification</div>
                 <div class="lg-grid-2">
                     <div class="form-group" style="margin:0;">
                         <label class="form-label">Date &amp; heure prévues *</label>
@@ -85,7 +85,7 @@
 
             <!-- Payment -->
             <div class="lg-section">
-                <div class="lg-section-title">💰 Paiement (optionnel)</div>
+                <div class="lg-section-title"><i class="bi bi-wallet2" aria-hidden="true"></i> Paiement (optionnel)</div>
                 <div class="lg-grid-2" style="margin-bottom:12px;">
                     <div class="form-group" style="margin:0;">
                         <label class="form-label">Montant</label>
@@ -94,8 +94,8 @@
                     <div class="form-group" style="margin:0;">
                         <label class="form-label">Mode de paiement</label>
                         <div class="lg-picker-row">
-                            <button type="button" class="lg-picker-btn lg-picker-compact" data-pm="cash" onclick="pickPaymentMethod('cash', this)">💵 Cash</button>
-                            <button type="button" class="lg-picker-btn lg-picker-compact" data-pm="other" onclick="pickPaymentMethod('other', this)">❔ Autre</button>
+                            <button type="button" class="lg-picker-btn lg-picker-compact" data-pm="cash" onclick="pickPaymentMethod('cash', this)"><i class="bi bi-cash" aria-hidden="true"></i> Cash</button>
+                            <button type="button" class="lg-picker-btn lg-picker-compact" data-pm="other" onclick="pickPaymentMethod('other', this)"><i class="bi bi-question-circle" aria-hidden="true"></i> Autre</button>
                         </div>
                         <input type="hidden" name="payment_method" id="paymentMethodInput" value="">
                     </div>
@@ -108,37 +108,37 @@
 
             <!-- Notes -->
             <div class="lg-section" style="margin-bottom:0;">
-                <div class="lg-section-title">📝 Notes</div>
+                <div class="lg-section-title"><i class="bi bi-journal-text" aria-hidden="true"></i> Notes</div>
                 <textarea name="notes" id="notesInput" class="form-control" rows="3" placeholder="Ex: Appeler 5 min avant l'arrivée, code du portail, étage..."></textarea>
             </div>
 
             <div class="lg-actions">
-                <button type="submit" class="btn btn-primary">💾 Créer la tâche</button>
+                <button type="submit" class="btn btn-primary"><i class="bi bi-floppy-fill" aria-hidden="true"></i> Créer la tâche</button>
                 <a href="{% url 'admin_logistics_dashboard' %}" class="btn btn-secondary">{{ t.cancel }}</a>
             </div>
         </div>
 
         <!-- Live preview -->
         <div class="lg-preview" id="dtPreview">
-            <div class="lg-preview-icon" id="pvIcon">📤</div>
+            <div class="lg-preview-icon" id="pvIcon"><i class="bi bi-send-fill" aria-hidden="true"></i></div>
             <div class="lg-preview-type" id="pvType">Collecte</div>
             <div class="lg-preview-client placeholder" id="pvClient">Aucun client sélectionné</div>
             <div class="lg-preview-phone" id="pvPhone"></div>
             <div class="lg-preview-divider"></div>
             <div class="lg-preview-row">
-                <span class="ico">📅</span>
+                <span class="ico"><i class="bi bi-calendar-event-fill" aria-hidden="true"></i></span>
                 <span class="val placeholder" id="pvDate">Date non définie</span>
             </div>
             <div class="lg-preview-row">
-                <span class="ico">🚚</span>
+                <span class="ico"><i class="bi bi-truck" aria-hidden="true"></i></span>
                 <span class="val placeholder" id="pvDriver">Non assigné</span>
             </div>
             <div class="lg-preview-row">
-                <span class="ico">💰</span>
+                <span class="ico"><i class="bi bi-wallet2" aria-hidden="true"></i></span>
                 <span class="val placeholder" id="pvAmount">Aucun montant</span>
             </div>
             <div class="lg-preview-row" style="align-items:flex-start;margin-bottom:0;">
-                <span class="ico">📍</span>
+                <span class="ico"><i class="bi bi-geo-alt-fill" aria-hidden="true"></i></span>
                 <span class="lg-preview-address" id="pvAddress">Aucune adresse sélectionnée</span>
             </div>
         </div>
@@ -167,7 +167,7 @@ function loadAddressesFor(clientId) {
         opt.textContent = a.label;
         addressSelect.appendChild(opt);
     });
-    addrHint.textContent = list.length ? '✅ ' + list.length + ' adresse(s) trouvée(s)' : '⚠️ Aucune adresse enregistrée pour ce client';
+    addrHint.innerHTML = list.length ? '<i class="bi bi-check-circle-fill" style="color:#22c55e" aria-hidden="true"></i> ' + list.length + ' adresse(s) trouvée(s)' : '<i class="bi bi-exclamation-triangle-fill" style="color:#f59e0b" aria-hidden="true"></i> Aucune adresse enregistrée pour ce client';
     updatePreview();
 }
 
@@ -188,7 +188,7 @@ function pickPaymentMethod(method, btn) {
 
 function updatePreview() {
     var type = document.getElementById('dtTaskType').value;
-    document.getElementById('pvIcon').textContent = type === 'pickup' ? '📤' : '📥';
+    document.getElementById('pvIcon').innerHTML = type === 'pickup' ? '<i class="bi bi-send-fill" aria-hidden="true"></i>' : '<i class="bi bi-inbox-fill" aria-hidden="true"></i>';
     document.getElementById('pvType').textContent = type === 'pickup' ? 'Collecte' : 'Livraison';
 
     var clientOpt = clientSelect.options[clientSelect.selectedIndex];

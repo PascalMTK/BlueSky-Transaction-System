@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
     <title>{{ t.register_title }} BLUESKY</title>
     <link rel="icon" href="{% static 'images/WhatsApp_Image_2026-01-27_at_11.11.59_PM__1_-removebg-preview.png' %}" type="image/png">
+    <link href="{% static 'vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
     <link href="{% static 'css/bluesky.css' %}" rel="stylesheet">
     <script>(function(){var t=localStorage.getItem('bluesky-theme')||'light';document.documentElement.setAttribute('data-theme',t);})();</script>
     <style>
@@ -202,13 +203,13 @@
     <div class="card-sub">{{ t.register_subtitle }}</div>
 
     <div class="notice">
-        <span style="font-size:16px;flex-shrink:0;">⏳</span>
+        <span style="font-size:16px;flex-shrink:0;"><i class="bi bi-hourglass-split" style="color:#f59e0b" aria-hidden="true"></i></span>
         {{ t.pending_notice }}
     </div>
 
     {% for message in messages %}
         <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %}" style="margin-bottom:12px;">
-            {% if message.tags == 'error' %}❌{% elif message.tags == 'success' %}✅{% else %}⚠️{% endif %}
+            {% if message.tags == 'error' %}<i class="bi bi-x-circle-fill" style="color:#ef4444" aria-hidden="true"></i>{% elif message.tags == 'success' %}<i class="bi bi-check-circle-fill" style="color:#22c55e" aria-hidden="true"></i>{% else %}<i class="bi bi-exclamation-triangle-fill" style="color:#f59e0b" aria-hidden="true"></i>{% endif %}
             {{ message }}
         </div>
     {% endfor %}
@@ -218,17 +219,17 @@
 
         <div class="form-row cols-2">
             <div class="form-group">
-                <label class="form-label">👤 {{ t.full_name }} <span class="required">*</span></label>
+                <label class="form-label"><i class="bi bi-person-fill" aria-hidden="true"></i> {{ t.full_name }} <span class="required">*</span></label>
                 <input type="text" name="name" class="form-control" placeholder="Jean Dupont" required autofocus>
             </div>
             <div class="form-group">
-                <label class="form-label">📱 {{ t.phone }}</label>
+                <label class="form-label"><i class="bi bi-phone-fill" aria-hidden="true"></i> {{ t.phone }}</label>
                 <input type="tel" name="phone" class="form-control" placeholder="+225 07 00 00 00">
             </div>
         </div>
 
         <div class="form-group">
-            <label class="form-label">📧 {{ t.email }} <span class="required">*</span></label>
+            <label class="form-label"><i class="bi bi-envelope-fill" aria-hidden="true"></i> {{ t.email }} <span class="required">*</span></label>
             <input type="email" name="email" class="form-control" placeholder="{{ t.email_placeholder }}" required>
         </div>
 
@@ -247,26 +248,26 @@
 
         <div class="form-row cols-2">
             <div class="form-group">
-                <label class="form-label">🔒 {{ t.password }} <span class="required">*</span></label>
+                <label class="form-label"><i class="bi bi-lock-fill" aria-hidden="true"></i> {{ t.password }} <span class="required">*</span></label>
                 <div class="pw-wrap">
                     <input type="password" name="password" id="regPw1" class="form-control" placeholder="Min. 8 chars" required minlength="8">
-                    <button type="button" class="pw-toggle" onclick="togglePw('regPw1','regEye1')" aria-label="{{ t.pw_toggle_label }}"><span id="regEye1">👁️</span></button>
+                    <button type="button" class="pw-toggle" onclick="togglePw('regPw1','regEye1')" aria-label="{{ t.pw_toggle_label }}"><span id="regEye1"><i class="bi bi-eye-fill" aria-hidden="true"></i></span></button>
                 </div>
             </div>
             <div class="form-group">
-                <label class="form-label">🔒 {{ t.confirm_password }} <span class="required">*</span></label>
+                <label class="form-label"><i class="bi bi-lock-fill" aria-hidden="true"></i> {{ t.confirm_password }} <span class="required">*</span></label>
                 <div class="pw-wrap">
                     <input type="password" name="password_confirmation" id="regPw2" class="form-control" placeholder="..." required>
-                    <button type="button" class="pw-toggle" onclick="togglePw('regPw2','regEye2')" aria-label="{{ t.pw_toggle_label }}"><span id="regEye2">👁️</span></button>
+                    <button type="button" class="pw-toggle" onclick="togglePw('regPw2','regEye2')" aria-label="{{ t.pw_toggle_label }}"><span id="regEye2"><i class="bi bi-eye-fill" aria-hidden="true"></i></span></button>
                 </div>
             </div>
         </div>
 
         <div class="form-group">
-            <label class="form-label">📷 {{ t.photo_label }} <span style="font-size:11px;color:var(--text-muted);">{{ t.photo_hint }}</span></label>
+            <label class="form-label"><i class="bi bi-camera-fill" aria-hidden="true"></i> {{ t.photo_label }} <span style="font-size:11px;color:var(--text-muted);">{{ t.photo_hint }}</span></label>
             <div class="photo-upload-area" id="photoArea" onclick="document.getElementById('photoInput').click()">
                 <!-- Placeholder visible before selection -->
-                <div class="photo-avatar-placeholder" id="photoPlaceholder">📷</div>
+                <div class="photo-avatar-placeholder" id="photoPlaceholder"><i class="bi bi-camera-fill" aria-hidden="true"></i></div>
                 <!-- Preview img, hidden until a file is chosen click to re-adjust the crop -->
                 <img id="photoPreview" class="photo-avatar" src="" alt="preview" style="display:none;cursor:pointer;" title="{{ t.crop_photo|default:'Recadrer' }}" onclick="event.stopPropagation(); reCropSelectedPhoto();">
                 <div class="photo-text">
@@ -274,12 +275,12 @@
                     <span id="photoSub">{{ t.photo_sub_hint }}</span>
                 </div>
                 <input type="file" name="profile_photo" id="photoInput" class="photo-input-hidden" accept=".jpg,.jpeg,.png,.webp" onchange="previewPhoto(event)">
-                <button type="button" class="photo-remove" id="photoRemove" onclick="removePhoto(event)" title="{{ t.photo_remove_label }}">✕</button>
+                <button type="button" class="photo-remove" id="photoRemove" onclick="removePhoto(event)" title="{{ t.photo_remove_label }}"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
             </div>
         </div>
 
         <button type="submit" class="btn-main">
-            ✅ {{ t.register_btn }} <span class="arr">→</span>
+            <i class="bi bi-check-circle-fill" style="color:#22c55e" aria-hidden="true"></i> {{ t.register_btn }} <span class="arr">→</span>
         </button>
     </form>
 
@@ -380,8 +381,8 @@ function removePhoto(event) {
 function togglePw(inputId, eyeId){
     var inp = document.getElementById(inputId);
     var eye = document.getElementById(eyeId);
-    if(inp.type === 'password'){ inp.type = 'text'; eye.textContent = '🙈'; }
-    else { inp.type = 'password'; eye.textContent = '👁️'; }
+    if(inp.type === 'password'){ inp.type = 'text'; eye.innerHTML = '<i class="bi bi-eye-slash-fill" aria-hidden="true"></i>'; }
+    else { inp.type = 'password'; eye.innerHTML = '<i class="bi bi-eye-fill" aria-hidden="true"></i>'; }
 }
 (function(){
     var t = localStorage.getItem('bluesky-theme') || 'light';
@@ -393,15 +394,15 @@ function togglePw(inputId, eyeId){
     <!-- Mobile bottom nav (auth pages) -->
     <nav class="auth-mob-nav">
         <a href="{% url 'welcome' %}">
-            <span class="amn-icon">🏠</span>
+            <span class="amn-icon"><i class="bi bi-house-door-fill" aria-hidden="true"></i></span>
             <span>{{ t.home|default:"Home" }}</span>
         </a>
         <a href="{% url 'login' %}">
-            <span class="amn-icon">🔑</span>
+            <span class="amn-icon"><i class="bi bi-key-fill" aria-hidden="true"></i></span>
             <span>{{ t.login_title|default:"Login" }}</span>
         </a>
         <a href="{% url 'register' %}" class="active">
-            <span class="amn-icon">📝</span>
+            <span class="amn-icon"><i class="bi bi-journal-text" aria-hidden="true"></i></span>
             <span>{{ t.register_title|default:"Register" }}</span>
         </a>
     </nav>

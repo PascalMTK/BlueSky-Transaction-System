@@ -2,7 +2,7 @@
 {% load static bluesky_tags %}
 
 {% block title %}Modifier le client{% endblock %}
-{% block page_title %}✏️ Modifier le client{% endblock %}
+{% block page_title %}<i class="bi bi-pencil-fill" aria-hidden="true"></i> Modifier le client{% endblock %}
 {% block page_subtitle %}{{ client.name }}{% endblock %}
 {% block nav_admin_logistics_clients %}active{% endblock %}
 
@@ -20,7 +20,7 @@
 </div>
 
 <div class="lg-section" style="max-width:520px;">
-    <div class="lg-section-title">👤 Informations du client</div>
+    <div class="lg-section-title"><i class="bi bi-person-fill" aria-hidden="true"></i> Informations du client</div>
     <form method="POST" action="{% url 'admin_logistics_client_edit' client.id %}">
         {% csrf_token %}
         <div class="form-group">
@@ -45,7 +45,7 @@
             </select>
         </div>
         <div style="display:flex;gap:10px;">
-            <button type="submit" class="btn btn-primary">💾 {{ t.save_changes }}</button>
+            <button type="submit" class="btn btn-primary"><i class="bi bi-floppy-fill" aria-hidden="true"></i> {{ t.save_changes }}</button>
             <a href="{% url 'admin_logistics_client_show' client.id %}" class="btn btn-secondary">{{ t.cancel }}</a>
         </div>
     </form>

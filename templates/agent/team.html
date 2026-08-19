@@ -134,7 +134,7 @@
         <div class="podium-card rank-{{ row.rank }}">
             {% if row.is_you %}<div class="podium-you-badge">{{ t.you_badge }}</div>{% endif %}
             <div class="podium-medal">
-                {% if row.rank == 1 %}🥇{% elif row.rank == 2 %}🥈{% else %}🥉{% endif %}
+                {% if row.rank == 1 %}<i class="bi bi-award-fill" style="color:#eab308" aria-hidden="true"></i>{% elif row.rank == 2 %}<i class="bi bi-award-fill" style="color:#94a3b8" aria-hidden="true"></i>{% else %}<i class="bi bi-award-fill" style="color:#b45309" aria-hidden="true"></i>{% endif %}
             </div>
             <div class="avatar-wrap podium-avatar-wrap">
                 {% if row.agent.photo_url %}
@@ -149,7 +149,7 @@
                 {% if row.agent.country %}{{ row.agent.country.flag_emoji }} {{ row.agent.country.name|country_name:locale }}{% else %}{% endif %}
             </div>
             <div class="online-label {% if row.agent.is_online %}is-online{% endif %}">
-                {% if row.agent.is_online %}🟢 {{ t.online_now }}{% else %}⚪ {{ t.offline_now }}{% endif %}
+                {% if row.agent.is_online %}<i class="bi bi-circle-fill" style="color:#22c55e" aria-hidden="true"></i> {{ t.online_now }}{% else %}<i class="bi bi-circle-fill" style="color:var(--text-muted)" aria-hidden="true"></i> {{ t.offline_now }}{% endif %}
             </div>
             <div class="podium-stat">{{ row.count }}<span>{{ t.tx_this_month }}</span></div>
         </div>
@@ -160,7 +160,7 @@
 
 <div class="card">
     <div class="card-header">
-        <div class="card-title">📋 {{ t.rank_label }}</div>
+        <div class="card-title"><i class="bi bi-clipboard-fill" aria-hidden="true"></i> {{ t.rank_label }}</div>
     </div>
     <div class="card-body">
         {% if board %}
@@ -180,13 +180,13 @@
                     <div class="team-row-name">
                         {{ row.agent.name }}
                         {% if row.is_you %}<span class="you-pill">{{ t.you_badge }}</span>{% endif %}
-                        {% if row.rank == 1 %}🏆{% endif %}
+                        {% if row.rank == 1 %}<i class="bi bi-trophy-fill" style="color:#eab308" aria-hidden="true"></i>{% endif %}
                     </div>
                     <div class="team-row-sub">
                         {% if row.agent.country %}{{ row.agent.country.flag_emoji }} {{ row.agent.country.name|country_name:locale }} · {% endif %}{{ row.agent.agent_code|default:"" }}
                     </div>
                     <div class="team-row-online {% if row.agent.is_online %}is-online{% endif %}">
-                        {% if row.agent.is_online %}🟢 {{ t.online_now }}{% else %}⚪ {{ t.offline_now }}{% endif %}
+                        {% if row.agent.is_online %}<i class="bi bi-circle-fill" style="color:#22c55e" aria-hidden="true"></i> {{ t.online_now }}{% else %}<i class="bi bi-circle-fill" style="color:var(--text-muted)" aria-hidden="true"></i> {{ t.offline_now }}{% endif %}
                     </div>
                 </div>
                 <div class="team-row-stats">

@@ -149,13 +149,13 @@
 {% block content %}
 <div class="card" style="max-width:760px;margin:0 auto;">
     <div class="card-header">
-        <div class="card-title">➕ {{ t.create_tx_title }}</div>
+        <div class="card-title"><i class="bi bi-plus-lg" aria-hidden="true"></i> {{ t.create_tx_title }}</div>
     </div>
     <div class="card-body">
 
         {% for message in messages %}
             <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %}">
-                {% if message.tags == 'error' %}❌{% else %}✅{% endif %} {{ message }}
+                {% if message.tags == 'error' %}<i class="bi bi-x-circle-fill" style="color:#ef4444" aria-hidden="true"></i>{% else %}<i class="bi bi-check-circle-fill" style="color:#22c55e" aria-hidden="true"></i>{% endif %} {{ message }}
             </div>
         {% endfor %}
 
@@ -166,9 +166,9 @@
             <div class="ip-group" style="margin-bottom:20px;">
                 <div class="ip-label">1️⃣ {{ t.tx_type_label }} *</div>
                 <div class="ip-row">
-                    <button type="button" class="ip-btn{% if type_preselected and default_tx_type == 'send' %} ip-active{% endif %}" data-tx-type="send" onclick="pickTxType('send', this)"><span class="ip-icon">📤</span><span class="ip-text">{{ t.type_send }}</span></button>
-                    <button type="button" class="ip-btn{% if type_preselected and default_tx_type == 'receive' %} ip-active{% endif %}" data-tx-type="receive" onclick="pickTxType('receive', this)"><span class="ip-icon">📥</span><span class="ip-text">{{ t.receive_verb }}</span></button>
-                    <button type="button" class="ip-btn{% if type_preselected and default_tx_type == 'exchange' %} ip-active{% endif %}" data-tx-type="exchange" onclick="pickTxType('exchange', this)"><span class="ip-icon">🔄</span><span class="ip-text">{{ t.exchange_verb }}</span></button>
+                    <button type="button" class="ip-btn{% if type_preselected and default_tx_type == 'send' %} ip-active{% endif %}" data-tx-type="send" onclick="pickTxType('send', this)"><span class="ip-icon"><i class="bi bi-send-fill" aria-hidden="true"></i></span><span class="ip-text">{{ t.type_send }}</span></button>
+                    <button type="button" class="ip-btn{% if type_preselected and default_tx_type == 'receive' %} ip-active{% endif %}" data-tx-type="receive" onclick="pickTxType('receive', this)"><span class="ip-icon"><i class="bi bi-inbox-fill" aria-hidden="true"></i></span><span class="ip-text">{{ t.receive_verb }}</span></button>
+                    <button type="button" class="ip-btn{% if type_preselected and default_tx_type == 'exchange' %} ip-active{% endif %}" data-tx-type="exchange" onclick="pickTxType('exchange', this)"><span class="ip-icon"><i class="bi bi-arrow-repeat" aria-hidden="true"></i></span><span class="ip-text">{{ t.exchange_verb }}</span></button>
                 </div>
                 <input type="hidden" name="transaction_type" id="txType" value="{{ default_tx_type }}">
             </div>
@@ -190,7 +190,7 @@
                     <div class="fx-hint" id="originRateHint" style="display:none;"></div>
                     <div id="originOtherWrap" style="display:none;margin-top:8px;">
                         <input type="text" name="origin_country_name" id="originOtherName" class="form-control" placeholder="{{ t.other_country_ph }}">
-                        <div style="font-size:11.5px;color:var(--text-muted);margin-top:4px;">💡 {{ t.other_country_hint }}</div>
+                        <div style="font-size:11.5px;color:var(--text-muted);margin-top:4px;"><i class="bi bi-lightbulb-fill" aria-hidden="true"></i> {{ t.other_country_hint }}</div>
                     </div>
                 </div>
                 <div class="form-group" style="margin:0;">
@@ -208,7 +208,7 @@
             <!-- Sender / Receiver -->
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;" class="form-grid">
                 <div style="background:var(--bg-secondary);border-radius:12px;padding:14px;">
-                    <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">📤 {{ t.sender_info }}</div>
+                    <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;"><i class="bi bi-send-fill" aria-hidden="true"></i> {{ t.sender_info }}</div>
                     <div class="form-group" style="margin-bottom:10px;">
                         <label class="form-label">{{ t.sender_name }} *</label>
                         <input type="text" name="sender_name" id="senderNameInput" class="form-control" placeholder="Jean Dupont" required>
@@ -219,7 +219,7 @@
                     </div>
                 </div>
                 <div style="background:var(--bg-secondary);border-radius:12px;padding:14px;">
-                    <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">📥 {{ t.receiver_info }}</div>
+                    <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;"><i class="bi bi-inbox-fill" aria-hidden="true"></i> {{ t.receiver_info }}</div>
                     <div class="form-group" style="margin-bottom:10px;">
                         <label class="form-label">{{ t.receiver_name }}</label>
                         <input type="text" name="receiver_name" id="receiverNameInput" class="form-control" placeholder="Marie Martin">
@@ -234,7 +234,7 @@
             <!-- Amount & fees -->
             <div class="tx-details-block">
                 <div class="tx-details-hdr">
-                    <div class="tx-details-hdr-icon">💰</div>
+                    <div class="tx-details-hdr-icon"><i class="bi bi-wallet2" aria-hidden="true"></i></div>
                     <div class="tx-details-hdr-label">{{ t.transfer_details }}</div>
                 </div>
                 <div class="tx-details-body">
@@ -244,7 +244,7 @@
                         <div class="tx-amount-grp">
                             <label class="form-label">{{ t.amount_to_send }} *</label>
                             <div class="tx-field-icon-wrap">
-                                <span class="tx-icon">💵</span>
+                                <span class="tx-icon"><i class="bi bi-cash" aria-hidden="true"></i></span>
                                 <input type="number" name="amount" id="amountInput" class="form-control"
                                        placeholder="100 000" step="0.01" min="0" required oninput="onAmountInput()">
                             </div>
@@ -304,7 +304,7 @@
                 <!-- Payment method optionnel, accordéon -->
                 <div class="ip-group-opt" id="grpPm">
                     <div class="ip-toggle-header" onclick="toggleIpGroup('grpPm')">
-                        <span class="ip-toggle-icon">💳</span>
+                        <span class="ip-toggle-icon"><i class="bi bi-credit-card-fill" aria-hidden="true"></i></span>
                         <span class="ip-toggle-title">{{ t.payment_method }}</span>
                         <span class="ip-opt-badge">OPTIONNEL</span>
                         <span class="ip-toggle-chosen" id="pmChosen"></span>
@@ -312,10 +312,10 @@
                     </div>
                     <div class="ip-collapsible">
                         <div class="ip-row">
-                            <button type="button" class="ip-btn" onclick="pickIpToggle('pm','cash',this,'pmChosen','💵 {{ t.cash }}')"><span class="ip-icon">💵</span><span class="ip-text">{{ t.cash }}</span></button>
-                            <button type="button" class="ip-btn" onclick="pickIpToggle('pm','bank_transfer',this,'pmChosen','🏦 {{ t.bank }}')"><span class="ip-icon">🏦</span><span class="ip-text">{{ t.bank }}</span></button>
-                            <button type="button" class="ip-btn" onclick="pickIpToggle('pm','mobile_money',this,'pmChosen','📱 {{ t.mobile_money }}')"><span class="ip-icon">📱</span><span class="ip-text">{{ t.mobile_money }}</span></button>
-                            <button type="button" class="ip-btn" onclick="pickIpToggle('pm','card',this,'pmChosen','💳 {{ t.card_label }}')"><span class="ip-icon">💳</span><span class="ip-text">{{ t.card_label }}</span></button>
+                            <button type="button" class="ip-btn" onclick="pickIpToggle('pm','cash',this,'pmChosen','<i class="bi bi-cash" aria-hidden="true"></i> {{ t.cash }}')"><span class="ip-icon"><i class="bi bi-cash" aria-hidden="true"></i></span><span class="ip-text">{{ t.cash }}</span></button>
+                            <button type="button" class="ip-btn" onclick="pickIpToggle('pm','bank_transfer',this,'pmChosen','<i class="bi bi-bank" aria-hidden="true"></i> {{ t.bank }}')"><span class="ip-icon"><i class="bi bi-bank" aria-hidden="true"></i></span><span class="ip-text">{{ t.bank }}</span></button>
+                            <button type="button" class="ip-btn" onclick="pickIpToggle('pm','mobile_money',this,'pmChosen','<i class="bi bi-phone-fill" aria-hidden="true"></i> {{ t.mobile_money }}')"><span class="ip-icon"><i class="bi bi-phone-fill" aria-hidden="true"></i></span><span class="ip-text">{{ t.mobile_money }}</span></button>
+                            <button type="button" class="ip-btn" onclick="pickIpToggle('pm','card',this,'pmChosen','<i class="bi bi-credit-card-fill" aria-hidden="true"></i> {{ t.card_label }}')"><span class="ip-icon"><i class="bi bi-credit-card-fill" aria-hidden="true"></i></span><span class="ip-text">{{ t.card_label }}</span></button>
                         </div>
                     </div>
                     <input type="hidden" name="payment_method" id="pm" value="">
@@ -323,14 +323,14 @@
             </div>
             <!-- Email client (optionnel) -->
             <div class="form-group" style="margin-top:16px;">
-                <label class="form-label">📧 {{ t.client_email_label }}</label>
+                <label class="form-label"><i class="bi bi-envelope-fill" aria-hidden="true"></i> {{ t.client_email_label }}</label>
                 <input type="email" name="client_email" class="form-control" placeholder="client@email.com">
-                <div style="font-size:11.5px;color:var(--text-muted);margin-top:4px;">💡 {{ t.client_email_hint_create }}</div>
+                <div style="font-size:11.5px;color:var(--text-muted);margin-top:4px;"><i class="bi bi-lightbulb-fill" aria-hidden="true"></i> {{ t.client_email_hint_create }}</div>
             </div>
 
             <!-- Notes -->
             <div class="form-group" style="margin-top:16px;">
-                <label class="form-label">📝 {{ t.notes }}</label>
+                <label class="form-label"><i class="bi bi-journal-text" aria-hidden="true"></i> {{ t.notes }}</label>
                 <textarea name="notes" class="form-control" rows="2" placeholder="{{ t.notes_ph }}"></textarea>
             </div>
 
@@ -338,7 +338,7 @@
 
             <!-- Actions -->
             <div class="tx-actions">
-                <button type="submit" class="btn btn-primary tx-btn-save">✅ {{ t.save_tx }}</button>
+                <button type="submit" class="btn btn-primary tx-btn-save"><i class="bi bi-check-circle-fill" style="color:#22c55e" aria-hidden="true"></i> {{ t.save_tx }}</button>
                 <a href="{% url 'tx_index' %}" class="btn btn-secondary tx-btn-cancel">← {{ t.cancel }}</a>
             </div>
         </form>
@@ -432,7 +432,7 @@ function updateRateHint(selId, hintId) {
     const rate = opt ? parseFloat(opt.dataset.rate) : NaN;
     const cur  = opt ? opt.dataset.currency : '';
     if (opt && opt.value && rate && cur) {
-        hint.textContent = '💱 ' + (window.FX_RATE_HINT_LABEL || '') + ' : 1 USD = ' + rate.toLocaleString('fr-FR') + ' ' + cur;
+        setIconText(hint, 'bi-currency-exchange', (window.FX_RATE_HINT_LABEL || '') + ' : 1 USD = ' + rate.toLocaleString('fr-FR') + ' ' + cur);
         hint.style.display = 'block';
     } else {
         hint.style.display = 'none';

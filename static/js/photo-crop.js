@@ -23,9 +23,9 @@
                 '</div>' +
                 '<div class="pcrop-hint">Glissez pour repositionner &middot; curseur pour zoomer</div>' +
                 '<div class="pcrop-actions">' +
-                    '<button type="button" class="btn btn-secondary" id="pcropCancel">✕ ' +
+                    '<button type="button" class="btn btn-secondary" id="pcropCancel"><i class="bi bi-x-lg" aria-hidden="true"></i> ' +
                     (document.documentElement.lang === 'en' ? 'Cancel' : 'Annuler') + '</button>' +
-                    '<button type="button" class="btn btn-primary" id="pcropConfirm">✓ Valider</button>' +
+                    '<button type="button" class="btn btn-primary" id="pcropConfirm"><i class="bi bi-check-lg" aria-hidden="true"></i> Valider</button>' +
                 '</div>' +
             '</div>';
         document.body.appendChild(el);

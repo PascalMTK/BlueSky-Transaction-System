@@ -2,7 +2,7 @@
 {% load static bluesky_tags %}
 
 {% block title %}{{ t.logistics_nav }}{% endblock %}
-{% block page_title %}🚚 {{ t.logistics_nav }}{% endblock %}
+{% block page_title %}<i class="bi bi-truck" aria-hidden="true"></i> {{ t.logistics_nav }}{% endblock %}
 {% block page_subtitle %}Tableau de bord des livraisons et collectes{% endblock %}
 {% block nav_admin_logistics %}active{% endblock %}
 {% block mob_adm_logistics %}active{% endblock %}
@@ -15,23 +15,23 @@
 
 <div class="lg-stats">
     <div class="lg-stat">
-        <span class="ico">📦</span>
+        <span class="ico"><i class="bi bi-box-seam-fill" aria-hidden="true"></i></span>
         <div><div class="lg-stat-num">{{ total_count }}</div><div class="lg-stat-lbl">Total</div></div>
     </div>
     <div class="lg-stat pending">
-        <span class="ico">⏳</span>
+        <span class="ico"><i class="bi bi-hourglass-split" style="color:#f59e0b" aria-hidden="true"></i></span>
         <div><div class="lg-stat-num">{{ status_counts.pending|default:0 }}</div><div class="lg-stat-lbl">En attente</div></div>
     </div>
     <div class="lg-stat in_transit">
-        <span class="ico">🚚</span>
+        <span class="ico"><i class="bi bi-truck" aria-hidden="true"></i></span>
         <div><div class="lg-stat-num">{{ status_counts.in_transit|default:0 }}</div><div class="lg-stat-lbl">En transit</div></div>
     </div>
     <div class="lg-stat delayed">
-        <span class="ico">⚠️</span>
+        <span class="ico"><i class="bi bi-exclamation-triangle-fill" style="color:#f59e0b" aria-hidden="true"></i></span>
         <div><div class="lg-stat-num">{{ status_counts.delayed|default:0 }}</div><div class="lg-stat-lbl">Retardé</div></div>
     </div>
     <div class="lg-stat completed">
-        <span class="ico">✅</span>
+        <span class="ico"><i class="bi bi-check-circle-fill" style="color:#22c55e" aria-hidden="true"></i></span>
         <div><div class="lg-stat-num">{{ status_counts.completed|default:0 }}</div><div class="lg-stat-lbl">Terminé</div></div>
     </div>
 </div>
@@ -39,19 +39,19 @@
 <div class="filters-bar">
     <form method="GET" action="{% url 'admin_logistics_dashboard' %}" style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;width:100%;">
         <div class="filter-group">
-            <label class="filter-label">📅 Du</label>
+            <label class="filter-label"><i class="bi bi-calendar-event-fill" aria-hidden="true"></i> Du</label>
             <input type="date" name="date_from" class="filter-control" value="{{ date_from }}">
         </div>
         <div class="filter-group">
-            <label class="filter-label">📅 Au</label>
+            <label class="filter-label"><i class="bi bi-calendar-event-fill" aria-hidden="true"></i> Au</label>
             <input type="date" name="date_to" class="filter-control" value="{{ date_to }}">
         </div>
         <div class="filter-group filter-group-search">
-            <label class="filter-label">🔍 {{ t.search }}</label>
+            <label class="filter-label"><i class="bi bi-search" aria-hidden="true"></i> {{ t.search }}</label>
             <input type="text" name="q" class="filter-control" placeholder="Nom ou téléphone du client..." value="{{ q }}">
         </div>
         <div class="filter-group">
-            <label class="filter-label">🚚 Chauffeur</label>
+            <label class="filter-label"><i class="bi bi-truck" aria-hidden="true"></i> Chauffeur</label>
             <select name="driver" class="filter-control">
                 <option value="">Tous les chauffeurs</option>
                 {% for d in drivers %}
@@ -60,7 +60,7 @@
             </select>
         </div>
         <div class="filter-group">
-            <label class="filter-label">📋 {{ t.status }}</label>
+            <label class="filter-label"><i class="bi bi-clipboard-fill" aria-hidden="true"></i> {{ t.status }}</label>
             <select name="status" class="filter-control">
                 <option value="">{{ t.all_statuses }}</option>
                 {% for key, label in status_choices %}
@@ -76,23 +76,23 @@
             </select>
         </div>
         <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;">
-            <button type="submit" class="btn btn-primary btn-sm">🔍 {{ t.filter_btn }}</button>
+            <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-search" aria-hidden="true"></i> {{ t.filter_btn }}</button>
             <a href="{% url 'admin_logistics_dashboard' %}" class="btn btn-secondary btn-sm">↺</a>
         </div>
     </form>
 </div>
 
 <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;">
-    <a href="{% url 'admin_delivery_create' %}" class="btn btn-primary btn-sm">➕ Nouvelle tâche</a>
-    <a href="{% url 'admin_logistics_clients' %}" class="btn btn-secondary btn-sm">👥 {{ t.logistics_clients_nav }}</a>
-    <a href="{% url 'admin_logistics_import' %}" class="btn btn-secondary btn-sm">📥 {{ t.logistics_import_nav }}</a>
-    <a href="{% url 'admin_logistics_map' %}" class="btn btn-secondary btn-sm">🗺️ {{ t.logistics_map_nav }}</a>
-    <a href="{% url 'admin_logistics_history' %}" class="btn btn-secondary btn-sm">📜 Historique</a>
+    <a href="{% url 'admin_delivery_create' %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg" aria-hidden="true"></i> Nouvelle tâche</a>
+    <a href="{% url 'admin_logistics_clients' %}" class="btn btn-secondary btn-sm"><i class="bi bi-people-fill" aria-hidden="true"></i> {{ t.logistics_clients_nav }}</a>
+    <a href="{% url 'admin_logistics_import' %}" class="btn btn-secondary btn-sm"><i class="bi bi-inbox-fill" aria-hidden="true"></i> {{ t.logistics_import_nav }}</a>
+    <a href="{% url 'admin_logistics_map' %}" class="btn btn-secondary btn-sm"><i class="bi bi-map-fill" aria-hidden="true"></i> {{ t.logistics_map_nav }}</a>
+    <a href="{% url 'admin_logistics_history' %}" class="btn btn-secondary btn-sm"><i class="bi bi-clock-history" aria-hidden="true"></i> Historique</a>
 </div>
 
 <div class="table-card">
     <div class="table-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
-        <div class="table-title">🚚 <span style="color:var(--sky-primary);">{{ deliveries|length }}</span> tâche(s)</div>
+        <div class="table-title"><i class="bi bi-truck" aria-hidden="true"></i> <span style="color:var(--sky-primary);">{{ deliveries|length }}</span> tâche(s)</div>
     </div>
     <div class="table-scroll" style="overflow-x:auto;">
         {% if deliveries %}
@@ -112,7 +112,7 @@
                 {% for d in deliveries %}
                 <tr data-delivery-id="{{ d.id }}">
                     <td style="white-space:nowrap;font-size:12px;">{{ d.scheduled_at|date:"d/m/Y H:i" }}</td>
-                    <td>{% if d.task_type == 'pickup' %}📤 Collecte{% else %}📥 Livraison{% endif %}</td>
+                    <td>{% if d.task_type == 'pickup' %}<i class="bi bi-send-fill" aria-hidden="true"></i> Collecte{% else %}<i class="bi bi-inbox-fill" aria-hidden="true"></i> Livraison{% endif %}</td>
                     <td>
                         <div style="display:flex;align-items:center;gap:8px;">
                             <div class="lg-avatar-sm">{{ d.client.name|initials }}</div>
@@ -139,10 +139,10 @@
                         </select>
                     </td>
                     <td class="hide-mobile" style="white-space:nowrap;">
-                        <a href="{% url 'admin_delivery_edit' d.id %}" class="btn btn-secondary btn-sm">✏️</a>
+                        <a href="{% url 'admin_delivery_edit' d.id %}" class="btn btn-secondary btn-sm"><i class="bi bi-pencil-fill" aria-hidden="true"></i></a>
                         <form method="POST" action="{% url 'admin_delivery_destroy' d.id %}" style="display:inline;" onsubmit="return confirm('Supprimer cette tâche ?');">
                             {% csrf_token %}
-                            <button type="submit" class="btn btn-secondary btn-sm">🗑️</button>
+                            <button type="submit" class="btn btn-secondary btn-sm"><i class="bi bi-trash3-fill" aria-hidden="true"></i></button>
                         </form>
                     </td>
                 </tr>
@@ -150,7 +150,7 @@
             </tbody>
         </table>
         {% else %}
-            <div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">Aucune tâche de livraison trouvée</div></div>
+            <div class="empty-state"><div class="empty-icon"><i class="bi bi-inbox" aria-hidden="true"></i></div><div class="empty-text">Aucune tâche de livraison trouvée</div></div>
         {% endif %}
     </div>
 </div>

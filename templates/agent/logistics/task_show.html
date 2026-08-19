@@ -2,7 +2,7 @@
 {% load static bluesky_tags %}
 
 {% block title %}{{ delivery.client.name }}{% endblock %}
-{% block page_title %}{% if delivery.task_type == 'pickup' %}📤 Collecte{% else %}📥 Livraison{% endif %}{% endblock %}
+{% block page_title %}{% if delivery.task_type == 'pickup' %}<i class="bi bi-send-fill" aria-hidden="true"></i> Collecte{% else %}<i class="bi bi-inbox-fill" aria-hidden="true"></i> Livraison{% endif %}{% endblock %}
 {% block page_subtitle %}{{ delivery.client.name }}{% endblock %}
 {% block nav_logistics_tasks %}active{% endblock %}
 {% block mob_logistics_tasks %}active{% endblock %}
@@ -16,12 +16,12 @@
     <div class="lg-avatar">{{ delivery.client.name|initials }}</div>
     <div>
         <div class="lg-profile-name">{{ delivery.client.name }}</div>
-        <div class="lg-profile-meta">📞 {{ delivery.client.phone }} · {{ delivery.scheduled_at|date:"d/m/Y H:i" }}</div>
+        <div class="lg-profile-meta"><i class="bi bi-telephone-fill" aria-hidden="true"></i> {{ delivery.client.phone }} · {{ delivery.scheduled_at|date:"d/m/Y H:i" }}</div>
     </div>
 </div>
 
 <div class="lg-section" style="max-width:560px;">
-    <div class="lg-section-title">📍 Détails de la tâche</div>
+    <div class="lg-section-title"><i class="bi bi-geo-alt-fill" aria-hidden="true"></i> Détails de la tâche</div>
     <div class="form-group">
         <label class="form-label">Adresse enregistrée</label>
         <div>{{ delivery.address.address_line|default:"Non spécifiée" }}</div>
@@ -47,7 +47,7 @@
 </div>
 
 <div class="lg-section" style="max-width:560px;margin-bottom:0;">
-    <div class="lg-section-title">📝 Informations sur le terrain</div>
+    <div class="lg-section-title"><i class="bi bi-journal-text" aria-hidden="true"></i> Informations sur le terrain</div>
     <form method="POST" action="{% url 'logistics_driver_task_show' delivery.id %}">
         {% csrf_token %}
         <div class="form-group">
@@ -61,8 +61,8 @@
         <div class="form-group">
             <label class="form-label">Mode de paiement</label>
             <div class="lg-picker-row">
-                <button type="button" class="lg-picker-btn lg-picker-compact{% if delivery.payment_method == 'cash' %} lg-active{% endif %}" data-pm="cash" onclick="tkPickPm('cash', this)">💵 Cash</button>
-                <button type="button" class="lg-picker-btn lg-picker-compact{% if delivery.payment_method == 'other' %} lg-active{% endif %}" data-pm="other" onclick="tkPickPm('other', this)">❔ Autre</button>
+                <button type="button" class="lg-picker-btn lg-picker-compact{% if delivery.payment_method == 'cash' %} lg-active{% endif %}" data-pm="cash" onclick="tkPickPm('cash', this)"><i class="bi bi-cash" aria-hidden="true"></i> Cash</button>
+                <button type="button" class="lg-picker-btn lg-picker-compact{% if delivery.payment_method == 'other' %} lg-active{% endif %}" data-pm="other" onclick="tkPickPm('other', this)"><i class="bi bi-question-circle" aria-hidden="true"></i> Autre</button>
             </div>
             <input type="hidden" name="payment_method" id="tkPmInput" value="{{ delivery.payment_method|default:'' }}">
         </div>
@@ -70,7 +70,7 @@
             <label class="form-label">Préciser</label>
             <input type="text" name="payment_method_other" class="form-control" value="{{ delivery.payment_method_other|default:'' }}" placeholder="Ex: Mobile Money, Virement...">
         </div>
-        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">💾 Enregistrer</button>
+        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;"><i class="bi bi-floppy-fill" aria-hidden="true"></i> Enregistrer</button>
     </form>
 </div>
 

@@ -2,7 +2,7 @@
 {% load static bluesky_tags l10n %}
 
 {% block title %}{{ t.month_summary_nav }}{% endblock %}
-{% block page_title %}📁 {{ t.month_summary_nav }}{% endblock %}
+{% block page_title %}<i class="bi bi-folder-fill" aria-hidden="true"></i> {{ t.month_summary_nav }}{% endblock %}
 {% block page_subtitle %}{{ selected_month_label }}{% endblock %}
 {% block nav_admin_month_summary %}active{% endblock %}
 {% block mob_adm_tx %}active{% endblock %}
@@ -71,15 +71,15 @@
         </div>
         <div class="trend-kpis">
             <div class="trend-kpi kpi-count">
-                <div class="trend-kpi-head"><span class="trend-kpi-icon">📋</span><span class="trend-kpi-label">{{ t.nb_tx|default:"Transactions" }}</span></div>
+                <div class="trend-kpi-head"><span class="trend-kpi-icon"><i class="bi bi-clipboard-fill" aria-hidden="true"></i></span><span class="trend-kpi-label">{{ t.nb_tx|default:"Transactions" }}</span></div>
                 <div class="trend-kpi-value">{{ total_count }}</div>
             </div>
             <div class="trend-kpi kpi-volume">
-                <div class="trend-kpi-head"><span class="trend-kpi-icon">💰</span><span class="trend-kpi-label">{% if locale == 'en' %}Sent (USD eq.){% else %}Envoyé (éq. USD){% endif %}</span></div>
+                <div class="trend-kpi-head"><span class="trend-kpi-icon"><i class="bi bi-wallet2" aria-hidden="true"></i></span><span class="trend-kpi-label">{% if locale == 'en' %}Sent (USD eq.){% else %}Envoyé (éq. USD){% endif %}</span></div>
                 <div class="trend-kpi-value">${{ total_amount_usd|number_format:0 }}</div>
             </div>
             <div class="trend-kpi kpi-best">
-                <div class="trend-kpi-head"><span class="trend-kpi-icon">🏦</span><span class="trend-kpi-label">{% if locale == 'en' %}Fees collected{% else %}Frais perçus{% endif %}</span></div>
+                <div class="trend-kpi-head"><span class="trend-kpi-icon"><i class="bi bi-bank" aria-hidden="true"></i></span><span class="trend-kpi-label">{% if locale == 'en' %}Fees collected{% else %}Frais perçus{% endif %}</span></div>
                 <div class="trend-kpi-value">${{ total_fee_usd|number_format:0 }}</div>
             </div>
             <div class="trend-kpi kpi-average">
@@ -98,13 +98,13 @@
                 <div class="distribution-list">
                     {% for row in status_breakdown %}
                     <div class="distribution-row">
-                        <div class="distribution-name"><span class="dot" style="background:{% if row.code == 'completed' %}#22c55e{% elif row.code == 'pending' %}#f59e0b{% else %}#ef4444{% endif %}"></span><strong>{% if row.code == 'completed' %}✅ {{ t.completed }}{% elif row.code == 'pending' %}⏳ {{ t.pending }}{% else %}❌ {{ t.cancelled }}{% endif %}</strong></div>
+                        <div class="distribution-name"><span class="dot" style="background:{% if row.code == 'completed' %}#22c55e{% elif row.code == 'pending' %}#f59e0b{% else %}#ef4444{% endif %}"></span><strong>{% if row.code == 'completed' %}<i class="bi bi-check-circle-fill" style="color:#22c55e" aria-hidden="true"></i> {{ t.completed }}{% elif row.code == 'pending' %}<i class="bi bi-hourglass-split" style="color:#f59e0b" aria-hidden="true"></i> {{ t.pending }}{% else %}<i class="bi bi-x-circle-fill" style="color:#ef4444" aria-hidden="true"></i> {{ t.cancelled }}{% endif %}</strong></div>
                         <div class="distribution-value">{{ row.count }} tx</div>
                         <div class="distribution-pct">{{ row.pct }}%</div>
                     </div>
                     {% endfor %}
                 </div>
-                {% else %}<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">{{ t.no_data }}</div></div>{% endif %}
+                {% else %}<div class="empty-state"><div class="empty-icon"><i class="bi bi-inbox" aria-hidden="true"></i></div><div class="empty-text">{{ t.no_data }}</div></div>{% endif %}
             </div>
         </section>
         <section class="analytics-card">
@@ -121,13 +121,13 @@
                     </div>
                     {% endfor %}
                 </div>
-                {% else %}<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">{{ t.no_data }}</div></div>{% endif %}
+                {% else %}<div class="empty-state"><div class="empty-icon"><i class="bi bi-inbox" aria-hidden="true"></i></div><div class="empty-text">{{ t.no_data }}</div></div>{% endif %}
             </div>
         </section>
     </div>
 
     <div class="table-card" style="margin-bottom:18px;">
-        <div class="table-header"><div class="table-title">👥 {% if locale == 'en' %}By agent (USD equivalent){% else %}Par agent (équivalent USD){% endif %}</div></div>
+        <div class="table-header"><div class="table-title"><i class="bi bi-people-fill" aria-hidden="true"></i> {% if locale == 'en' %}By agent (USD equivalent){% else %}Par agent (équivalent USD){% endif %}</div></div>
         <div class="table-scroll" style="overflow-x:auto;">
             {% if agent_breakdown %}
             <table class="bsky-table">
@@ -138,12 +138,12 @@
                     {% endfor %}
                 </tbody>
             </table>
-            {% else %}<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">{{ t.no_data }}</div></div>{% endif %}
+            {% else %}<div class="empty-state"><div class="empty-icon"><i class="bi bi-inbox" aria-hidden="true"></i></div><div class="empty-text">{{ t.no_data }}</div></div>{% endif %}
         </div>
     </div>
 
     <div class="table-card">
-        <div class="table-header"><div class="table-title">💱 {% if locale == 'en' %}By currency (raw amounts, no conversion){% else %}Par devise (montants bruts, sans conversion){% endif %}</div></div>
+        <div class="table-header"><div class="table-title"><i class="bi bi-currency-exchange" aria-hidden="true"></i> {% if locale == 'en' %}By currency (raw amounts, no conversion){% else %}Par devise (montants bruts, sans conversion){% endif %}</div></div>
         <div class="table-scroll" style="overflow-x:auto;">
             {% if currency_breakdown %}
             <table class="bsky-table">
@@ -160,7 +160,7 @@
                     {% endfor %}
                 </tbody>
             </table>
-            {% else %}<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">{{ t.no_data }}</div></div>{% endif %}
+            {% else %}<div class="empty-state"><div class="empty-icon"><i class="bi bi-inbox" aria-hidden="true"></i></div><div class="empty-text">{{ t.no_data }}</div></div>{% endif %}
         </div>
     </div>
 </div>

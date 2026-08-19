@@ -2,7 +2,7 @@
 {% load static bluesky_tags %}
 
 {% block title %}Itinéraire — {{ driver.name }}{% endblock %}
-{% block page_title %}🗺️ Itinéraire — {{ driver.name }}{% endblock %}
+{% block page_title %}<i class="bi bi-map-fill" aria-hidden="true"></i> Itinéraire — {{ driver.name }}{% endblock %}
 {% block page_subtitle %}{{ day|date:"d/m/Y" }}{% endblock %}
 {% block nav_admin_logistics %}active{% endblock %}
 
@@ -22,21 +22,21 @@
 
 <form method="GET" style="margin-bottom:14px;display:flex;gap:8px;align-items:flex-end;">
     <div class="filter-group">
-        <label class="filter-label">📅 Date</label>
+        <label class="filter-label"><i class="bi bi-calendar-event-fill" aria-hidden="true"></i> Date</label>
         <input type="date" name="date" class="filter-control" value="{{ day|date:'Y-m-d' }}">
     </div>
-    <button type="submit" class="btn btn-primary btn-sm">🔍 {{ t.filter_btn }}</button>
+    <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-search" aria-hidden="true"></i> {{ t.filter_btn }}</button>
 </form>
 
 <div class="lg-section">
     <div id="logiRouteMap" class="logi-map"></div>
     <div class="lg-hint" style="margin-top:8px;">
-        💡 Ordre suggéré (ligne droite la plus courte), ce n'est pas un itinéraire routier précis
+        <i class="bi bi-lightbulb-fill" aria-hidden="true"></i> Ordre suggéré (ligne droite la plus courte), ce n'est pas un itinéraire routier précis
     </div>
 </div>
 
 <div class="lg-section">
-    <div class="lg-section-title">📋 Arrêts ordonnés</div>
+    <div class="lg-section-title"><i class="bi bi-clipboard-fill" aria-hidden="true"></i> Arrêts ordonnés</div>
     {% if ordered_deliveries %}
     <div class="table-scroll" style="overflow-x:auto;">
         <table class="bsky-table">
@@ -54,13 +54,13 @@
         </table>
     </div>
     {% else %}
-    <div class="empty-state"><div class="empty-icon">🗺️</div><div class="empty-text">Aucun arrêt géocodé pour cette date</div></div>
+    <div class="empty-state"><div class="empty-icon"><i class="bi bi-map-fill" aria-hidden="true"></i></div><div class="empty-text">Aucun arrêt géocodé pour cette date</div></div>
     {% endif %}
 </div>
 
 {% if not_on_route %}
 <div class="lg-section" style="margin-top:16px;">
-    <div class="lg-section-title">⚪ Non inclus (adresse non géocodée)</div>
+    <div class="lg-section-title"><i class="bi bi-circle-fill" style="color:var(--text-muted)" aria-hidden="true"></i> Non inclus (adresse non géocodée)</div>
     {% for d in not_on_route %}
         <div style="font-size:13px;padding:6px 0;border-bottom:1px solid var(--border);">{{ d.client.name }} — {{ d.address.address_line|default:"Aucune adresse" }}</div>
     {% endfor %}

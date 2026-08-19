@@ -51,9 +51,9 @@
 
 <!-- Breadcrumb -->
 <div style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--text-muted);margin-bottom:16px;">
-    <a href="{% url 'admin_dashboard' %}" style="color:var(--text-muted);text-decoration:none;" onmouseover="this.style.color='var(--sky-primary)'" onmouseout="this.style.color='var(--text-muted)'">🏠 {{ t.dashboard }}</a>
+    <a href="{% url 'admin_dashboard' %}" style="color:var(--text-muted);text-decoration:none;" onmouseover="this.style.color='var(--sky-primary)'" onmouseout="this.style.color='var(--text-muted)'"><i class="bi bi-house-door-fill" aria-hidden="true"></i> {{ t.dashboard }}</a>
     <span>›</span>
-    <a href="{% url 'admin_countries' %}" style="color:var(--text-muted);text-decoration:none;" onmouseover="this.style.color='var(--sky-primary)'" onmouseout="this.style.color='var(--text-muted)'">🌍 {{ t.countries_title }}</a>
+    <a href="{% url 'admin_countries' %}" style="color:var(--text-muted);text-decoration:none;" onmouseover="this.style.color='var(--sky-primary)'" onmouseout="this.style.color='var(--text-muted)'"><i class="bi bi-globe-americas" aria-hidden="true"></i> {{ t.countries_title }}</a>
     <span>›</span>
     <span style="color:var(--sky-primary);font-weight:600;">{{ country.flag_emoji }} {{ country.name }}</span>
 </div>
@@ -64,7 +64,7 @@
     <div class="card">
         <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
             <div>
-                <div class="card-title">✏️ {{ t.edit_country_title }}</div>
+                <div class="card-title"><i class="bi bi-pencil-fill" aria-hidden="true"></i> {{ t.edit_country_title }}</div>
                 <div class="card-subtitle">{{ country.flag_emoji }} {{ country.name }}</div>
             </div>
             <div style="display:flex;gap:8px;">
@@ -75,7 +75,7 @@
 
             {% for message in messages %}
                 <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %}" style="margin-bottom:16px;">
-                    {% if message.tags == 'error' %}❌{% else %}✅{% endif %} {{ message }}
+                    {% if message.tags == 'error' %}<i class="bi bi-x-circle-fill" style="color:#ef4444" aria-hidden="true"></i>{% else %}<i class="bi bi-check-circle-fill" style="color:#22c55e" aria-hidden="true"></i>{% endif %} {{ message }}
                 </div>
             {% endfor %}
 
@@ -84,7 +84,7 @@
 
                 <!-- Identity -->
                 <div class="form-section">
-                    <div class="form-section-title">🏳️ {{ t.country_identity }}</div>
+                    <div class="form-section-title"><i class="bi bi-flag-fill" aria-hidden="true"></i> {{ t.country_identity }}</div>
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;" class="form-grid">
                         <div class="form-group" style="margin:0;">
                             <label class="form-label">{{ t.country_name }} <span class="required">*</span></label>
@@ -108,7 +108,7 @@
 
                 <!-- Currency -->
                 <div class="form-section">
-                    <div class="form-section-title">💰 {{ t.currency_section }}</div>
+                    <div class="form-section-title"><i class="bi bi-wallet2" aria-hidden="true"></i> {{ t.currency_section }}</div>
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;" class="form-grid">
                         <div class="form-group" style="margin:0;">
                             <label class="form-label">{{ t.currency_code }} <span class="required">*</span></label>
@@ -124,7 +124,7 @@
 
                 <!-- Settings -->
                 <div class="form-section">
-                    <div class="form-section-title">⚙️ {{ t.settings_section }}</div>
+                    <div class="form-section-title"><i class="bi bi-gear-fill" aria-hidden="true"></i> {{ t.settings_section }}</div>
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;" class="form-grid">
                         <div class="form-group" style="margin:0;">
                             <label class="form-label">{{ t.default_fee }} (%)</label>
@@ -134,12 +134,12 @@
                         <div class="form-group" style="margin:0;">
                             <label class="form-label">{{ t.status }}</label>
                             <select name="is_active" class="form-control">
-                                <option value="1" {% if country.is_active %}selected{% endif %}>✅ {{ t.active }}</option>
-                                <option value="0" {% if not country.is_active %}selected{% endif %}>❌ {{ t.inactive }}</option>
+                                <option value="1" {% if country.is_active %}selected{% endif %}><i class="bi bi-check-circle-fill" style="color:#22c55e" aria-hidden="true"></i> {{ t.active }}</option>
+                                <option value="0" {% if not country.is_active %}selected{% endif %}><i class="bi bi-x-circle-fill" style="color:#ef4444" aria-hidden="true"></i> {{ t.inactive }}</option>
                             </select>
                         </div>
                         <div class="form-group" style="margin:0;">
-                            <label class="form-label">💵 {{ t.usd_rate_label }}</label>
+                            <label class="form-label"><i class="bi bi-cash" aria-hidden="true"></i> {{ t.usd_rate_label }}</label>
                             <input type="number" name="usd_exchange_rate" class="form-control" value="{{ country.usd_exchange_rate }}" step="0.0001" min="0.0001">
                             <div class="form-text">{{ t.usd_rate_field_hint }}</div>
                         </div>
@@ -147,14 +147,14 @@
                 </div>
 
                 <div style="display:flex;gap:12px;">
-                    <button type="submit" class="btn btn-primary btn-lg" style="flex:1;justify-content:center;">💾 {{ t.save_changes }}</button>
+                    <button type="submit" class="btn btn-primary btn-lg" style="flex:1;justify-content:center;"><i class="bi bi-floppy-fill" aria-hidden="true"></i> {{ t.save_changes }}</button>
                     <a href="{% url 'admin_countries' %}" class="btn btn-secondary btn-lg">← {{ t.cancel }}</a>
                 </div>
             </form>
 
             <!-- Danger zone -->
             <div class="danger-zone" style="margin-top:24px;">
-                <div style="font-size:11px;font-weight:700;color:#ef4444;text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;">⚠️ {{ t.danger_zone }}</div>
+                <div style="font-size:11px;font-weight:700;color:#ef4444;text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;"><i class="bi bi-exclamation-triangle-fill" style="color:#f59e0b" aria-hidden="true"></i> {{ t.danger_zone }}</div>
                 <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
                     <div>
                         <div style="font-size:13px;font-weight:600;color:var(--text-primary);">{{ t.delete_country }}</div>
@@ -162,7 +162,7 @@
                     </div>
                     <form method="POST" action="{% url 'admin_countries_destroy' country.id %}" onsubmit="return confirm('{{ t.delete_confirm }}');">
                         {% csrf_token %}
-                        <button type="submit" class="btn btn-danger btn-sm">🗑️ {{ t.delete }}</button>
+                        <button type="submit" class="btn btn-danger btn-sm"><i class="bi bi-trash3-fill" aria-hidden="true"></i> {{ t.delete }}</button>
                     </form>
                 </div>
             </div>
@@ -173,7 +173,7 @@
     <div>
         <div class="card">
             <div class="card-header">
-                <div class="card-title">👁️ {{ t.live_preview }}</div>
+                <div class="card-title"><i class="bi bi-eye-fill" aria-hidden="true"></i> {{ t.live_preview }}</div>
             </div>
             <div class="card-body" style="padding:16px;">
                 <div class="country-preview">
@@ -204,7 +204,7 @@
                     <div style="display:flex;justify-content:space-between;padding:9px 0;font-size:12.5px;">
                         <span style="color:var(--text-muted);font-weight:600;">{{ t.status }}</span>
                         <span class="badge-status {% if country.is_active %}status-completed{% else %}status-cancelled{% endif %}" style="font-size:11px;">
-                            {% if country.is_active %}✅ {{ t.active }}{% else %}❌ {{ t.inactive }}{% endif %}
+                            {% if country.is_active %}<i class="bi bi-check-circle-fill" style="color:#22c55e" aria-hidden="true"></i> {{ t.active }}{% else %}<i class="bi bi-x-circle-fill" style="color:#ef4444" aria-hidden="true"></i> {{ t.inactive }}{% endif %}
                         </span>
                     </div>
                 </div>

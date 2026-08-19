@@ -194,12 +194,12 @@
 <!-- Search / Filters -->
 <form method="GET" action="{% url 'admin_agents' %}">
 <div class="ag-search-bar">
-    <input type="text" name="q" placeholder="🔍 {{ t.search_agent }}" value="{{ q }}">
+    <input type="text" name="q" placeholder="<i class="bi bi-search" aria-hidden="true"></i> {{ t.search_agent }}" value="{{ q }}">
     <select name="status">
         <option value="">{{ t.all_status }}</option>
-        <option value="active"   {% if status_filter == 'active' %}selected{% endif %}>✅ {{ t.active_status }}</option>
-        <option value="pending"  {% if status_filter == 'pending' %}selected{% endif %}>⏳ {{ t.pending_status }}</option>
-        <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>❌ {{ t.inactive_status }}</option>
+        <option value="active"   {% if status_filter == 'active' %}selected{% endif %}><i class="bi bi-check-circle-fill" style="color:#22c55e" aria-hidden="true"></i> {{ t.active_status }}</option>
+        <option value="pending"  {% if status_filter == 'pending' %}selected{% endif %}><i class="bi bi-hourglass-split" style="color:#f59e0b" aria-hidden="true"></i> {{ t.pending_status }}</option>
+        <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}><i class="bi bi-x-circle-fill" style="color:#ef4444" aria-hidden="true"></i> {{ t.inactive_status }}</option>
     </select>
     <select name="country_id">
         <option value="">{{ t.all_countries_filter }}</option>
@@ -248,18 +248,18 @@
             {% if agent.agent_code %}<span class="ag-card-code">{{ agent.agent_code }}</span>{% endif %}
         </div>
         <span class="ag-card-badge {{ agent.status }}">
-            {% if agent.status == 'active' %}✅ {{ t.active_status }}
-            {% elif agent.status == 'pending' %}⏳ {{ t.pending_status }}
-            {% else %}❌ {{ t.inactive_status }}{% endif %}
+            {% if agent.status == 'active' %}<i class="bi bi-check-circle-fill" style="color:#22c55e" aria-hidden="true"></i> {{ t.active_status }}
+            {% elif agent.status == 'pending' %}<i class="bi bi-hourglass-split" style="color:#f59e0b" aria-hidden="true"></i> {{ t.pending_status }}
+            {% else %}<i class="bi bi-x-circle-fill" style="color:#ef4444" aria-hidden="true"></i> {{ t.inactive_status }}{% endif %}
         </span>
     </div>
 
     <!-- Info rows -->
     <div class="ag-card-info">
-        <div class="ag-card-row"><span>📧</span><span>{{ agent.email }}</span></div>
-        {% if agent.phone %}<div class="ag-card-row"><span>📞</span><span>{{ agent.phone }}</span></div>{% endif %}
-        {% if agent.country %}<div class="ag-card-row"><span>🌍</span><span>{{ agent.country.flag_emoji }} {{ agent.country.name|country_name:locale }}</span></div>{% endif %}
-        <div class="ag-card-row"><span>📅</span><span>{{ agent.created_at|date:"d/m/Y" }}</span></div>
+        <div class="ag-card-row"><span><i class="bi bi-envelope-fill" aria-hidden="true"></i></span><span>{{ agent.email }}</span></div>
+        {% if agent.phone %}<div class="ag-card-row"><span><i class="bi bi-telephone-fill" aria-hidden="true"></i></span><span>{{ agent.phone }}</span></div>{% endif %}
+        {% if agent.country %}<div class="ag-card-row"><span><i class="bi bi-globe-americas" aria-hidden="true"></i></span><span>{{ agent.country.flag_emoji }} {{ agent.country.name|country_name:locale }}</span></div>{% endif %}
+        <div class="ag-card-row"><span><i class="bi bi-calendar-event-fill" aria-hidden="true"></i></span><span>{{ agent.created_at|date:"d/m/Y" }}</span></div>
     </div>
 
     <!-- Action buttons -->
@@ -267,14 +267,14 @@
 
         <!-- Edit -->
         <a href="{% url 'admin_agent_edit' agent.id %}" class="ac-btn ac-btn-edit">
-            ✏️ {{ t.edit_agent }}
+            <i class="bi bi-pencil-fill" aria-hidden="true"></i> {{ t.edit_agent }}
         </a>
 
         <!-- Change password -->
         <button type="button" class="ac-btn ac-btn-pw"
                 data-agent-id="{{ agent.id }}" data-agent-name="{{ agent.name }}"
                 onclick="openPwModal(this.dataset.agentId, this.dataset.agentName)">
-            🔑 {{ t.password_label }}
+            <i class="bi bi-key-fill" aria-hidden="true"></i> {{ t.password_label }}
         </button>
 
         <!-- Activate / Deactivate -->
@@ -285,7 +285,7 @@
                 <button type="submit" class="ac-btn ac-btn-deactivate" style="width:100%;">⏸ {{ t.deactivate }}</button>
             {% elif agent.status == 'pending' %}
                 <input type="hidden" name="status" value="active">
-                <button type="submit" class="ac-btn ac-btn-activate" style="width:100%;">✅ {{ t.activate }}</button>
+                <button type="submit" class="ac-btn ac-btn-activate" style="width:100%;"><i class="bi bi-check-circle-fill" style="color:#22c55e" aria-hidden="true"></i> {{ t.activate }}</button>
             {% else %}
                 <input type="hidden" name="status" value="active">
                 <button type="submit" class="ac-btn ac-btn-activate" style="width:100%;">▶ {{ t.reactivate }}</button>
@@ -295,13 +295,13 @@
         <!-- Promote to admin -->
         <form method="POST" action="{% url 'admin_agent_promote' agent.id %}">
             {% csrf_token %}
-            <button type="submit" class="ac-btn ac-btn-promote" style="width:100%;">⬆️ {{ t.promote_admin }}</button>
+            <button type="submit" class="ac-btn ac-btn-promote" style="width:100%;"><i class="bi bi-arrow-up-circle-fill" aria-hidden="true"></i> {{ t.promote_admin }}</button>
         </form>
 
         <!-- Archive (soft delete) -->
         <form method="POST" action="{% url 'admin_agent_destroy' agent.id %}" class="form-full">
             {% csrf_token %}
-            <button type="submit" class="ac-btn ac-btn-archive">🗂️ {{ t.archive_agent }}</button>
+            <button type="submit" class="ac-btn ac-btn-archive"><i class="bi bi-archive-fill" aria-hidden="true"></i> {{ t.archive_agent }}</button>
         </form>
 
     </div>
@@ -311,7 +311,7 @@
 
 {% else %}
 <div class="ag-empty">
-    <div class="ag-empty-icon">👥</div>
+    <div class="ag-empty-icon"><i class="bi bi-people-fill" aria-hidden="true"></i></div>
     <div style="font-size:15px;font-weight:600;">{{ t.no_agents_found }}</div>
 </div>
 {% endif %}
@@ -320,7 +320,7 @@
 {% if deleted_agents %}
 <div class="ag-archive-section">
     <div class="ag-archive-header" onclick="toggleArchive()">
-        <span>🗂️</span>
+        <span><i class="bi bi-archive-fill" aria-hidden="true"></i></span>
         <span>{{ t.archived_agents }} {{ t.archived_agents_hint }} ({{ deleted_agents|length }})</span>
         <span id="archiveChevron" style="margin-left:auto;">▼</span>
     </div>
@@ -336,31 +336,31 @@
                     <div class="ag-card-name">{{ agent.name }}</div>
                     {% if agent.agent_code %}<span class="ag-card-code">{{ agent.agent_code }}</span>{% endif %}
                 </div>
-                <span class="ag-card-badge deleted">🗂️ {{ t.archived_badge }}</span>
+                <span class="ag-card-badge deleted"><i class="bi bi-archive-fill" aria-hidden="true"></i> {{ t.archived_badge }}</span>
             </div>
             <div class="ag-card-info">
-                <div class="ag-card-row"><span>📧</span><span>{{ agent.email }}</span></div>
-                {% if agent.phone %}<div class="ag-card-row"><span>📞</span><span>{{ agent.phone }}</span></div>{% endif %}
-                {% if agent.country %}<div class="ag-card-row"><span>🌍</span><span>{{ agent.country.flag_emoji }} {{ agent.country.name|country_name:locale }}</span></div>{% endif %}
+                <div class="ag-card-row"><span><i class="bi bi-envelope-fill" aria-hidden="true"></i></span><span>{{ agent.email }}</span></div>
+                {% if agent.phone %}<div class="ag-card-row"><span><i class="bi bi-telephone-fill" aria-hidden="true"></i></span><span>{{ agent.phone }}</span></div>{% endif %}
+                {% if agent.country %}<div class="ag-card-row"><span><i class="bi bi-globe-americas" aria-hidden="true"></i></span><span>{{ agent.country.flag_emoji }} {{ agent.country.name|country_name:locale }}</span></div>{% endif %}
             </div>
             <div class="ag-card-actions">
                 <!-- Restore -->
                 <form method="POST" action="{% url 'admin_agent_status' agent.id %}" class="form-full">
                     {% csrf_token %}
                     <input type="hidden" name="status" value="inactive">
-                    <button type="submit" class="ac-btn ac-btn-restore">↩️ {{ t.restore_agent }}</button>
+                    <button type="submit" class="ac-btn ac-btn-restore"><i class="bi bi-arrow-return-left" aria-hidden="true"></i> {{ t.restore_agent }}</button>
                 </form>
                 <!-- Edit -->
-                <a href="{% url 'admin_agent_edit' agent.id %}" class="ac-btn ac-btn-edit">✏️ {{ t.edit_agent }}</a>
+                <a href="{% url 'admin_agent_edit' agent.id %}" class="ac-btn ac-btn-edit"><i class="bi bi-pencil-fill" aria-hidden="true"></i> {{ t.edit_agent }}</a>
                 <!-- Password -->
                 <button type="button" class="ac-btn ac-btn-pw"
                         data-agent-id="{{ agent.id }}" data-agent-name="{{ agent.name }}"
                         onclick="openPwModal(this.dataset.agentId, this.dataset.agentName)">
-                    🔑 {{ t.change_password }}
+                    <i class="bi bi-key-fill" aria-hidden="true"></i> {{ t.change_password }}
                 </button>
                 <form method="POST" action="{% url 'admin_agent_permanent_delete' agent.id %}" class="form-full" onsubmit="return confirm('{{ t.delete_forever_confirm|escapejs }}');">
                     {% csrf_token %}
-                    <button type="submit" class="ac-btn ac-btn-archive" style="background:rgba(239,68,68,.16);border:1px solid rgba(239,68,68,.25);">🗑️ {{ t.delete_forever }}</button>
+                    <button type="submit" class="ac-btn ac-btn-archive" style="background:rgba(239,68,68,.16);border:1px solid rgba(239,68,68,.25);"><i class="bi bi-trash3-fill" aria-hidden="true"></i> {{ t.delete_forever }}</button>
                 </form>
             </div>
         </div>
@@ -373,7 +373,7 @@
 <!-- Password Modal -->
 <div id="pwModal">
     <div class="pw-box">
-        <div class="pw-title">🔑 {{ t.change_password_title }}</div>
+        <div class="pw-title"><i class="bi bi-key-fill" aria-hidden="true"></i> {{ t.change_password_title }}</div>
         <div class="pw-sub" id="pwAgentName"></div>
         <form id="pwForm" method="POST">
             {% csrf_token %}
@@ -387,7 +387,7 @@
             </div>
             <div class="pw-actions">
                 <button type="button" class="pw-cancel" onclick="closePwModal()">{{ t.cancel }}</button>
-                <button type="submit" class="pw-submit">🔑 {{ t.save_info }}</button>
+                <button type="submit" class="pw-submit"><i class="bi bi-key-fill" aria-hidden="true"></i> {{ t.save_info }}</button>
             </div>
         </form>
     </div>

@@ -204,9 +204,9 @@
             <div class="agent-hero-name">{{ auth_user.name }}</div>
             <div style="display:flex;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap;">
                 {% if auth_user.agent_code %}
-                <span class="agent-hero-code">🆔 {{ auth_user.agent_code }}</span>
+                <span class="agent-hero-code"><i class="bi bi-person-vcard-fill" aria-hidden="true"></i> {{ auth_user.agent_code }}</span>
                 {% endif %}
-                <span class="badge-status status-active" style="font-size:11px;">✅ {{ t.status_active }}</span>
+                <span class="badge-status status-active" style="font-size:11px;"><i class="bi bi-check-circle-fill" style="color:#22c55e" aria-hidden="true"></i> {{ t.status_active }}</span>
                 {% if auth_user.country %}
                 <span class="agent-hero-country">{{ auth_user.country.flag_emoji }} {{ auth_user.country.name|country_name:locale }}</span>
                 {% endif %}
@@ -214,15 +214,15 @@
         </div>
     </div>
     <div class="agent-hero-actions">
-        <a href="{% url 'agent_export_csv' %}" class="btn btn-secondary">📥 {{ t.export_csv }}</a>
-        <a href="{% url 'tx_create' %}" class="btn btn-primary btn-lg">➕ {{ t.new_transaction }}</a>
+        <a href="{% url 'agent_export_csv' %}" class="btn btn-secondary"><i class="bi bi-inbox-fill" aria-hidden="true"></i> {{ t.export_csv }}</a>
+        <a href="{% url 'tx_create' %}" class="btn btn-primary btn-lg"><i class="bi bi-plus-lg" aria-hidden="true"></i> {{ t.new_transaction }}</a>
     </div>
 </div>
 
 <!-- FX rate of the day -->
 {% if auth_user.country %}
 <div class="fx-today-card">
-    <div class="fx-today-icon">💱</div>
+    <div class="fx-today-icon"><i class="bi bi-currency-exchange" aria-hidden="true"></i></div>
     <div class="fx-today-body">
         <div class="fx-today-label">{{ t.fx_rate_today_label }} · {{ t.fx_rate_today_sub }}</div>
         <div class="fx-today-value">1 USD = {{ auth_user.country.usd_exchange_rate|number_format:2 }} {{ auth_user.country.currency_code }}</div>
@@ -234,28 +234,28 @@
 <!-- Stats -->
 <div class="stats-grid" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));margin-bottom:22px;">
     <div class="stat-card">
-        <div class="stat-icon blue">💸</div>
+        <div class="stat-icon blue"><i class="bi bi-cash-coin" aria-hidden="true"></i></div>
         <div class="stat-info">
             <div class="stat-value" data-counter="{{ stats.total_transactions }}">{{ stats.total_transactions }}</div>
             <div class="stat-label">{{ t.my_transactions_total }}</div>
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon green">📅</div>
+        <div class="stat-icon green"><i class="bi bi-calendar-event-fill" aria-hidden="true"></i></div>
         <div class="stat-info">
             <div class="stat-value" data-counter="{{ stats.transactions_today }}">{{ stats.transactions_today }}</div>
             <div class="stat-label">{{ t.today }}</div>
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon blue">📆</div>
+        <div class="stat-icon blue"><i class="bi bi-calendar3" aria-hidden="true"></i></div>
         <div class="stat-info">
             <div class="stat-value" data-counter="{{ stats.transactions_month }}">{{ stats.transactions_month }}</div>
             <div class="stat-label">{{ t.this_month }}</div>
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon gold">💰</div>
+        <div class="stat-icon gold"><i class="bi bi-wallet2" aria-hidden="true"></i></div>
         <div class="stat-info">
             <div class="stat-value" style="font-size:18px;">{{ stats.total_amount|number_format:0 }}</div>
             <div class="stat-label">{{ t.total_volume_sent }}</div>
@@ -263,14 +263,14 @@
         <div class="stat-spark">{% sparkline volume_trend "#F59E0B" %}</div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon teal">🏷️</div>
+        <div class="stat-icon teal"><i class="bi bi-tag-fill" aria-hidden="true"></i></div>
         <div class="stat-info">
             <div class="stat-value" style="font-size:18px;">{{ stats.total_fees|number_format:0 }}</div>
             <div class="stat-label">{{ t.total_fees }}</div>
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon purple">📊</div>
+        <div class="stat-icon purple"><i class="bi bi-bar-chart-fill" aria-hidden="true"></i></div>
         <div class="stat-info">
             <div class="stat-value" style="font-size:18px;">{{ stats.amount_month|number_format:0 }}</div>
             <div class="stat-label">{{ t.volume_month }}</div>
@@ -281,7 +281,7 @@
 <!-- Quick TX Action Cards -->
 <div class="tx-action-grid" style="margin-bottom:22px;">
     <a href="{% url 'tx_create' %}?type=send" class="tx-action-card tx-action-send">
-        <div class="tac-icon tac-icon-send">📤</div>
+        <div class="tac-icon tac-icon-send"><i class="bi bi-send-fill" aria-hidden="true"></i></div>
         <div class="tac-body">
             <div class="tac-title">{{ t.type_send }}</div>
             <div class="tac-sub">{{ t.transfer_details }}</div>
@@ -289,7 +289,7 @@
         <span class="tac-arrow">›</span>
     </a>
     <a href="{% url 'tx_create' %}?type=receive" class="tx-action-card tx-action-receive">
-        <div class="tac-icon tac-icon-receive">📥</div>
+        <div class="tac-icon tac-icon-receive"><i class="bi bi-inbox-fill" aria-hidden="true"></i></div>
         <div class="tac-body">
             <div class="tac-title">{{ t.receive_verb }}</div>
             <div class="tac-sub">{{ t.receiver_info }}</div>
@@ -304,24 +304,24 @@
     <!-- Quick actions -->
     <div class="card">
         <div class="card-header">
-            <div class="card-title">⚡ {{ t.quick_actions }}</div>
+            <div class="card-title"><i class="bi bi-lightning-charge-fill" aria-hidden="true"></i> {{ t.quick_actions }}</div>
             <div class="card-subtitle">{{ t.quick_actions_sub }}</div>
         </div>
         <div class="card-body qa-grid">
             <a href="{% url 'tx_index' %}" class="btn btn-secondary" style="flex-direction:column;gap:6px;padding:16px 12px;text-align:center;justify-content:center;height:74px;">
-                <span style="font-size:22px;">📋</span>
+                <span style="font-size:22px;"><i class="bi bi-clipboard-fill" aria-hidden="true"></i></span>
                 <span style="font-size:12px;">{{ t.quick_action_my_tx }}</span>
             </a>
             <a href="{% url 'profile_show' %}" class="btn btn-secondary" style="flex-direction:column;gap:6px;padding:16px 12px;text-align:center;justify-content:center;height:74px;">
-                <span style="font-size:22px;">👤</span>
+                <span style="font-size:22px;"><i class="bi bi-person-fill" aria-hidden="true"></i></span>
                 <span style="font-size:12px;">{{ t.quick_action_profile }}</span>
             </a>
             <a href="{% url 'agent_export_csv' %}" class="btn btn-secondary" style="flex-direction:column;gap:6px;padding:16px 12px;text-align:center;justify-content:center;height:74px;">
-                <span style="font-size:22px;">📥</span>
+                <span style="font-size:22px;"><i class="bi bi-inbox-fill" aria-hidden="true"></i></span>
                 <span style="font-size:12px;">{{ t.quick_action_csv }}</span>
             </a>
             <a href="{% url 'tx_create' %}" class="btn btn-primary" style="flex-direction:column;gap:6px;padding:16px 12px;text-align:center;justify-content:center;height:74px;">
-                <span style="font-size:22px;">➕</span>
+                <span style="font-size:22px;"><i class="bi bi-plus-lg" aria-hidden="true"></i></span>
                 <span style="font-size:12px;">{{ t.new_transaction }}</span>
             </a>
         </div>
@@ -330,7 +330,7 @@
     <!-- Report form -->
     <div class="card">
         <div class="card-header">
-            <div class="card-title">📨 {{ t.send_report }}</div>
+            <div class="card-title"><i class="bi bi-envelope-paper-fill" aria-hidden="true"></i> {{ t.send_report }}</div>
             <div class="card-subtitle">{{ t.send_report_sub }}</div>
         </div>
         <div class="card-body">
@@ -345,7 +345,7 @@
                     <textarea name="message" class="form-control" rows="4" placeholder="{{ t.report_message_ph }}" required style="resize:vertical;"></textarea>
                 </div>
                 <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">
-                    📤 {{ t.report_send_btn }}
+                    <i class="bi bi-send-fill" aria-hidden="true"></i> {{ t.report_send_btn }}
                 </button>
             </form>
         </div>
@@ -356,12 +356,12 @@
 <div class="table-card">
     <div class="table-header" style="display:flex;align-items:center;justify-content:space-between;">
         <div>
-            <div class="table-title">🕐 {{ t.recent_my_tx }}</div>
+            <div class="table-title"><i class="bi bi-clock-fill" aria-hidden="true"></i> {{ t.recent_my_tx }}</div>
             <div style="font-size:11.5px;color:var(--text-muted);margin-top:2px;">{{ t.last_10_mine }}</div>
         </div>
         <div style="display:flex;gap:8px;">
             <a href="{% url 'tx_index' %}" class="btn btn-secondary btn-sm">{{ t.see_all }}</a>
-            <a href="{% url 'tx_create' %}" class="btn btn-primary btn-sm">➕ {{ t.new_btn }}</a>
+            <a href="{% url 'tx_create' %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg" aria-hidden="true"></i> {{ t.new_btn }}</a>
         </div>
     </div>
     <div style="overflow-x:auto;">
@@ -385,7 +385,7 @@
                     <td>
                         <div class="tx-row-lead">
                             <div class="tx-type-ico {{ tx.transaction_type }}">
-                                {% if tx.transaction_type == 'send' %}📤{% elif tx.transaction_type == 'receive' %}📥{% elif tx.transaction_type == 'withdrawal' %}💸{% else %}🔄{% endif %}
+                                {% if tx.transaction_type == 'send' %}<i class="bi bi-send-fill" aria-hidden="true"></i>{% elif tx.transaction_type == 'receive' %}<i class="bi bi-inbox-fill" aria-hidden="true"></i>{% elif tx.transaction_type == 'withdrawal' %}<i class="bi bi-cash-coin" aria-hidden="true"></i>{% else %}<i class="bi bi-arrow-repeat" aria-hidden="true"></i>{% endif %}
                             </div>
                             <div>
                                 <a href="{% url 'tx_show' tx.id %}" class="tx-number">{{ tx.transaction_number }}</a>
@@ -412,22 +412,22 @@
                     </td>
                     <td>
                         {% if tx.status == 'completed' %}
-                            <span class="status-pill sp-completed">✅ {{ t.completed }}</span>
+                            <span class="status-pill sp-completed"><i class="bi bi-check-circle-fill" style="color:#22c55e" aria-hidden="true"></i> {{ t.completed }}</span>
                         {% elif tx.status == 'pending' %}
-                            <span class="status-pill sp-pending">⏳ {{ t.pending }}</span>
+                            <span class="status-pill sp-pending"><i class="bi bi-hourglass-split" style="color:#f59e0b" aria-hidden="true"></i> {{ t.pending }}</span>
                         {% else %}
-                            <span class="status-pill sp-cancelled">❌ {{ t.cancelled }}</span>
+                            <span class="status-pill sp-cancelled"><i class="bi bi-x-circle-fill" style="color:#ef4444" aria-hidden="true"></i> {{ t.cancelled }}</span>
                         {% endif %}
                     </td>
                     <td style="font-size:11.5px;color:var(--text-muted);white-space:nowrap;">{{ tx.created_at|date:"d/m/Y" }}<br>{{ tx.created_at|date:"H:i" }}</td>
                     <td>
                         <div class="tx-actions-row">
-                            <a href="{% url 'tx_show' tx.id %}" class="tx-btn tx-btn-view" title="{{ t.edit }}">👁️ {{ t.edit|slice:":4" }}</a>
-                            <a href="{% url 'tx_edit' tx.id %}" class="tx-btn tx-btn-edit" title="{{ t.edit }}">✏️</a>
-                            <a href="{% url 'tx_print' tx.id %}" class="tx-btn tx-btn-print" target="_blank" title="{{ t.print }}">🖨️</a>
+                            <a href="{% url 'tx_show' tx.id %}" class="tx-btn tx-btn-view" title="{{ t.edit }}"><i class="bi bi-eye-fill" aria-hidden="true"></i> {{ t.edit|slice:":4" }}</a>
+                            <a href="{% url 'tx_edit' tx.id %}" class="tx-btn tx-btn-edit" title="{{ t.edit }}"><i class="bi bi-pencil-fill" aria-hidden="true"></i></a>
+                            <a href="{% url 'tx_print' tx.id %}" class="tx-btn tx-btn-print" target="_blank" title="{{ t.print }}"><i class="bi bi-printer-fill" aria-hidden="true"></i></a>
                             <form method="POST" action="{% url 'tx_destroy' tx.id %}" style="display:inline;">
                                 {% csrf_token %}
-                                <button type="submit" class="tx-btn tx-btn-delete" onclick="return confirm('{{ t.delete_tx_confirm }}')" title="{{ t.delete }}">🗑️</button>
+                                <button type="submit" class="tx-btn tx-btn-delete" onclick="return confirm('{{ t.delete_tx_confirm }}')" title="{{ t.delete }}"><i class="bi bi-trash3-fill" aria-hidden="true"></i></button>
                             </form>
                         </div>
                     </td>
@@ -437,11 +437,11 @@
         </table>
         {% else %}
             <div class="empty-state">
-                <div class="empty-icon">💸</div>
+                <div class="empty-icon"><i class="bi bi-cash-coin" aria-hidden="true"></i></div>
                 <div class="empty-text">{{ t.no_tx_yet }}</div>
                 <div style="display:flex;gap:12px;margin-top:14px;justify-content:center;flex-wrap:wrap;">
-                    <a href="{% url 'tx_create' %}?type=send" class="btn btn-primary">📤 {{ t.type_send }}</a>
-                    <a href="{% url 'tx_create' %}?type=receive" class="btn btn-secondary">📥 {{ t.receive_verb }}</a>
+                    <a href="{% url 'tx_create' %}?type=send" class="btn btn-primary"><i class="bi bi-send-fill" aria-hidden="true"></i> {{ t.type_send }}</a>
+                    <a href="{% url 'tx_create' %}?type=receive" class="btn btn-secondary"><i class="bi bi-inbox-fill" aria-hidden="true"></i> {{ t.receive_verb }}</a>
                 </div>
             </div>
         {% endif %}

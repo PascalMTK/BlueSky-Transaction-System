@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
     <title>{{ t.contact_title }} BLUESKY</title>
     <link rel="icon" href="{% static 'images/WhatsApp_Image_2026-01-27_at_11.11.59_PM__1_-removebg-preview.png' %}" type="image/png">
+    <link href="{% static 'vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
     <link href="{% static 'css/bluesky.css' %}" rel="stylesheet">
     <script>(function(){var t=localStorage.getItem('bluesky-theme')||'light';document.documentElement.setAttribute('data-theme',t);})();</script>
     <style>
@@ -133,13 +134,13 @@
     <div class="card-sub">{{ t.contact_sub }}</div>
 
     <div class="contact-info">
-        <span class="contact-info-item">📧 vandervloger@gmail.com</span>
-        <span class="contact-info-item">🌐 pascal02.pythonanywhere.com</span>
+        <span class="contact-info-item"><i class="bi bi-envelope-fill" aria-hidden="true"></i> vandervloger@gmail.com</span>
+        <span class="contact-info-item"><i class="bi bi-globe2" aria-hidden="true"></i> pascal02.pythonanywhere.com</span>
     </div>
 
     {% for message in messages %}
         <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %}" style="margin-bottom:12px;">
-            {% if message.tags == 'error' %}❌{% elif message.tags == 'success' %}✅{% else %}⚠️{% endif %}
+            {% if message.tags == 'error' %}<i class="bi bi-x-circle-fill" style="color:#ef4444" aria-hidden="true"></i>{% elif message.tags == 'success' %}<i class="bi bi-check-circle-fill" style="color:#22c55e" aria-hidden="true"></i>{% else %}<i class="bi bi-exclamation-triangle-fill" style="color:#f59e0b" aria-hidden="true"></i>{% endif %}
             {{ message }}
         </div>
     {% endfor %}
@@ -147,22 +148,22 @@
     <form method="POST" action="{% url 'contact' %}">
         {% csrf_token %}
         <div class="form-group">
-            <label class="form-label">👤 {{ t.contact_name }}</label>
+            <label class="form-label"><i class="bi bi-person-fill" aria-hidden="true"></i> {{ t.contact_name }}</label>
             <input type="text" name="name" class="form-control" required autofocus>
         </div>
         <div class="form-group">
-            <label class="form-label">📧 {{ t.email }}</label>
+            <label class="form-label"><i class="bi bi-envelope-fill" aria-hidden="true"></i> {{ t.email }}</label>
             <input type="email" name="email" class="form-control" placeholder="{{ t.email_placeholder }}" required>
         </div>
         <div class="form-group">
-            <label class="form-label">✏️ {{ t.contact_subject }}</label>
+            <label class="form-label"><i class="bi bi-pencil-fill" aria-hidden="true"></i> {{ t.contact_subject }}</label>
             <input type="text" name="subject" class="form-control">
         </div>
         <div class="form-group">
-            <label class="form-label">💬 {{ t.contact_message }}</label>
+            <label class="form-label"><i class="bi bi-chat-dots-fill" aria-hidden="true"></i> {{ t.contact_message }}</label>
             <textarea name="message" class="form-control" required></textarea>
         </div>
-        <button type="submit" class="btn-main">📨 {{ t.contact_send }}</button>
+        <button type="submit" class="btn-main"><i class="bi bi-envelope-paper-fill" aria-hidden="true"></i> {{ t.contact_send }}</button>
     </form>
 
     <div class="card-foot">

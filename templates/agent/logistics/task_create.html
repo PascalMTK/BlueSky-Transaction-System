@@ -2,7 +2,7 @@
 {% load static bluesky_tags %}
 
 {% block title %}Nouvelle tâche{% endblock %}
-{% block page_title %}➕ Nouvelle tâche depuis une transaction{% endblock %}
+{% block page_title %}<i class="bi bi-plus-lg" aria-hidden="true"></i> Nouvelle tâche depuis une transaction{% endblock %}
 {% block page_subtitle %}Recherchez une transaction du système pour créer votre tâche{% endblock %}
 {% block nav_logistics_tasks %}active{% endblock %}
 
@@ -55,7 +55,7 @@
 {% block content %}
 <div class="lg-section" style="max-width:620px;">
     <div class="form-group" style="margin:0;">
-        <label class="form-label">🔍 Rechercher une transaction (n°, nom, téléphone)</label>
+        <label class="form-label"><i class="bi bi-search" aria-hidden="true"></i> Rechercher une transaction (n°, nom, téléphone)</label>
         <div class="tkc-search-wrap">
             <input type="text" id="tkcSearchInput" class="form-control" placeholder="Ex: BSK-2026..., Jean Kabila, +243...">
             <div class="tkc-results" id="tkcResults" style="display:none;"></div>
@@ -74,7 +74,7 @@
         <input type="hidden" name="transaction_id" id="tkcTxId">
 
         <div class="lg-section">
-            <div class="lg-section-title">👥 Partie concernée</div>
+            <div class="lg-section-title"><i class="bi bi-people-fill" aria-hidden="true"></i> Partie concernée</div>
             <div class="lg-picker-row">
                 <button type="button" class="lg-picker-btn" data-party="sender" onclick="tkcPickParty('sender', this)">
                     <span>
@@ -93,16 +93,16 @@
         </div>
 
         <div class="lg-section">
-            <div class="lg-section-title">📦 Type de tâche</div>
+            <div class="lg-section-title"><i class="bi bi-box-seam-fill" aria-hidden="true"></i> Type de tâche</div>
             <div class="lg-picker-row">
-                <button type="button" class="lg-picker-btn lg-picker-compact lg-active" data-type="pickup" onclick="tkcPickType('pickup', this)">📤 Collecte</button>
-                <button type="button" class="lg-picker-btn lg-picker-compact" data-type="dropoff" onclick="tkcPickType('dropoff', this)">📥 Livraison</button>
+                <button type="button" class="lg-picker-btn lg-picker-compact lg-active" data-type="pickup" onclick="tkcPickType('pickup', this)"><i class="bi bi-send-fill" aria-hidden="true"></i> Collecte</button>
+                <button type="button" class="lg-picker-btn lg-picker-compact" data-type="dropoff" onclick="tkcPickType('dropoff', this)"><i class="bi bi-inbox-fill" aria-hidden="true"></i> Livraison</button>
             </div>
             <input type="hidden" name="task_type" id="tkcTypeInput" value="pickup">
         </div>
 
         <div class="lg-section">
-            <div class="lg-section-title">📅 Planification &amp; adresse</div>
+            <div class="lg-section-title"><i class="bi bi-calendar-event-fill" aria-hidden="true"></i> Planification &amp; adresse</div>
             <div class="form-group">
                 <label class="form-label">Date &amp; heure prévues *</label>
                 <input type="datetime-local" name="scheduled_at" id="tkcScheduledInput" class="form-control" required>
@@ -114,7 +114,7 @@
         </div>
 
         <div class="lg-section">
-            <div class="lg-section-title">💰 Paiement</div>
+            <div class="lg-section-title"><i class="bi bi-wallet2" aria-hidden="true"></i> Paiement</div>
             <div class="lg-grid-2" style="margin-bottom:12px;">
                 <div class="form-group" style="margin:0;">
                     <label class="form-label">Montant</label>
@@ -137,12 +137,12 @@
         </div>
 
         <div class="lg-section" style="margin-bottom:0;">
-            <div class="lg-section-title">📝 Notes</div>
+            <div class="lg-section-title"><i class="bi bi-journal-text" aria-hidden="true"></i> Notes</div>
             <textarea name="notes" class="form-control" rows="2" placeholder="Instructions particulières..."></textarea>
         </div>
 
         <div class="lg-actions">
-            <button type="submit" class="btn btn-primary">💾 Créer ma tâche</button>
+            <button type="submit" class="btn btn-primary"><i class="bi bi-floppy-fill" aria-hidden="true"></i> Créer ma tâche</button>
             <a href="{% url 'logistics_driver_tasks' %}" class="btn btn-secondary">{{ t.cancel }}</a>
         </div>
     </form>
@@ -186,8 +186,8 @@ function selectTransaction(t) {
     document.getElementById('tkcTxId').value = t.id;
     document.getElementById('tkcSelNum').textContent = t.transaction_number;
     document.getElementById('tkcSelMeta').textContent = t.sender_name + ' → ' + (t.receiver_name || '—') + ' · ' + t.amount + ' ' + t.currency + ' · ' + t.route;
-    document.getElementById('tkcSenderLbl').textContent = '📤 ' + t.sender_name + (t.sender_phone ? ' (' + t.sender_phone + ')' : '');
-    document.getElementById('tkcReceiverLbl').textContent = t.receiver_name ? ('📥 ' + t.receiver_name + (t.receiver_phone ? ' (' + t.receiver_phone + ')' : '')) : '📥 Aucun bénéficiaire';
+    setIconText(document.getElementById('tkcSenderLbl'), 'bi-send-fill', t.sender_name + (t.sender_phone ? ' (' + t.sender_phone + ')' : ''));
+    setIconText(document.getElementById('tkcReceiverLbl'), 'bi-inbox-fill', t.receiver_name ? (t.receiver_name + (t.receiver_phone ? ' (' + t.receiver_phone + ')' : '')) : 'Aucun bénéficiaire');
 
     selectedCard.classList.add('lg-active');
     detailsForm.classList.add('lg-active');

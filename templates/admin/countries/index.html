@@ -147,15 +147,15 @@
 <!-- Toolbar -->
 <div class="co-toolbar">
     <div>
-        <div class="co-toolbar-title">🌍 {{ t.countries_title }}</div>
+        <div class="co-toolbar-title"><i class="bi bi-globe-americas" aria-hidden="true"></i> {{ t.countries_title }}</div>
         <div class="co-toolbar-sub">{{ t.countries_configured_sub }}</div>
     </div>
     <div class="co-toolbar-actions">
         <form method="POST" action="{% url 'admin_countries_refresh_rates' %}">
             {% csrf_token %}
-            <button type="submit" class="btn btn-secondary btn-sm">💱 {{ t.refresh_rates }}</button>
+            <button type="submit" class="btn btn-secondary btn-sm"><i class="bi bi-currency-exchange" aria-hidden="true"></i> {{ t.refresh_rates }}</button>
         </form>
-        <a href="{% url 'admin_countries_create' %}" class="btn btn-primary btn-sm">➕ {{ t.add_country }}</a>
+        <a href="{% url 'admin_countries_create' %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg" aria-hidden="true"></i> {{ t.add_country }}</a>
     </div>
 </div>
 
@@ -174,25 +174,25 @@
             <form method="POST" action="{% url 'admin_countries_toggle' c.id %}" style="margin-left:auto;">
                 {% csrf_token %}
                 <button type="submit" class="co-card-badge {% if c.is_active %}active{% else %}inactive{% endif %}" title="{{ t.click_to_toggle }}">
-                    {% if c.is_active %}✅ {{ t.active }}{% else %}❌ {{ t.inactive }}{% endif %}
+                    {% if c.is_active %}<i class="bi bi-check-circle-fill" style="color:#22c55e" aria-hidden="true"></i> {{ t.active }}{% else %}<i class="bi bi-x-circle-fill" style="color:#ef4444" aria-hidden="true"></i> {{ t.inactive }}{% endif %}
                 </button>
             </form>
         </div>
 
         <!-- Info rows -->
         <div class="co-card-info">
-            <div class="co-card-row"><span>💰</span><span>{{ c.currency_code }} {{ c.currency_name }}</span></div>
-            <div class="co-card-row"><span>💱</span><span>1 $ = {{ c.usd_exchange_rate }} {{ c.currency_code }}</span></div>
-            {% if c.phone_code %}<div class="co-card-row"><span>📞</span><span>{{ c.phone_code }}</span></div>{% endif %}
-            <div class="co-card-row"><span>⚙️</span><span>{{ t.default_fee }}</span><span class="co-fee">{{ c.default_fee_percentage }}%</span></div>
+            <div class="co-card-row"><span><i class="bi bi-wallet2" aria-hidden="true"></i></span><span>{{ c.currency_code }} {{ c.currency_name }}</span></div>
+            <div class="co-card-row"><span><i class="bi bi-currency-exchange" aria-hidden="true"></i></span><span>1 $ = {{ c.usd_exchange_rate }} {{ c.currency_code }}</span></div>
+            {% if c.phone_code %}<div class="co-card-row"><span><i class="bi bi-telephone-fill" aria-hidden="true"></i></span><span>{{ c.phone_code }}</span></div>{% endif %}
+            <div class="co-card-row"><span><i class="bi bi-gear-fill" aria-hidden="true"></i></span><span>{{ t.default_fee }}</span><span class="co-fee">{{ c.default_fee_percentage }}%</span></div>
         </div>
 
         <!-- Actions -->
         <div class="co-card-actions">
-            <a href="{% url 'admin_countries_edit' c.id %}" class="co-btn co-btn-edit">✏️ {{ t.edit_country }}</a>
+            <a href="{% url 'admin_countries_edit' c.id %}" class="co-btn co-btn-edit"><i class="bi bi-pencil-fill" aria-hidden="true"></i> {{ t.edit_country }}</a>
             <form method="POST" action="{% url 'admin_countries_destroy' c.id %}" class="co-del" onsubmit="return confirm('{{ t.delete_confirm }}');">
                 {% csrf_token %}
-                <button type="submit" class="co-btn co-btn-del">🗑️</button>
+                <button type="submit" class="co-btn co-btn-del"><i class="bi bi-trash3-fill" aria-hidden="true"></i></button>
             </form>
         </div>
     </div>
@@ -200,10 +200,10 @@
 </div>
 {% else %}
 <div class="co-empty">
-    <div class="co-empty-icon">🌍</div>
+    <div class="co-empty-icon"><i class="bi bi-globe-americas" aria-hidden="true"></i></div>
     <div style="font-size:15px;font-weight:600;margin-bottom:8px;">{{ t.no_countries }}</div>
     <div style="font-size:13px;color:var(--text-muted);margin-bottom:20px;">{{ t.countries_empty_hint }}</div>
-    <a href="{% url 'admin_countries_create' %}" class="btn btn-primary btn-lg">➕ {{ t.first_country_btn }}</a>
+    <a href="{% url 'admin_countries_create' %}" class="btn btn-primary btn-lg"><i class="bi bi-plus-lg" aria-hidden="true"></i> {{ t.first_country_btn }}</a>
 </div>
 {% endif %}
 {% endblock %}

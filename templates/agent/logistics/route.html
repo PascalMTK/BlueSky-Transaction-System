@@ -2,7 +2,7 @@
 {% load static bluesky_tags %}
 
 {% block title %}{{ t.logistics_my_route_nav }}{% endblock %}
-{% block page_title %}🗺️ {{ t.logistics_my_route_nav }}{% endblock %}
+{% block page_title %}<i class="bi bi-map-fill" aria-hidden="true"></i> {{ t.logistics_my_route_nav }}{% endblock %}
 {% block page_subtitle %}{{ day|date:"d/m/Y" }}{% endblock %}
 {% block nav_logistics_route %}active{% endblock %}
 
@@ -14,21 +14,21 @@
 {% block content %}
 <div class="lg-stats">
     <div class="lg-stat completed">
-        <span class="ico">📋</span>
+        <span class="ico"><i class="bi bi-clipboard-fill" aria-hidden="true"></i></span>
         <div><div class="lg-stat-num">{{ ordered_deliveries|length }}</div><div class="lg-stat-lbl">Arrêts prévus</div></div>
     </div>
     <div class="lg-stat pending">
-        <span class="ico">⚪</span>
+        <span class="ico"><i class="bi bi-circle-fill" style="color:var(--text-muted)" aria-hidden="true"></i></span>
         <div><div class="lg-stat-num">{{ not_on_route|length }}</div><div class="lg-stat-lbl">Non géocodés</div></div>
     </div>
 </div>
 
 <form method="GET" style="margin-bottom:14px;display:flex;gap:8px;align-items:flex-end;">
     <div class="filter-group">
-        <label class="filter-label">📅 Date</label>
+        <label class="filter-label"><i class="bi bi-calendar-event-fill" aria-hidden="true"></i> Date</label>
         <input type="date" name="date" class="filter-control" value="{{ day|date:'Y-m-d' }}">
     </div>
-    <button type="submit" class="btn btn-primary btn-sm">🔍 {{ t.filter_btn }}</button>
+    <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-search" aria-hidden="true"></i> {{ t.filter_btn }}</button>
 </form>
 
 <div class="lg-section">
@@ -36,7 +36,7 @@
 </div>
 
 <div class="lg-section">
-    <div class="lg-section-title">📋 Arrêts ordonnés</div>
+    <div class="lg-section-title"><i class="bi bi-clipboard-fill" aria-hidden="true"></i> Arrêts ordonnés</div>
     {% if ordered_deliveries %}
     <div class="table-scroll" style="overflow-x:auto;">
         <table class="bsky-table">
@@ -53,7 +53,7 @@
         </table>
     </div>
     {% else %}
-    <div class="empty-state"><div class="empty-icon">🗺️</div><div class="empty-text">Aucun arrêt géocodé pour cette date</div></div>
+    <div class="empty-state"><div class="empty-icon"><i class="bi bi-map-fill" aria-hidden="true"></i></div><div class="empty-text">Aucun arrêt géocodé pour cette date</div></div>
     {% endif %}
 </div>
 {% endblock %}

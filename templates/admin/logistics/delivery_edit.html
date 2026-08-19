@@ -2,7 +2,7 @@
 {% load static bluesky_tags %}
 
 {% block title %}Modifier la tâche{% endblock %}
-{% block page_title %}✏️ Modifier la tâche{% endblock %}
+{% block page_title %}<i class="bi bi-pencil-fill" aria-hidden="true"></i> Modifier la tâche{% endblock %}
 {% block page_subtitle %}{{ delivery.client.name }}{% endblock %}
 {% block nav_admin_logistics %}active{% endblock %}
 
@@ -15,7 +15,7 @@
     <div class="lg-avatar">{{ delivery.client.name|initials }}</div>
     <div>
         <div class="lg-profile-name">{{ delivery.client.name }}</div>
-        <div class="lg-profile-meta">📞 {{ delivery.client.phone }} · <span class="badge-status status-{{ delivery.status }}">{{ delivery.get_status_display }}</span></div>
+        <div class="lg-profile-meta"><i class="bi bi-telephone-fill" aria-hidden="true"></i> {{ delivery.client.phone }} · <span class="badge-status status-{{ delivery.status }}">{{ delivery.get_status_display }}</span></div>
     </div>
 </div>
 
@@ -23,16 +23,16 @@
     {% csrf_token %}
 
     <div class="lg-section">
-        <div class="lg-section-title">📦 Type de tâche</div>
+        <div class="lg-section-title"><i class="bi bi-box-seam-fill" aria-hidden="true"></i> Type de tâche</div>
         <div class="lg-picker-row">
-            <button type="button" class="lg-picker-btn lg-picker-compact{% if delivery.task_type == 'pickup' %} lg-active{% endif %}" data-type="pickup" onclick="pickField('task_type','pickup',this)">📤 Collecte</button>
-            <button type="button" class="lg-picker-btn lg-picker-compact{% if delivery.task_type == 'dropoff' %} lg-active{% endif %}" data-type="dropoff" onclick="pickField('task_type','dropoff',this)">📥 Livraison</button>
+            <button type="button" class="lg-picker-btn lg-picker-compact{% if delivery.task_type == 'pickup' %} lg-active{% endif %}" data-type="pickup" onclick="pickField('task_type','pickup',this)"><i class="bi bi-send-fill" aria-hidden="true"></i> Collecte</button>
+            <button type="button" class="lg-picker-btn lg-picker-compact{% if delivery.task_type == 'dropoff' %} lg-active{% endif %}" data-type="dropoff" onclick="pickField('task_type','dropoff',this)"><i class="bi bi-inbox-fill" aria-hidden="true"></i> Livraison</button>
         </div>
         <input type="hidden" name="task_type" id="taskTypeInput" value="{{ delivery.task_type }}">
     </div>
 
     <div class="lg-section">
-        <div class="lg-section-title">📍 Adresse &amp; planification</div>
+        <div class="lg-section-title"><i class="bi bi-geo-alt-fill" aria-hidden="true"></i> Adresse &amp; planification</div>
         <div class="form-group">
             <label class="form-label">Adresse enregistrée</label>
             <select name="address_id" class="form-control">
@@ -64,7 +64,7 @@
     </div>
 
     <div class="lg-section">
-        <div class="lg-section-title">📋 {{ t.status }}</div>
+        <div class="lg-section-title"><i class="bi bi-clipboard-fill" aria-hidden="true"></i> {{ t.status }}</div>
         <select name="status" class="form-control">
             {% for key, label in status_choices %}
                 <option value="{{ key }}" {% if delivery.status == key %}selected{% endif %}>{{ label }}</option>
@@ -73,7 +73,7 @@
     </div>
 
     <div class="lg-section">
-        <div class="lg-section-title">💰 Paiement</div>
+        <div class="lg-section-title"><i class="bi bi-wallet2" aria-hidden="true"></i> Paiement</div>
         <div class="lg-grid-2" style="margin-bottom:12px;">
             <div class="form-group" style="margin:0;">
                 <label class="form-label">Montant</label>
@@ -82,8 +82,8 @@
             <div class="form-group" style="margin:0;">
                 <label class="form-label">Mode de paiement</label>
                 <div class="lg-picker-row">
-                    <button type="button" class="lg-picker-btn lg-picker-compact{% if delivery.payment_method == 'cash' %} lg-active{% endif %}" onclick="pickPayment('cash', this)">💵 Cash</button>
-                    <button type="button" class="lg-picker-btn lg-picker-compact{% if delivery.payment_method == 'other' %} lg-active{% endif %}" onclick="pickPayment('other', this)">❔ Autre</button>
+                    <button type="button" class="lg-picker-btn lg-picker-compact{% if delivery.payment_method == 'cash' %} lg-active{% endif %}" onclick="pickPayment('cash', this)"><i class="bi bi-cash" aria-hidden="true"></i> Cash</button>
+                    <button type="button" class="lg-picker-btn lg-picker-compact{% if delivery.payment_method == 'other' %} lg-active{% endif %}" onclick="pickPayment('other', this)"><i class="bi bi-question-circle" aria-hidden="true"></i> Autre</button>
                 </div>
                 <input type="hidden" name="payment_method" id="editPmInput" value="{{ delivery.payment_method|default:'' }}">
             </div>
@@ -95,12 +95,12 @@
     </div>
 
     <div class="lg-section" style="margin-bottom:0;">
-        <div class="lg-section-title">📝 Notes</div>
+        <div class="lg-section-title"><i class="bi bi-journal-text" aria-hidden="true"></i> Notes</div>
         <textarea name="notes" class="form-control" rows="3">{{ delivery.notes|default:'' }}</textarea>
     </div>
 
     <div class="lg-actions">
-        <button type="submit" class="btn btn-primary">💾 {{ t.save_changes }}</button>
+        <button type="submit" class="btn btn-primary"><i class="bi bi-floppy-fill" aria-hidden="true"></i> {{ t.save_changes }}</button>
         <a href="{% url 'admin_logistics_dashboard' %}" class="btn btn-secondary">{{ t.cancel }}</a>
     </div>
 </form>

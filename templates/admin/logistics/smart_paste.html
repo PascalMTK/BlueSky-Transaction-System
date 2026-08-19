@@ -2,7 +2,7 @@
 {% load static bluesky_tags %}
 
 {% block title %}{{ t.logistics_smart_paste_nav }}{% endblock %}
-{% block page_title %}🧠 {{ t.logistics_smart_paste_nav }}{% endblock %}
+{% block page_title %}<i class="bi bi-magic" aria-hidden="true"></i> {{ t.logistics_smart_paste_nav }}{% endblock %}
 {% block page_subtitle %}Collez un message reçu d'un client ou chauffeur pour pré-remplir le formulaire{% endblock %}
 {% block nav_admin_logistics %}active{% endblock %}
 
@@ -13,16 +13,16 @@
 {% block content %}
 <div class="lg-grid-2">
     <div class="lg-section">
-        <div class="lg-section-title">📋 Texte brut</div>
+        <div class="lg-section-title"><i class="bi bi-clipboard-fill" aria-hidden="true"></i> Texte brut</div>
         <textarea id="spInput" class="form-control" rows="10" placeholder="Ex: Jean Kabila&#10;+243900000000&#10;12 Avenue de la Paix, Kinshasa&#10;Appeler avant d'arriver"></textarea>
-        <button type="button" id="spParseBtn" class="btn btn-primary" style="margin-top:12px;">🧠 Analyser</button>
+        <button type="button" id="spParseBtn" class="btn btn-primary" style="margin-top:12px;"><i class="bi bi-magic" aria-hidden="true"></i> Analyser</button>
         <div class="lg-hint" style="margin-top:8px;">
-            💡 Analyse par reconnaissance de motifs (regex), pas d'intelligence artificielle — vérifiez toujours les champs avant d'enregistrer
+            <i class="bi bi-lightbulb-fill" aria-hidden="true"></i> Analyse par reconnaissance de motifs (regex), pas d'intelligence artificielle — vérifiez toujours les champs avant d'enregistrer
         </div>
     </div>
 
     <div class="lg-section">
-        <div class="lg-section-title">✅ Résultat (à vérifier)</div>
+        <div class="lg-section-title"><i class="bi bi-check-circle-fill" style="color:#22c55e" aria-hidden="true"></i> Résultat (à vérifier)</div>
         <form method="POST" action="{% url 'admin_logistics_client_create' %}" id="spForm">
             {% csrf_token %}
             <div class="form-group">
@@ -45,7 +45,7 @@
                 <label class="form-label">Notes restantes</label>
                 <textarea id="spNotes" class="form-control" rows="2" readonly></textarea>
             </div>
-            <button type="submit" class="btn btn-primary">💾 Créer le client</button>
+            <button type="submit" class="btn btn-primary"><i class="bi bi-floppy-fill" aria-hidden="true"></i> Créer le client</button>
         </form>
     </div>
 </div>

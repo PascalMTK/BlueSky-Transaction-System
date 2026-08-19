@@ -2,7 +2,7 @@
 {% load static bluesky_tags %}
 
 {% block title %}{{ t.forum_nav }}{% endblock %}
-{% block page_title %}💬 {{ t.forum_nav }}{% endblock %}
+{% block page_title %}<i class="bi bi-chat-dots-fill" aria-hidden="true"></i> {{ t.forum_nav }}{% endblock %}
 {% block page_subtitle %}{% if locale == 'en' %}Open space for every agent and admin to post messages{% else %}Espace ouvert où chaque agent et administrateur peut publier un message{% endif %}{% endblock %}
 {% block nav_forum %}active{% endblock %}
 
@@ -31,7 +31,7 @@
         {% csrf_token %}
         <textarea name="body" maxlength="2000" placeholder="{% if locale == 'en' %}Write a message to the whole team...{% else %}Écrivez un message pour toute l'équipe...{% endif %}" required></textarea>
         <div class="forum-composer-foot">
-            <button type="submit" class="btn btn-primary btn-sm">📤 {% if locale == 'en' %}Post{% else %}Publier{% endif %}</button>
+            <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-send-fill" aria-hidden="true"></i> {% if locale == 'en' %}Post{% else %}Publier{% endif %}</button>
         </div>
     </form>
 
@@ -42,7 +42,7 @@
                 <div class="forum-avatar">{{ m.author.name|default:"?"|initials }}</div>
                 <div>
                     <div class="forum-post-name">{{ m.author.name|default:"—" }}
-                        {% if m.author.role == 'admin' %}<span class="forum-post-role admin">🛡️ {{ t.role_admin }}</span>{% elif m.author %}<span class="forum-post-role agent">🏢 {{ t.role_agent }}</span>{% endif %}
+                        {% if m.author.role == 'admin' %}<span class="forum-post-role admin"><i class="bi bi-shield-fill-check" aria-hidden="true"></i> {{ t.role_admin }}</span>{% elif m.author %}<span class="forum-post-role agent"><i class="bi bi-building-fill" aria-hidden="true"></i> {{ t.role_agent }}</span>{% endif %}
                     </div>
                 </div>
                 <div class="forum-post-time">{{ m.created_at|date:"d/m/Y H:i" }}</div>
@@ -50,7 +50,7 @@
             <div class="forum-post-body">{{ m.body }}</div>
         </div>
         {% empty %}
-        <div class="empty-state"><div class="empty-icon">💬</div><div class="empty-text">{% if locale == 'en' %}No messages yet — be the first to write one.{% else %}Aucun message pour le moment — soyez le premier à écrire.{% endif %}</div></div>
+        <div class="empty-state"><div class="empty-icon"><i class="bi bi-chat-dots-fill" aria-hidden="true"></i></div><div class="empty-text">{% if locale == 'en' %}No messages yet — be the first to write one.{% else %}Aucun message pour le moment — soyez le premier à écrire.{% endif %}</div></div>
         {% endfor %}
     </div>
 </div>

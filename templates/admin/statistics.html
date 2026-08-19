@@ -90,22 +90,22 @@
         </div>
         <div class="trend-kpis">
             <div class="trend-kpi kpi-volume">
-                <div class="trend-kpi-head"><span class="trend-kpi-icon">💰</span><span class="trend-kpi-label">{{ t.volume }}</span></div>
+                <div class="trend-kpi-head"><span class="trend-kpi-icon"><i class="bi bi-wallet2" aria-hidden="true"></i></span><span class="trend-kpi-label">{{ t.volume }}</span></div>
                 <div class="trend-kpi-value">{{ selected_total|number_format:2 }}</div>
                 <div class="trend-kpi-note">{% if selected_growth is not None %}<span class="delta">{% if selected_growth >= 0 %}↗{% else %}↘{% endif %} {{ selected_growth }}%</span> {% if locale == 'en' %}vs {{ previous_year }}{% else %}vs {{ previous_year }}{% endif %}{% else %}{% if locale == 'en' %}No previous comparison{% else %}Pas de comparaison antérieure{% endif %}{% endif %}</div>
             </div>
             <div class="trend-kpi kpi-count">
-                <div class="trend-kpi-head"><span class="trend-kpi-icon">📊</span><span class="trend-kpi-label">{{ t.nb_tx }}</span></div>
+                <div class="trend-kpi-head"><span class="trend-kpi-icon"><i class="bi bi-bar-chart-fill" aria-hidden="true"></i></span><span class="trend-kpi-label">{{ t.nb_tx }}</span></div>
                 <div class="trend-kpi-value">{{ selected_count }}</div>
                 <div class="trend-kpi-note">{% if count_growth is not None %}<span class="delta">{% if count_growth >= 0 %}↗{% else %}↘{% endif %} {{ count_growth }}%</span> vs {{ previous_year }}{% else %}{% endif %}</div>
             </div>
             <div class="trend-kpi kpi-best">
-                <div class="trend-kpi-head"><span class="trend-kpi-icon">🏆</span><span class="trend-kpi-label">{% if locale == 'en' %}Best month{% else %}Meilleur mois{% endif %}</span></div>
+                <div class="trend-kpi-head"><span class="trend-kpi-icon"><i class="bi bi-trophy-fill" style="color:#eab308" aria-hidden="true"></i></span><span class="trend-kpi-label">{% if locale == 'en' %}Best month{% else %}Meilleur mois{% endif %}</span></div>
                 <div class="trend-kpi-value">{% if best_month %}{{ best_month.month }}{% else %}{% endif %}</div>
                 <div class="trend-kpi-note">{% if best_month %}{{ best_month.amount|number_format:2 }} · {{ best_month.count }} tx{% else %}{{ t.no_data }}{% endif %}</div>
             </div>
             <div class="trend-kpi kpi-average">
-                <div class="trend-kpi-head"><span class="trend-kpi-icon">📈</span><span class="trend-kpi-label">{% if locale == 'en' %}Monthly average{% else %}Moyenne mensuelle{% endif %}</span></div>
+                <div class="trend-kpi-head"><span class="trend-kpi-icon"><i class="bi bi-graph-up-arrow" aria-hidden="true"></i></span><span class="trend-kpi-label">{% if locale == 'en' %}Monthly average{% else %}Moyenne mensuelle{% endif %}</span></div>
                 <div class="trend-kpi-value">{{ average_monthly|number_format:2 }}</div>
                 <div class="trend-kpi-note">{% if locale == 'en' %}active months{% else %}sur les mois actifs{% endif %}</div>
             </div>
@@ -124,8 +124,8 @@
             <div class="analytics-card-title">{% if locale == 'en' %}Revenue at a glance{% else %}Revenus en un coup d’œil{% endif %}</div>
             <div class="analytics-card-sub">{{ t.daily_gains_sub_usd }}</div>
             <div class="insight-list">
-                <div class="insight-item"><div class="insight-icon">☀️</div><div><div class="insight-label">{{ t.today }}</div><div class="insight-value">${{ daily_gains_today|default:0|number_format:2 }}</div></div></div>
-                <div class="insight-item"><div class="insight-icon">📅</div><div><div class="insight-label">{{ t.this_month }}</div><div class="insight-value">${{ daily_gains_month|default:0|number_format:2 }}</div></div></div>
+                <div class="insight-item"><div class="insight-icon"><i class="bi bi-sun-fill" aria-hidden="true"></i></div><div><div class="insight-label">{{ t.today }}</div><div class="insight-value">${{ daily_gains_today|default:0|number_format:2 }}</div></div></div>
+                <div class="insight-item"><div class="insight-icon"><i class="bi bi-calendar-event-fill" aria-hidden="true"></i></div><div><div class="insight-label">{{ t.this_month }}</div><div class="insight-value">${{ daily_gains_month|default:0|number_format:2 }}</div></div></div>
                 <div class="insight-item"><div class="insight-icon">◎</div><div><div class="insight-label">{{ t.total }}</div><div class="insight-value">${{ daily_gains_total|default:0|number_format:2 }}</div></div></div>
             </div>
         </aside>
@@ -139,7 +139,7 @@
                 {% if total_tx_all %}
                 <div class="distribution-bar">{% for row in status_breakdown %}{% if row.pct > 0 %}<span style="width:{{ row.pct|unlocalize }}%;background:{% if row.code == 'completed' %}#22c55e{% elif row.code == 'pending' %}#f59e0b{% else %}#ef4444{% endif %}"></span>{% endif %}{% endfor %}</div>
                 <div class="distribution-list">{% for row in status_breakdown %}<div class="distribution-row"><div class="distribution-name"><i class="dot" style="background:{% if row.code == 'completed' %}#22c55e{% elif row.code == 'pending' %}#f59e0b{% else %}#ef4444{% endif %}"></i><strong>{% if row.code == 'completed' %}{{ t.completed }}{% elif row.code == 'pending' %}{{ t.pending }}{% else %}{{ t.cancelled }}{% endif %}</strong></div><div class="distribution-value">{{ row.count }} tx</div><div class="distribution-pct">{{ row.pct }}%</div></div>{% endfor %}</div>
-                {% else %}<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">{{ t.no_data }}</div></div>{% endif %}
+                {% else %}<div class="empty-state"><div class="empty-icon"><i class="bi bi-inbox" aria-hidden="true"></i></div><div class="empty-text">{{ t.no_data }}</div></div>{% endif %}
             </div>
         </section>
         <section class="analytics-card">
@@ -148,14 +148,14 @@
                 {% if country_breakdown %}
                 <div class="distribution-bar">{% for row in country_breakdown %}{% if row.pct > 0 %}<span style="width:{{ row.pct|unlocalize }}%;background:{{ row.color }}"></span>{% endif %}{% endfor %}</div>
                 <div class="distribution-list">{% for row in country_breakdown|slice:':6' %}<div class="distribution-row"><div class="distribution-name"><span>{{ row.flag }}</span><strong style="color:{{ row.color }}">{{ row.name|country_name:locale }}</strong></div><div class="distribution-value">{{ row.count }} tx</div><div class="distribution-pct">{{ row.pct }}%</div></div>{% endfor %}</div>
-                {% else %}<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">{{ t.no_data }}</div></div>{% endif %}
+                {% else %}<div class="empty-state"><div class="empty-icon"><i class="bi bi-inbox" aria-hidden="true"></i></div><div class="empty-text">{{ t.no_data }}</div></div>{% endif %}
             </div>
         </section>
     </div>
 
     <section class="table-card year-table">
         <div class="table-header"><div><div class="table-title">{{ t.yearly_summary }}</div><div class="analytics-card-sub">{{ t.yearly_sub }}</div></div></div>
-        <div class="table-scroll">{% if yearly_data %}<table class="bsky-table"><thead><tr><th>{{ t.year }}</th><th>{{ t.nb_tx }}</th><th>{{ t.volume }}</th><th>{{ t.commissions }}</th><th>{{ t.growth }}</th></tr></thead><tbody>{% for row in yearly_data reversed %}<tr><td><strong>{{ row.year }}</strong></td><td>{{ row.total }}</td><td><strong>{{ row.total_amount|number_format:2 }}</strong></td><td>{{ row.total_fees|number_format:2 }}</td><td>{% if row.growth is None %}<span class="growth-pill flat">{{ t.first_year }}</span>{% elif row.growth > 0 %}<span class="growth-pill up">↑ {{ row.growth }}%</span>{% elif row.growth < 0 %}<span class="growth-pill down">↓ {{ row.growth }}%</span>{% else %}<span class="growth-pill flat">0%</span>{% endif %}</td></tr>{% endfor %}</tbody></table>{% else %}<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">{{ t.no_data }}</div></div>{% endif %}</div>
+        <div class="table-scroll">{% if yearly_data %}<table class="bsky-table"><thead><tr><th>{{ t.year }}</th><th>{{ t.nb_tx }}</th><th>{{ t.volume }}</th><th>{{ t.commissions }}</th><th>{{ t.growth }}</th></tr></thead><tbody>{% for row in yearly_data reversed %}<tr><td><strong>{{ row.year }}</strong></td><td>{{ row.total }}</td><td><strong>{{ row.total_amount|number_format:2 }}</strong></td><td>{{ row.total_fees|number_format:2 }}</td><td>{% if row.growth is None %}<span class="growth-pill flat">{{ t.first_year }}</span>{% elif row.growth > 0 %}<span class="growth-pill up">↑ {{ row.growth }}%</span>{% elif row.growth < 0 %}<span class="growth-pill down">↓ {{ row.growth }}%</span>{% else %}<span class="growth-pill flat">0%</span>{% endif %}</td></tr>{% endfor %}</tbody></table>{% else %}<div class="empty-state"><div class="empty-icon"><i class="bi bi-inbox" aria-hidden="true"></i></div><div class="empty-text">{{ t.no_data }}</div></div>{% endif %}</div>
     </section>
 </div>
 {{ monthly_labels|json_script:'stats-labels' }}

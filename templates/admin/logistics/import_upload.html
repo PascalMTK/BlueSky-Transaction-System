@@ -2,7 +2,7 @@
 {% load static bluesky_tags %}
 
 {% block title %}{{ t.logistics_import_nav }}{% endblock %}
-{% block page_title %}📥 Import de données{% endblock %}
+{% block page_title %}<i class="bi bi-inbox-fill" aria-hidden="true"></i> Import de données{% endblock %}
 {% block page_subtitle %}CSV ou Excel — clients, adresses et tâches de livraison{% endblock %}
 {% block nav_admin_logistics %}active{% endblock %}
 
@@ -20,24 +20,24 @@
 </div>
 
 <div class="lg-section" style="max-width:640px;">
-    <div class="lg-section-title">📁 Fichier à importer</div>
+    <div class="lg-section-title"><i class="bi bi-folder-fill" aria-hidden="true"></i> Fichier à importer</div>
     <form method="POST" action="{% url 'admin_logistics_import' %}" enctype="multipart/form-data" id="importForm">
         {% csrf_token %}
         <label class="lg-dropzone" id="dropzone" for="fileInput">
-            <div class="ico">📄</div>
+            <div class="ico"><i class="bi bi-file-earmark-fill" aria-hidden="true"></i></div>
             <div class="lbl">Cliquez ou glissez-déposez un fichier</div>
             <div class="sub">.csv ou .xlsx — 500 lignes maximum</div>
             <div class="file-name" id="fileNameDisplay"></div>
         </label>
         <input type="file" name="file" id="fileInput" accept=".csv,.xlsx" required style="display:none;">
         <div style="margin-top:16px;">
-            <button type="submit" class="btn btn-primary">📥 Importer et continuer</button>
+            <button type="submit" class="btn btn-primary"><i class="bi bi-inbox-fill" aria-hidden="true"></i> Importer et continuer</button>
         </div>
     </form>
 </div>
 
 <div class="lg-section">
-    <div class="lg-section-title">🕐 Imports précédents</div>
+    <div class="lg-section-title"><i class="bi bi-clock-fill" aria-hidden="true"></i> Imports précédents</div>
     {% if past_batches %}
     <div class="table-scroll" style="overflow-x:auto;">
         <table class="bsky-table">
@@ -67,7 +67,7 @@ var dropzone = document.getElementById('dropzone');
 var fileNameDisplay = document.getElementById('fileNameDisplay');
 
 fileInput.addEventListener('change', function () {
-    fileNameDisplay.textContent = fileInput.files.length ? '📎 ' + fileInput.files[0].name : '';
+    if (fileInput.files.length) { setIconText(fileNameDisplay, 'bi-paperclip', fileInput.files[0].name); } else { fileNameDisplay.textContent = ''; }
 });
 
 ['dragenter', 'dragover'].forEach(function (evt) {
@@ -85,7 +85,7 @@ fileInput.addEventListener('change', function () {
 dropzone.addEventListener('drop', function (e) {
     if (e.dataTransfer.files.length) {
         fileInput.files = e.dataTransfer.files;
-        fileNameDisplay.textContent = '📎 ' + e.dataTransfer.files[0].name;
+        setIconText(fileNameDisplay, 'bi-paperclip', e.dataTransfer.files[0].name);
     }
 });
 </script>
