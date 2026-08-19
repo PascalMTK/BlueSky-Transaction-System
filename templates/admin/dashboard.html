@@ -140,7 +140,7 @@
 <div class="admin-hero">
     <div class="admin-hero-left">
         <div class="admin-hero-live"><span class="admin-hero-live-dot"></span> {{ t.live_label }}</div>
-        <div class="admin-hero-title">🛰️ {{ t.dashboard }}</div>
+        <div class="admin-hero-title">🧭 {{ t.dashboard }}</div>
         <div class="admin-hero-sub">{{ t.overview }} {{ stats.countries_active }} {{ t.countries_active }}</div>
     </div>
     <div class="admin-hero-stats">
@@ -184,11 +184,11 @@
                 </form>
                 <form method="POST" action="{% url 'admin_agent_promote' agent.id %}" onsubmit="return confirm('Promouvoir {{ agent.name }} comme Admin ?');">
                     {% csrf_token %}
-                    <button type="submit" style="display:inline-flex;align-items:center;gap:5px;padding:8px 14px;background:linear-gradient(135deg,#7c3aed,#6d28d9);color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;">⬆ {{ t.promote_admin }}</button>
+                    <button type="submit" style="display:inline-flex;align-items:center;gap:5px;padding:8px 14px;background:linear-gradient(135deg,#7c3aed,#6d28d9);color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;">⬆️ {{ t.promote_admin }}</button>
                 </form>
                 <form method="POST" action="{% url 'admin_agent_destroy' agent.id %}" onsubmit="return confirm('{{ t.delete }} {{ agent.name|escapejs }}?');">
                     {% csrf_token %}
-                    <button type="submit" style="display:inline-flex;align-items:center;gap:5px;padding:8px 14px;background:linear-gradient(135deg,#ef4444,#dc2626);color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;">🗑 {{ t.delete }}</button>
+                    <button type="submit" style="display:inline-flex;align-items:center;gap:5px;padding:8px 14px;background:linear-gradient(135deg,#ef4444,#dc2626);color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;">🗑️ {{ t.delete }}</button>
                 </form>
             </div>
         </div>
@@ -464,8 +464,8 @@
                     <td style="font-size:11.5px;color:var(--text-muted);white-space:nowrap;">{{ tx.created_at|date:"d/m/Y H:i" }}</td>
                     <td>
                         <div style="display:flex;gap:4px;">
-                            <a href="{% url 'tx_show' tx.id %}" style="padding:5px 8px;border-radius:7px;background:rgba(14,165,233,.12);color:#0ea5e9;font-size:14px;text-decoration:none;" title="{{ t.edit }}">👁</a>
-                            <a href="{% url 'tx_print' tx.id %}" style="padding:5px 8px;border-radius:7px;background:rgba(20,184,166,.12);color:#14b8a6;font-size:14px;text-decoration:none;" target="_blank" title="{{ t.print }}">🖨</a>
+                            <a href="{% url 'tx_show' tx.id %}" style="padding:5px 8px;border-radius:7px;background:rgba(14,165,233,.12);color:#0ea5e9;font-size:14px;text-decoration:none;" title="{{ t.edit }}">👁️</a>
+                            <a href="{% url 'tx_print' tx.id %}" style="padding:5px 8px;border-radius:7px;background:rgba(20,184,166,.12);color:#14b8a6;font-size:14px;text-decoration:none;" target="_blank" title="{{ t.print }}">🖨️</a>
                         </div>
                     </td>
                 </tr>

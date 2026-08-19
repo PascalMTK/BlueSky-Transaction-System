@@ -83,7 +83,7 @@
                 <label class="form-label">Mode de paiement</label>
                 <div class="lg-picker-row">
                     <button type="button" class="lg-picker-btn lg-picker-compact{% if delivery.payment_method == 'cash' %} lg-active{% endif %}" onclick="pickPayment('cash', this)">💵 Cash</button>
-                    <button type="button" class="lg-picker-btn lg-picker-compact{% if delivery.payment_method == 'other' %} lg-active{% endif %}" onclick="pickPayment('other', this)">🔀 Autre</button>
+                    <button type="button" class="lg-picker-btn lg-picker-compact{% if delivery.payment_method == 'other' %} lg-active{% endif %}" onclick="pickPayment('other', this)">❔ Autre</button>
                 </div>
                 <input type="hidden" name="payment_method" id="editPmInput" value="{{ delivery.payment_method|default:'' }}">
             </div>

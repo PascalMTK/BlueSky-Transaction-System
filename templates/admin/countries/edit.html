@@ -162,7 +162,7 @@
                     </div>
                     <form method="POST" action="{% url 'admin_countries_destroy' country.id %}" onsubmit="return confirm('{{ t.delete_confirm }}');">
                         {% csrf_token %}
-                        <button type="submit" class="btn btn-danger btn-sm">🗑 {{ t.delete }}</button>
+                        <button type="submit" class="btn btn-danger btn-sm">🗑️ {{ t.delete }}</button>
                     </form>
                 </div>
             </div>
@@ -173,7 +173,7 @@
     <div>
         <div class="card">
             <div class="card-header">
-                <div class="card-title">👁 {{ t.live_preview }}</div>
+                <div class="card-title">👁️ {{ t.live_preview }}</div>
             </div>
             <div class="card-body" style="padding:16px;">
                 <div class="country-preview">

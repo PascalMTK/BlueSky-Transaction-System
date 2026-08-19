@@ -192,7 +192,7 @@
             <a href="{% url 'admin_countries_edit' c.id %}" class="co-btn co-btn-edit">✏️ {{ t.edit_country }}</a>
             <form method="POST" action="{% url 'admin_countries_destroy' c.id %}" class="co-del" onsubmit="return confirm('{{ t.delete_confirm }}');">
                 {% csrf_token %}
-                <button type="submit" class="co-btn co-btn-del">🗑</button>
+                <button type="submit" class="co-btn co-btn-del">🗑️</button>
             </form>
         </div>
     </div>

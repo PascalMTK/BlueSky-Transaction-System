@@ -1,5 +1,5 @@
 {% extends 'layouts/app.html' %}
-{% load static bluesky_tags %}
+{% load static bluesky_tags l10n %}
 
 {% block title %}{{ t.stats_title }}{% endblock %}
 {% block page_title %}{{ t.stats_title }}{% endblock %}
@@ -58,6 +58,7 @@
 .distribution-row { display:grid; grid-template-columns:minmax(90px,1fr) auto auto; align-items:center; gap:12px; }
 .distribution-name { display:flex; align-items:center; gap:8px; min-width:0; color:var(--text-heading); font-size:12px; font-weight:750; }
 .distribution-name strong { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.distribution-name .dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
 .distribution-value { color:var(--text-heading); font-size:12px; font-weight:800; }
 .distribution-pct { min-width:45px; padding:4px 7px; border-radius:7px; text-align:center; color:var(--text-muted); background:var(--bg-secondary); font-size:10px; font-weight:750; }
 .dot { width:9px; height:9px; flex:0 0 auto; border-radius:50%; }
@@ -136,7 +137,7 @@
             <div class="analytics-card-head"><div><div class="analytics-card-title">{{ t.status_breakdown_title }}</div><div class="analytics-card-sub">{{ t.status_breakdown_sub }}</div></div></div>
             <div class="breakdown-body">
                 {% if total_tx_all %}
-                <div class="distribution-bar">{% for row in status_breakdown %}{% if row.pct > 0 %}<span style="width:{{ row.pct }}%;background:{% if row.code == 'completed' %}#22c55e{% elif row.code == 'pending' %}#f59e0b{% else %}#ef4444{% endif %}"></span>{% endif %}{% endfor %}</div>
+                <div class="distribution-bar">{% for row in status_breakdown %}{% if row.pct > 0 %}<span style="width:{{ row.pct|unlocalize }}%;background:{% if row.code == 'completed' %}#22c55e{% elif row.code == 'pending' %}#f59e0b{% else %}#ef4444{% endif %}"></span>{% endif %}{% endfor %}</div>
                 <div class="distribution-list">{% for row in status_breakdown %}<div class="distribution-row"><div class="distribution-name"><i class="dot" style="background:{% if row.code == 'completed' %}#22c55e{% elif row.code == 'pending' %}#f59e0b{% else %}#ef4444{% endif %}"></i><strong>{% if row.code == 'completed' %}{{ t.completed }}{% elif row.code == 'pending' %}{{ t.pending }}{% else %}{{ t.cancelled }}{% endif %}</strong></div><div class="distribution-value">{{ row.count }} tx</div><div class="distribution-pct">{{ row.pct }}%</div></div>{% endfor %}</div>
                 {% else %}<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">{{ t.no_data }}</div></div>{% endif %}
             </div>
@@ -145,7 +146,7 @@
             <div class="analytics-card-head"><div><div class="analytics-card-title">{{ t.country_breakdown }}</div><div class="analytics-card-sub">{{ t.country_breakdown_sub }}</div></div></div>
             <div class="breakdown-body">
                 {% if country_breakdown %}
-                <div class="distribution-bar">{% for row in country_breakdown %}{% if row.pct > 0 %}<span style="width:{{ row.pct }}%;background:{{ row.color }}"></span>{% endif %}{% endfor %}</div>
+                <div class="distribution-bar">{% for row in country_breakdown %}{% if row.pct > 0 %}<span style="width:{{ row.pct|unlocalize }}%;background:{{ row.color }}"></span>{% endif %}{% endfor %}</div>
                 <div class="distribution-list">{% for row in country_breakdown|slice:':6' %}<div class="distribution-row"><div class="distribution-name"><span>{{ row.flag }}</span><strong style="color:{{ row.color }}">{{ row.name|country_name:locale }}</strong></div><div class="distribution-value">{{ row.count }} tx</div><div class="distribution-pct">{{ row.pct }}%</div></div>{% endfor %}</div>
                 {% else %}<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">{{ t.no_data }}</div></div>{% endif %}
             </div>

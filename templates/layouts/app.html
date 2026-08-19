@@ -233,7 +233,7 @@
                 </div>
                 <div class="dropdown-menu" id="userDropdown">
                     {% if auth_user and auth_user.agent_code %}
-                        <div class="dropdown-item" style="cursor:default;color:var(--text-muted);font-size:11px;pointer-events:none;font-family:monospace;">🔑 {{ auth_user.agent_code }}</div>
+                        <div class="dropdown-item" style="cursor:default;color:var(--text-muted);font-size:11px;pointer-events:none;font-family:monospace;">🆔 {{ auth_user.agent_code }}</div>
                         <div class="dropdown-divider"></div>
                     {% endif %}
                     <a href="{% url 'profile_show' %}" class="dropdown-item">👤 {{ t.my_profile }}</a>

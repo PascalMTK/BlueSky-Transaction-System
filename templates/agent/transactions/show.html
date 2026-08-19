@@ -36,7 +36,7 @@
                         <span class="badge-status status-{{ transaction.status }}" style="font-size:14px;padding:8px 16px;">
                             {% if transaction.status == 'completed' %}✅ {{ t.completed }}{% elif transaction.status == 'pending' %}⏳ {{ t.pending }}{% else %}❌ {{ t.cancelled }}{% endif %}
                         </span>
-                        <a href="{% url 'tx_print' transaction.id %}" class="btn btn-secondary" target="_blank">🖨 {{ t.print }}</a>
+                        <a href="{% url 'tx_print' transaction.id %}" class="btn btn-secondary" target="_blank">🖨️ {{ t.print }}</a>
                         <a href="{% url 'tx_edit' transaction.id %}" class="btn btn-primary">✏️ {{ t.edit }}</a>
                     </div>
                 </div>
@@ -148,13 +148,13 @@
 
         <!-- Sidebar Actions -->
         <div style="display:flex;flex-direction:column;gap:8px;">
-            <a href="{% url 'tx_print' transaction.id %}" class="btn btn-secondary" target="_blank" style="justify-content:center;">🖨 {{ t.print_receipt_btn }}</a>
+            <a href="{% url 'tx_print' transaction.id %}" class="btn btn-secondary" target="_blank" style="justify-content:center;">🖨️ {{ t.print_receipt_btn }}</a>
             <a href="{% url 'tx_edit' transaction.id %}" class="btn btn-primary" style="justify-content:center;">✏️ {{ t.edit }}</a>
             <a href="{% url 'tx_index' %}" class="btn btn-secondary" style="justify-content:center;">← {{ t.back_to_list }}</a>
             <div style="height:1px;background:var(--border);margin:4px 0;"></div>
             <form method="POST" action="{% url 'tx_destroy' transaction.id %}" onsubmit="return confirm('{{ t.delete_tx_confirm }}');">
                 {% csrf_token %}
-                <button type="submit" class="btn btn-danger" style="width:100%;justify-content:center;">🗑 {{ t.delete }}</button>
+                <button type="submit" class="btn btn-danger" style="width:100%;justify-content:center;">🗑️ {{ t.delete }}</button>
             </form>
         </div>
     </div>

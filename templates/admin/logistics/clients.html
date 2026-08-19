@@ -71,7 +71,7 @@
                     <td class="hide-mobile">{{ c.email|default:"—" }}</td>
                     <td class="hide-mobile">{{ c.addresses.count }}</td>
                     <td>
-                        <a href="{% url 'admin_logistics_client_show' c.id %}" class="btn btn-secondary btn-sm">👁</a>
+                        <a href="{% url 'admin_logistics_client_show' c.id %}" class="btn btn-secondary btn-sm">👁️</a>
                         <a href="{% url 'admin_delivery_create' %}?client_id={{ c.id }}" class="btn btn-secondary btn-sm">➕ Tâche</a>
                     </td>
                 </tr>

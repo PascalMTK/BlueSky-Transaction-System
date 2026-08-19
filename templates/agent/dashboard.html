@@ -204,7 +204,7 @@
             <div class="agent-hero-name">{{ auth_user.name }}</div>
             <div style="display:flex;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap;">
                 {% if auth_user.agent_code %}
-                <span class="agent-hero-code">🔑 {{ auth_user.agent_code }}</span>
+                <span class="agent-hero-code">🆔 {{ auth_user.agent_code }}</span>
                 {% endif %}
                 <span class="badge-status status-active" style="font-size:11px;">✅ {{ t.status_active }}</span>
                 {% if auth_user.country %}
@@ -422,12 +422,12 @@
                     <td style="font-size:11.5px;color:var(--text-muted);white-space:nowrap;">{{ tx.created_at|date:"d/m/Y" }}<br>{{ tx.created_at|date:"H:i" }}</td>
                     <td>
                         <div class="tx-actions-row">
-                            <a href="{% url 'tx_show' tx.id %}" class="tx-btn tx-btn-view" title="{{ t.edit }}">👁 {{ t.edit|slice:":4" }}</a>
+                            <a href="{% url 'tx_show' tx.id %}" class="tx-btn tx-btn-view" title="{{ t.edit }}">👁️ {{ t.edit|slice:":4" }}</a>
                             <a href="{% url 'tx_edit' tx.id %}" class="tx-btn tx-btn-edit" title="{{ t.edit }}">✏️</a>
-                            <a href="{% url 'tx_print' tx.id %}" class="tx-btn tx-btn-print" target="_blank" title="{{ t.print }}">🖨</a>
+                            <a href="{% url 'tx_print' tx.id %}" class="tx-btn tx-btn-print" target="_blank" title="{{ t.print }}">🖨️</a>
                             <form method="POST" action="{% url 'tx_destroy' tx.id %}" style="display:inline;">
                                 {% csrf_token %}
-                                <button type="submit" class="tx-btn tx-btn-delete" onclick="return confirm('{{ t.delete_tx_confirm }}')" title="{{ t.delete }}">🗑</button>
+                                <button type="submit" class="tx-btn tx-btn-delete" onclick="return confirm('{{ t.delete_tx_confirm }}')" title="{{ t.delete }}">🗑️</button>
                             </form>
                         </div>
                     </td>

@@ -250,14 +250,14 @@
                 <label class="form-label">🔒 {{ t.password }} <span class="required">*</span></label>
                 <div class="pw-wrap">
                     <input type="password" name="password" id="regPw1" class="form-control" placeholder="Min. 8 chars" required minlength="8">
-                    <button type="button" class="pw-toggle" onclick="togglePw('regPw1','regEye1')" aria-label="{{ t.pw_toggle_label }}"><span id="regEye1">👁</span></button>
+                    <button type="button" class="pw-toggle" onclick="togglePw('regPw1','regEye1')" aria-label="{{ t.pw_toggle_label }}"><span id="regEye1">👁️</span></button>
                 </div>
             </div>
             <div class="form-group">
                 <label class="form-label">🔒 {{ t.confirm_password }} <span class="required">*</span></label>
                 <div class="pw-wrap">
                     <input type="password" name="password_confirmation" id="regPw2" class="form-control" placeholder="..." required>
-                    <button type="button" class="pw-toggle" onclick="togglePw('regPw2','regEye2')" aria-label="{{ t.pw_toggle_label }}"><span id="regEye2">👁</span></button>
+                    <button type="button" class="pw-toggle" onclick="togglePw('regPw2','regEye2')" aria-label="{{ t.pw_toggle_label }}"><span id="regEye2">👁️</span></button>
                 </div>
             </div>
         </div>
@@ -381,7 +381,7 @@ function togglePw(inputId, eyeId){
     var inp = document.getElementById(inputId);
     var eye = document.getElementById(eyeId);
     if(inp.type === 'password'){ inp.type = 'text'; eye.textContent = '🙈'; }
-    else { inp.type = 'password'; eye.textContent = '👁'; }
+    else { inp.type = 'password'; eye.textContent = '👁️'; }
 }
 (function(){
     var t = localStorage.getItem('bluesky-theme') || 'light';

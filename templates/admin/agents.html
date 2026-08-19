@@ -256,7 +256,7 @@
 
     <!-- Info rows -->
     <div class="ag-card-info">
-        <div class="ag-card-row"><span>✉️</span><span>{{ agent.email }}</span></div>
+        <div class="ag-card-row"><span>📧</span><span>{{ agent.email }}</span></div>
         {% if agent.phone %}<div class="ag-card-row"><span>📞</span><span>{{ agent.phone }}</span></div>{% endif %}
         {% if agent.country %}<div class="ag-card-row"><span>🌍</span><span>{{ agent.country.flag_emoji }} {{ agent.country.name|country_name:locale }}</span></div>{% endif %}
         <div class="ag-card-row"><span>📅</span><span>{{ agent.created_at|date:"d/m/Y" }}</span></div>
@@ -295,13 +295,13 @@
         <!-- Promote to admin -->
         <form method="POST" action="{% url 'admin_agent_promote' agent.id %}">
             {% csrf_token %}
-            <button type="submit" class="ac-btn ac-btn-promote" style="width:100%;">⬆ {{ t.promote_admin }}</button>
+            <button type="submit" class="ac-btn ac-btn-promote" style="width:100%;">⬆️ {{ t.promote_admin }}</button>
         </form>
 
         <!-- Archive (soft delete) -->
         <form method="POST" action="{% url 'admin_agent_destroy' agent.id %}" class="form-full">
             {% csrf_token %}
-            <button type="submit" class="ac-btn ac-btn-archive">🗂 {{ t.archive_agent }}</button>
+            <button type="submit" class="ac-btn ac-btn-archive">🗂️ {{ t.archive_agent }}</button>
         </form>
 
     </div>
@@ -320,7 +320,7 @@
 {% if deleted_agents %}
 <div class="ag-archive-section">
     <div class="ag-archive-header" onclick="toggleArchive()">
-        <span>🗂</span>
+        <span>🗂️</span>
         <span>{{ t.archived_agents }} {{ t.archived_agents_hint }} ({{ deleted_agents|length }})</span>
         <span id="archiveChevron" style="margin-left:auto;">▼</span>
     </div>
@@ -336,10 +336,10 @@
                     <div class="ag-card-name">{{ agent.name }}</div>
                     {% if agent.agent_code %}<span class="ag-card-code">{{ agent.agent_code }}</span>{% endif %}
                 </div>
-                <span class="ag-card-badge deleted">🗂 {{ t.archived_badge }}</span>
+                <span class="ag-card-badge deleted">🗂️ {{ t.archived_badge }}</span>
             </div>
             <div class="ag-card-info">
-                <div class="ag-card-row"><span>✉️</span><span>{{ agent.email }}</span></div>
+                <div class="ag-card-row"><span>📧</span><span>{{ agent.email }}</span></div>
                 {% if agent.phone %}<div class="ag-card-row"><span>📞</span><span>{{ agent.phone }}</span></div>{% endif %}
                 {% if agent.country %}<div class="ag-card-row"><span>🌍</span><span>{{ agent.country.flag_emoji }} {{ agent.country.name|country_name:locale }}</span></div>{% endif %}
             </div>
@@ -348,7 +348,7 @@
                 <form method="POST" action="{% url 'admin_agent_status' agent.id %}" class="form-full">
                     {% csrf_token %}
                     <input type="hidden" name="status" value="inactive">
-                    <button type="submit" class="ac-btn ac-btn-restore">↩ {{ t.restore_agent }}</button>
+                    <button type="submit" class="ac-btn ac-btn-restore">↩️ {{ t.restore_agent }}</button>
                 </form>
                 <!-- Edit -->
                 <a href="{% url 'admin_agent_edit' agent.id %}" class="ac-btn ac-btn-edit">✏️ {{ t.edit_agent }}</a>
@@ -360,7 +360,7 @@
                 </button>
                 <form method="POST" action="{% url 'admin_agent_permanent_delete' agent.id %}" class="form-full" onsubmit="return confirm('{{ t.delete_forever_confirm|escapejs }}');">
                     {% csrf_token %}
-                    <button type="submit" class="ac-btn ac-btn-archive" style="background:rgba(239,68,68,.16);border:1px solid rgba(239,68,68,.25);">🗑 {{ t.delete_forever }}</button>
+                    <button type="submit" class="ac-btn ac-btn-archive" style="background:rgba(239,68,68,.16);border:1px solid rgba(239,68,68,.25);">🗑️ {{ t.delete_forever }}</button>
                 </form>
             </div>
         </div>

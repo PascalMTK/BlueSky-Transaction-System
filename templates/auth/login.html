@@ -164,7 +164,7 @@
             <label class="form-label">🔒 {{ t.password }}</label>
             <div class="pw-wrap">
                 <input type="password" name="password" id="loginPw" class="form-control" placeholder="••••••••" required>
-                <button type="button" class="pw-toggle" onclick="togglePw('loginPw','loginEye')" aria-label="{{ t.pw_toggle_label }}"><span id="loginEye">👁</span></button>
+                <button type="button" class="pw-toggle" onclick="togglePw('loginPw','loginEye')" aria-label="{{ t.pw_toggle_label }}"><span id="loginEye">👁️</span></button>
             </div>
         </div>
         <button type="submit" class="btn-main">🔑 {{ t.login_btn }}</button>
@@ -185,7 +185,7 @@ function togglePw(inputId, eyeId){
     var inp = document.getElementById(inputId);
     var eye = document.getElementById(eyeId);
     if(inp.type === 'password'){ inp.type = 'text'; eye.textContent = '🙈'; }
-    else { inp.type = 'password'; eye.textContent = '👁'; }
+    else { inp.type = 'password'; eye.textContent = '👁️'; }
 }
 /* Logo switching on theme change */
 (function(){

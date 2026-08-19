@@ -89,8 +89,8 @@
 <div class="sel-bar" id="atxSelBar">
     <div class="sel-bar-count"><em id="atxSelCount">0</em> {{ t.selected_count }}</div>
     <div class="sel-bar-actions">
-        <button class="sel-bar-btn" data-action="view"  disabled>👁 {{ t.view|default:"Voir" }}</button>
-        <button class="sel-bar-btn" data-action="print">🖨 {{ t.print|default:"Imprimer" }}</button>
+        <button class="sel-bar-btn" data-action="view"  disabled>👁️ {{ t.view|default:"Voir" }}</button>
+        <button class="sel-bar-btn" data-action="print">🖨️ {{ t.print|default:"Imprimer" }}</button>
         <a href="{% url 'admin_export_csv' %}" class="sel-bar-btn">📥 {{ t.export_csv }}</a>
         <button class="sel-bar-clear" title="{{ t.clear_selection }}">✕</button>
     </div>

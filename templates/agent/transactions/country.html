@@ -111,9 +111,9 @@
 <div class="sel-bar" id="ctrySelBar">
     <div class="sel-bar-count"><em id="ctrySelCount">0</em> {{ t.selected_count }}</div>
     <div class="sel-bar-actions">
-        <button class="sel-bar-btn" data-action="view"  disabled>👁 {{ t.view|default:"Voir" }}</button>
+        <button class="sel-bar-btn" data-action="view"  disabled>👁️ {{ t.view|default:"Voir" }}</button>
         <button class="sel-bar-btn" data-action="edit"  disabled>✏️ {{ t.edit }}</button>
-        <button class="sel-bar-btn" data-action="print">🖨 {{ t.print|default:"Imprimer" }}</button>
+        <button class="sel-bar-btn" data-action="print">🖨️ {{ t.print|default:"Imprimer" }}</button>
         <button class="sel-bar-clear" title="{{ t.clear_selection }}">✕</button>
     </div>
 </div>
@@ -183,9 +183,9 @@
                     <td class="hide-mobile" style="font-size:12px;color:var(--text-muted);white-space:nowrap;">{{ tx.created_at|date:"d/m/Y H:i" }}</td>
                     <td>
                         <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-start;">
-                            <a href="{% url 'tx_show' tx.id %}" class="btn btn-secondary btn-sm" style="padding:6px 8px;min-width:34px;">👁</a>
+                            <a href="{% url 'tx_show' tx.id %}" class="btn btn-secondary btn-sm" style="padding:6px 8px;min-width:34px;">👁️</a>
                             <a href="{% url 'tx_edit' tx.id %}" class="btn btn-primary btn-sm" style="padding:6px 8px;min-width:34px;">✏️</a>
-                            <a href="{% url 'tx_print' tx.id %}" class="btn btn-secondary btn-sm" target="_blank" style="padding:6px 8px;min-width:34px;">🖨</a>
+                            <a href="{% url 'tx_print' tx.id %}" class="btn btn-secondary btn-sm" target="_blank" style="padding:6px 8px;min-width:34px;">🖨️</a>
                         </div>
                     </td>
                 </tr>
