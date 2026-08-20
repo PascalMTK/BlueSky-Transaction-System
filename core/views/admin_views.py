@@ -227,11 +227,38 @@ def dashboard(request):
     unread_reports = AgentReport.objects.filter(status='unread').select_related('agent')
     recent_tx      = Transaction.objects.select_related('agent', 'origin_country', 'destination_country').order_by('-created_at')[:10]
 
-    top_agents = (
-        User.objects.filter(role='agent', status__in=['active', 'pending', 'inactive'])
-        .annotate(tx_count=Count('transaction'), tx_amount=Sum('transaction__amount'))
-        .order_by('-tx_amount')[:5]
+    # Volume per agent, converted to USD via each transaction's origin-country
+    # exchange rate before summing — a straight Sum('amount') would add ZAR to
+    # UGX to KES as if they were the same unit, which is meaningless. Grouped
+    # by (agent, origin_country) first so each bucket converts at its own rate.
+    agent_tx_rows = (
+        Transaction.objects
+        .filter(agent__role='agent')
+        .values('agent_id', 'origin_country_id')
+        .annotate(count=Count('id'), total=Sum('amount'), rate=Max('origin_country__usd_exchange_rate'))
     )
+    agent_perf = {}
+    for r in agent_tx_rows:
+        if not r['agent_id']:
+            continue
+        rate = float(r['rate'] or 1) or 1
+        bucket = agent_perf.setdefault(r['agent_id'], {'count': 0, 'amount_usd': 0.0})
+        bucket['count']      += r['count']
+        bucket['amount_usd'] += float(r['total'] or 0) / rate
+
+    top_agent_ids = sorted(agent_perf, key=lambda aid: agent_perf[aid]['amount_usd'], reverse=True)[:5]
+    top_agents_by_id = {
+        a.id: a for a in
+        User.objects.filter(id__in=top_agent_ids, role='agent').select_related('country')
+    }
+    top_agents = [
+        {
+            'agent':          top_agents_by_id[aid],
+            'tx_count':       agent_perf[aid]['count'],
+            'tx_amount_usd':  agent_perf[aid]['amount_usd'],
+        }
+        for aid in top_agent_ids if aid in top_agents_by_id
+    ]
 
     months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
     year = today.year

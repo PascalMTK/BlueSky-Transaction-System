@@ -1,5 +1,5 @@
 {% extends 'layouts/app.html' %}
-{% load static bluesky_tags %}
+{% load static bluesky_tags l10n %}
 
 {% block title %}Itinéraire — {{ driver.name }}{% endblock %}
 {% block page_title %}<i class="bi bi-map-fill" aria-hidden="true"></i> Itinéraire — {{ driver.name }}{% endblock %}
@@ -74,7 +74,7 @@
 (function () {
     var stops = [
         {% for item in ordered_deliveries %}
-        { lat: {{ item.lat }}, lng: {{ item.lon }}, seq: {{ item.sequence }}, label: "{{ item.sequence }}. {{ item.delivery.client.name|escapejs }}" }{% if not forloop.last %},{% endif %}
+        { lat: {{ item.lat|unlocalize }}, lng: {{ item.lon|unlocalize }}, seq: {{ item.sequence }}, label: "{{ item.sequence }}. {{ item.delivery.client.name|escapejs }}" }{% if not forloop.last %},{% endif %}
         {% endfor %}
     ];
 

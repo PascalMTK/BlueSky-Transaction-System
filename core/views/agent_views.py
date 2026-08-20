@@ -347,23 +347,31 @@ def team_index(request):
 
     agents = list(User.objects.filter(role='agent', status='active').select_related('country'))
 
-    # Ranked by transaction count this month — amounts aren't comparable
-    # across agents since each country trades in its own currency.
+    # Ranked by transaction count this month. Volume is converted to USD via
+    # each transaction's origin-country exchange rate (grouped by agent +
+    # origin country before converting) so agents trading in different
+    # currencies are actually comparable, instead of a raw Sum('amount')
+    # that would add ZAR to UGX to KES as if they were the same unit.
     monthly_qs = (
         Transaction.objects
         .filter(status='completed', created_at__year=today.year, created_at__month=today.month, agent__in=agents)
-        .values('agent_id')
-        .annotate(c=Count('id'), v=Sum('amount'))
+        .values('agent_id', 'origin_country_id')
+        .annotate(c=Count('id'), v=Sum('amount'), rate=Max('origin_country__usd_exchange_rate'))
     )
-    monthly_counts = {row['agent_id']: row['c'] for row in monthly_qs}
-    monthly_volume = {row['agent_id']: row['v'] for row in monthly_qs}
+    monthly_counts = {}
+    monthly_volume_usd = {}
+    for row in monthly_qs:
+        aid = row['agent_id']
+        rate = float(row['rate'] or 1) or 1
+        monthly_counts[aid]     = monthly_counts.get(aid, 0) + row['c']
+        monthly_volume_usd[aid] = monthly_volume_usd.get(aid, 0.0) + float(row['v'] or 0) / rate
 
     board = []
     for a in agents:
         board.append({
             'agent':  a,
             'count':  monthly_counts.get(a.id, 0),
-            'volume': float(monthly_volume.get(a.id) or 0),
+            'volume': monthly_volume_usd.get(a.id, 0.0),
             'is_you': a.id == user.id,
         })
     board.sort(key=lambda row: row['count'], reverse=True)

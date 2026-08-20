@@ -191,7 +191,7 @@
                 </div>
                 <div class="team-row-stats">
                     <div class="team-row-count">{{ row.count }}</div>
-                    <div class="team-row-vol">{{ row.volume|currency }} {{ row.agent.country.currency_code|default:"" }}</div>
+                    <div class="team-row-vol">${{ row.volume|number_format:0 }}</div>
                 </div>
             </div>
             {% endfor %}

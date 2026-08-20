@@ -62,6 +62,45 @@ def _apply_payment_fields(delivery, post):
     delivery.address_note = post.get('address_note', '').strip() or None
 
 
+def _geocode_delivery_address(delivery, address_text, country=None):
+    """Create/refresh the ClientAddress backing a delivery's on-the-ground
+    address and geocode it via OpenStreetMap, so the task can show up on a
+    map and get a turn-by-turn directions link. Mutates delivery.address in
+    memory — the caller is responsible for saving the delivery afterwards
+    (include 'address' in update_fields on an existing row). Returns
+    (ok, error): ok is True when there was nothing to geocode or geocoding
+    already succeeded; error is a human-readable message on failure."""
+    address_text = (address_text or '').strip()
+    if not address_text:
+        return True, None
+
+    address = delivery.address
+    if address is None:
+        label = 'Livraison' if delivery.task_type == Delivery.TYPE_DROPOFF else 'Collecte'
+        address = ClientAddress(client=delivery.client, label=label)
+    if address.address_line != address_text:
+        address.address_line = address_text
+        address.latitude = None
+        address.longitude = None
+        address.lat_lng_source = ClientAddress.SOURCE_UNRESOLVED
+    if country and not address.country_id:
+        address.country = country
+    address.save()
+    delivery.address = address
+
+    if address.lat_lng_source == ClientAddress.SOURCE_GEOCODED:
+        return True, None
+
+    lat, lon, error = geocode_address(address.address_line, '', address.country.name if address.country_id else '')
+    if lat is not None:
+        address.latitude = lat
+        address.longitude = lon
+        address.lat_lng_source = ClientAddress.SOURCE_GEOCODED
+        address.save(update_fields=['latitude', 'longitude', 'lat_lng_source'])
+        return True, None
+    return False, error
+
+
 def _status_badge(status):
     labels = {
         'pending':    ('⏳ En attente', 'badge-status status-pending'),
@@ -874,9 +913,9 @@ def driver_task_create(request):
 
         tx = get_object_or_404(Transaction, pk=tx_id)
         if party == 'sender':
-            name, phone = tx.sender_name, tx.sender_phone
+            name, phone, country = tx.sender_name, tx.sender_phone, tx.origin_country
         else:
-            name, phone = tx.receiver_name, tx.receiver_phone
+            name, phone, country = tx.receiver_name, tx.receiver_phone, tx.destination_country
 
         if not name or not phone:
             messages.error(request, "Cette transaction n'a pas de coordonnées pour cette partie.")
@@ -885,7 +924,10 @@ def driver_task_create(request):
         normalized_phone = phone.replace(' ', '').replace('-', '')
         client = Client.objects.filter(phone=normalized_phone).first()
         if not client:
-            client = Client.objects.create(name=name, phone=normalized_phone, created_by=user)
+            client = Client.objects.create(name=name, phone=normalized_phone, country=country, created_by=user)
+        elif country and not client.country_id:
+            client.country = country
+            client.save(update_fields=['country'])
 
         delivery = Delivery(
             client=client,
@@ -897,8 +939,12 @@ def driver_task_create(request):
             created_by=user,
         )
         _apply_payment_fields(delivery, request.POST)
+        geo_ok, geo_error = _geocode_delivery_address(delivery, delivery.address_note, country)
         delivery.save()
-        messages.success(request, "Tâche créée à partir de la transaction.")
+        if delivery.address_note and not geo_ok:
+            messages.warning(request, f"Tâche créée, mais le géocodage automatique de l'adresse a échoué : {geo_error}")
+        else:
+            messages.success(request, "Tâche créée à partir de la transaction.")
         return redirect('logistics_driver_task_show', delivery_id=delivery.id)
 
     return render(request, 'agent/logistics/task_create.html', {
@@ -912,12 +958,16 @@ def driver_task_create(request):
 def driver_task_show(request, delivery_id):
     user = get_auth_user(request)
     delivery = get_object_or_404(
-        Delivery.objects.select_related('client', 'address'), pk=delivery_id, driver=user,
+        Delivery.objects.select_related('client', 'client__country', 'address'), pk=delivery_id, driver=user,
     )
     if request.method == 'POST':
         _apply_payment_fields(delivery, request.POST)
-        delivery.save(update_fields=['address_note', 'amount', 'payment_method', 'payment_method_other', 'updated_at'])
-        messages.success(request, "Informations enregistrées.")
+        geo_ok, geo_error = _geocode_delivery_address(delivery, delivery.address_note, delivery.client.country)
+        delivery.save(update_fields=['address_note', 'amount', 'payment_method', 'payment_method_other', 'address', 'updated_at'])
+        if delivery.address_note and not geo_ok:
+            messages.warning(request, f"Informations enregistrées, mais le géocodage automatique a échoué : {geo_error}")
+        else:
+            messages.success(request, "Informations enregistrées.")
         return redirect('logistics_driver_task_show', delivery_id=delivery.id)
 
     return render(request, 'agent/logistics/task_show.html', {
@@ -940,6 +990,30 @@ def driver_task_status_update(request, delivery_id):
     delivery.save(update_fields=['status', 'updated_at'])
     label, badge_class = _status_badge(value)
     return JsonResponse({'ok': True, 'field': 'status', 'value': value, 'label': label, 'badge_class': badge_class})
+
+
+@agent_required
+def driver_task_geocode(request, delivery_id):
+    """Force a fresh geocoding attempt on the delivery's current address —
+    used by the 'retry' button on the task detail page when the automatic
+    geocode at save time failed (typo, obscure address, service hiccup)."""
+    if request.method != 'POST':
+        return JsonResponse({'ok': False, 'error': 'Méthode non autorisée.'}, status=405)
+    user = get_auth_user(request)
+    delivery = get_object_or_404(
+        Delivery.objects.select_related('client', 'client__country', 'address'), pk=delivery_id, driver=user,
+    )
+    if not delivery.address_note:
+        return JsonResponse({'ok': False, 'error': "Aucune adresse à géocoder pour cette tâche."})
+
+    if delivery.address:
+        delivery.address.lat_lng_source = ClientAddress.SOURCE_UNRESOLVED
+    ok, error = _geocode_delivery_address(delivery, delivery.address_note, delivery.client.country)
+    delivery.save(update_fields=['address', 'updated_at'])
+
+    if ok and delivery.address and delivery.address.has_coordinates():
+        return JsonResponse({'ok': True, 'lat': float(delivery.address.latitude), 'lon': float(delivery.address.longitude)})
+    return JsonResponse({'ok': False, 'error': error or "Échec du géocodage."})
 
 
 @agent_required

@@ -109,6 +109,7 @@ urlpatterns = [
     path('agent/logistics/transactions/search/',      logistics_views.driver_transaction_search, name='logistics_driver_transaction_search'),
     path('agent/logistics/tasks/<int:delivery_id>/',  logistics_views.driver_task_show,           name='logistics_driver_task_show'),
     path('agent/logistics/tasks/<int:delivery_id>/status/', logistics_views.driver_task_status_update, name='logistics_driver_task_status_update'),
+    path('agent/logistics/tasks/<int:delivery_id>/geocode/', logistics_views.driver_task_geocode,      name='logistics_driver_task_geocode'),
     path('agent/logistics/route/',                    logistics_views.driver_route_self,         name='logistics_driver_route'),
 
     # ── Forum (all active users — admin & agents) ───────────────────────────

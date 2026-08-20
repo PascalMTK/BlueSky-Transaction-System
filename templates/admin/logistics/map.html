@@ -1,5 +1,5 @@
 {% extends 'layouts/app.html' %}
-{% load static bluesky_tags %}
+{% load static bluesky_tags l10n %}
 
 {% block title %}{{ t.logistics_map_nav }}{% endblock %}
 {% block page_title %}<i class="bi bi-map-fill" aria-hidden="true"></i> {{ t.logistics_map_nav }}{% endblock %}
@@ -74,7 +74,7 @@
 (function () {
     var points = [
         {% for a in geocoded_addresses %}
-        { lat: {{ a.latitude }}, lng: {{ a.longitude }}, label: "{{ a.client.name|escapejs }} — {{ a.label|escapejs }}" }{% if not forloop.last %},{% endif %}
+        { lat: {{ a.latitude|unlocalize }}, lng: {{ a.longitude|unlocalize }}, label: "{{ a.client.name|escapejs }} — {{ a.label|escapejs }}" }{% if not forloop.last %},{% endif %}
         {% endfor %}
     ];
 
