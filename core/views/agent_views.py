@@ -926,8 +926,8 @@ def export_csv(request):
             float(t.fee_amount),
             float(t.total_amount),
             t.currency or '',
-            t.origin_country.name,
-            t.destination_country.name,
+            t.origin_country.name if t.origin_country else '',
+            t.destination_country.name if t.destination_country else '',
             STA_MAP.get(t.status, t.status),
         ]
         fill = even_fill if row_idx % 2 == 0 else odd_fill
