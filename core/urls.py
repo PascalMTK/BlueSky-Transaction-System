@@ -1,5 +1,5 @@
 from django.urls import path
-from core.views import auth_views, admin_views, agent_views, profile_views, logistics_views, forum_views
+from core.views import auth_views, admin_views, agent_views, profile_views, forum_views
 
 urlpatterns = [
     # ── Welcome & Auth ────────────────────────────────────────────────────
@@ -78,39 +78,6 @@ urlpatterns = [
     path('agent/reports/portal/',             agent_views.agent_reports_portal, name='agent_reports_portal'),
     path('agent/reports/<int:report_id>/delete/', agent_views.report_delete,   name='report_delete'),
     path('agent/export/csv/',             agent_views.export_csv,         name='agent_export_csv'),
-
-    # ── Admin — Logistics ─────────────────────────────────────────────────
-    path('admin/logistics/',                       logistics_views.dashboard,           name='admin_logistics_dashboard'),
-    path('admin/logistics/history/',                logistics_views.history,             name='admin_logistics_history'),
-    path('admin/logistics/export/',                 logistics_views.export_xlsx,         name='admin_logistics_export'),
-    path('admin/logistics/deliveries/create/',      logistics_views.delivery_create,     name='admin_delivery_create'),
-    path('admin/logistics/deliveries/<int:delivery_id>/edit/',   logistics_views.delivery_edit,          name='admin_delivery_edit'),
-    path('admin/logistics/deliveries/<int:delivery_id>/update/', logistics_views.delivery_inline_update, name='admin_delivery_inline_update'),
-    path('admin/logistics/deliveries/<int:delivery_id>/delete/', logistics_views.delivery_destroy,       name='admin_delivery_destroy'),
-    path('admin/logistics/clients/',                logistics_views.clients_index,       name='admin_logistics_clients'),
-    path('admin/logistics/clients/create/',          logistics_views.client_create,       name='admin_logistics_client_create'),
-    path('admin/logistics/clients/<int:client_id>/', logistics_views.client_show,         name='admin_logistics_client_show'),
-    path('admin/logistics/clients/<int:client_id>/edit/', logistics_views.client_edit,    name='admin_logistics_client_edit'),
-    path('admin/logistics/clients/<int:client_id>/addresses/create/', logistics_views.address_create, name='admin_logistics_address_create'),
-    path('admin/logistics/clients/<int:client_id>/addresses/<int:address_id>/edit/',   logistics_views.address_edit,    name='admin_logistics_address_edit'),
-    path('admin/logistics/clients/<int:client_id>/addresses/<int:address_id>/delete/', logistics_views.address_destroy, name='admin_logistics_address_destroy'),
-    path('admin/logistics/addresses/<int:address_id>/geocode/', logistics_views.address_geocode, name='admin_logistics_address_geocode'),
-    path('admin/logistics/clients/<int:client_id>/notes/add/',  logistics_views.note_add,        name='admin_logistics_note_add'),
-    path('admin/logistics/import/',                  logistics_views.import_upload,      name='admin_logistics_import'),
-    path('admin/logistics/import/<int:batch_id>/map/',    logistics_views.import_map,     name='admin_logistics_import_map'),
-    path('admin/logistics/import/<int:batch_id>/result/', logistics_views.import_result,  name='admin_logistics_import_result'),
-    path('admin/logistics/smart-paste/',             logistics_views.smart_paste,         name='admin_logistics_smart_paste'),
-    path('admin/logistics/map/',                     logistics_views.route_map,           name='admin_logistics_map'),
-    path('admin/logistics/route/<int:driver_id>/',   logistics_views.driver_route,        name='admin_logistics_driver_route'),
-
-    # ── Agent — Logistics (driver) ─────────────────────────────────────────
-    path('agent/logistics/tasks/',                    logistics_views.driver_tasks,              name='logistics_driver_tasks'),
-    path('agent/logistics/tasks/create/',             logistics_views.driver_task_create,        name='logistics_driver_task_create'),
-    path('agent/logistics/transactions/search/',      logistics_views.driver_transaction_search, name='logistics_driver_transaction_search'),
-    path('agent/logistics/tasks/<int:delivery_id>/',  logistics_views.driver_task_show,           name='logistics_driver_task_show'),
-    path('agent/logistics/tasks/<int:delivery_id>/status/', logistics_views.driver_task_status_update, name='logistics_driver_task_status_update'),
-    path('agent/logistics/tasks/<int:delivery_id>/geocode/', logistics_views.driver_task_geocode,      name='logistics_driver_task_geocode'),
-    path('agent/logistics/route/',                    logistics_views.driver_route_self,         name='logistics_driver_route'),
 
     # ── Forum (all active users — admin & agents) ───────────────────────────
     path('forum/',                        forum_views.forum_index,       name='forum_index'),
